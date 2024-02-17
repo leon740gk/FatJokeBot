@@ -1,0 +1,21 @@
+ME = "me"
+VALODYA = "valodya"
+ROMANUIK = "romanyuk"
+IRISKA = "iriska"
+VLAD = "vlad"
+OLENA = "olena"
+NIGHTMARE = "nightmare"
+KABACHOK = "kabachok"
+TREIMAK = "treimak"
+
+USER_IDS = {
+    ME: 442512203,
+    VALODYA: 525256253,
+    ROMANUIK: 902953403,
+    IRISKA: 5052321639,
+    VLAD: 460619719,
+    OLENA: 5259127280,
+    NIGHTMARE: 1208501917,
+    KABACHOK: 1005200098,
+    TREIMAK: 6633528682,
+}
