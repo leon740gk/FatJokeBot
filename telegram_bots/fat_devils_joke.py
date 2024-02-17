@@ -13,11 +13,12 @@ from telegram_bots.reaction_data import (
 )
 from telegram_bots.knowledge_base.l_podreviansjkyi.philosophy import bot_philosophy
 from telegram_bots.reaction_tools import ToTextReactions, ToPhotoReactions, ToStickerReactions
+from telegram_bots.token import fat_joke_token
 
 logger = telebot.logger
 telebot.logger.setLevel(logging.DEBUG)
 
-BOT_TOKEN = ""
+BOT_TOKEN = fat_joke_token
 bot = telebot.TeleBot(BOT_TOKEN, skip_pending=True)
 
 
