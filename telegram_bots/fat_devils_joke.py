@@ -6,7 +6,6 @@ from telegram_bots.reaction_data import (
     sticker_responses,
     text_to_text_reactions,
     sticker_to_text_reactions,
-    regex_reactions,
     froggy_sticker,
     special_sticker_responses,
     photo_to_text_reactions,
@@ -27,7 +26,6 @@ def text_reply(message):
     to_text_reaction = ToTextReactions(bot, message)
     to_text_reaction._text_to_text_reply(text_to_text_reactions)
     to_text_reaction._sticker_to_text_reply(sticker_to_text_reactions)
-    to_text_reaction._text_to_text_reply_re(regex_reactions)
     to_text_reaction._photo_to_text_reply(photo_to_text_reactions)
     to_text_reaction._bots_philosophy(bot_philosophy)
 
