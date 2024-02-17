@@ -17,7 +17,7 @@ from telegram_bots.reaction_tools import ToTextReactions, ToPhotoReactions, ToSt
 logger = telebot.logger
 telebot.logger.setLevel(logging.DEBUG)
 
-BOT_TOKEN = "REMOVED_BOT_TOKEN"
+BOT_TOKEN = ""
 bot = telebot.TeleBot(BOT_TOKEN, skip_pending=True)
 
 
