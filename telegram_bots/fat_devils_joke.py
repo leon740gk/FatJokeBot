@@ -1,7 +1,13 @@
+import datetime
 import logging
+import threading
+import time
 
+import pytz
 import telebot
 
+from telegram_bots.knowledge_base.chat_data import billi_chat_id
+from telegram_bots.knowledge_base.timer_data import time_mapper
 from telegram_bots.reaction_data import (
     sticker_responses,
     text_to_text_reactions,
@@ -23,6 +29,8 @@ bot = telebot.TeleBot(BOT_TOKEN, skip_pending=True)
 
 @bot.message_handler(content_types=["text"])
 def text_reply(message):
+    logger.debug(f"Chat id --->>> {message.chat.id}")
+
     to_text_reaction = ToTextReactions(bot, message)
     to_text_reaction._text_to_text_reply(text_to_text_reactions)
     to_text_reaction._sticker_to_text_reply(sticker_to_text_reactions)
@@ -48,6 +56,19 @@ def photo_reply(message):
     to_photo_reaction = ToPhotoReactions(bot, message)
     to_photo_reaction._react_to_photo(froggy_sticker)
 
+def message_timer():
+    while True:
+        minutes = datetime.datetime.now(pytz.timezone('Europe/Kiev')).strftime('%M')
+        if minutes in ['00']:
+            time_now = datetime.datetime.now(pytz.timezone('Europe/Kiev')).strftime('%H')
+            bot.send_message(billi_chat_id, text=f"{time_mapper.get(time_now)} блеать! Можна на годинник не дивицця!")
+            time.sleep(59)
+
+
+x = threading.Thread(target=message_timer)
+x.start()
+
 
 if __name__ == "__main__":
     bot.infinity_polling()
+
