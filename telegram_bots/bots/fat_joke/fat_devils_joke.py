@@ -1,10 +1,12 @@
 import logging
+import random
 import threading
 
 import schedule
 import telebot
 from telebot import types
 
+from knowledge_base.fat_joke.test_your_mind.qa_data import questionnaire
 from telegram_bots.knowledge_base.fat_joke.chat_data import billi_chat_id
 from telegram_bots.knowledge_base.fat_joke.periodic_tasks import message_timer, schedule_checker
 from telegram_bots.knowledge_base.fat_joke.timer_data import time_mapper
@@ -44,20 +46,25 @@ def help(message):
 
 @bot.message_handler(commands=["test_your_brain"])
 def test_your_brain(message):
+    pick_random_question = random.randint(1, len(questionnaire))
+    question_dict = questionnaire.get(pick_random_question)
+    question = list(question_dict.keys())[0]
+    answers_dict = question_dict.get(question)
+
     markup = types.InlineKeyboardMarkup(row_width=2)
-    answer_1 = types.InlineKeyboardButton("Бот", callback_data="answer_1")
-    answer_2 = types.InlineKeyboardButton("Санечек :)", callback_data="answer_2")
-    answer_3 = types.InlineKeyboardButton("Сірожка", callback_data="answer_3")
-    answer_4 = types.InlineKeyboardButton("Всі прям генії!", callback_data="answer_4")
+    answer_1 = types.InlineKeyboardButton(text=answers_dict.get("1")[0], callback_data=answers_dict.get("1")[1])
+    answer_2 = types.InlineKeyboardButton(text=answers_dict.get("2")[0], callback_data=answers_dict.get("2")[1])
+    answer_3 = types.InlineKeyboardButton(text=answers_dict.get("3")[0], callback_data=answers_dict.get("3")[1])
+    answer_4 = types.InlineKeyboardButton(text=answers_dict.get("4")[0], callback_data=answers_dict.get("4")[1])
 
     markup.add(answer_1, answer_2, answer_3, answer_4)
-    bot.send_message(message.chat.id, "Хто найрозумніший в чаті?", reply_markup=markup)
+    bot.send_message(message.chat.id, text=question, reply_markup=markup)
 
 
 @bot.callback_query_handler(func=lambda call: True)
 def callback(call):
     if call.message:
-        if call.data == "answer_4":
+        if call.data == "correct":
             bot.edit_message_text(
                 chat_id=call.message.chat.id, message_id=call.message.id, text="Таки так! Візьми з полки пиріжок"
             )
