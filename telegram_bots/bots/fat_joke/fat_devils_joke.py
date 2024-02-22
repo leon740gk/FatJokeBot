@@ -14,10 +14,18 @@ from telegram_bots.knowledge_base.fat_joke.reaction_data import (
     sticker_to_text_reactions,
     froggy_sticker,
     special_sticker_responses,
-    photo_to_text_reactions, commands_responses, dick, raund,
+    photo_to_text_reactions,
+    commands_responses,
+    dick,
+    raund,
 )
 from telegram_bots.knowledge_base.fat_joke.l_podreviansjkyi.philosophy import bot_philosophy
-from telegram_bots.bots.fat_joke.reaction_tools import ToTextReactions, ToPhotoReactions, ToStickerReactions, CommandHandler
+from telegram_bots.bots.fat_joke.reaction_tools import (
+    ToTextReactions,
+    ToPhotoReactions,
+    ToStickerReactions,
+    CommandHandler,
+)
 from telegram_bots.bots.fat_joke.token import fat_joke_token
 
 logger = telebot.logger
@@ -51,17 +59,11 @@ def callback(call):
     if call.message:
         if call.data == "answer_4":
             bot.edit_message_text(
-                chat_id=call.message.chat.id,
-                message_id=call.message.id,
-                text="Таки так! Візьми з полки пиріжок"
+                chat_id=call.message.chat.id, message_id=call.message.id, text="Таки так! Візьми з полки пиріжок"
             )
             bot.send_sticker(call.message.chat.id, raund)
         else:
-            bot.edit_message_text(
-                chat_id=call.message.chat.id,
-                message_id=call.message.id,
-                text="Лузер йоба )"
-            )
+            bot.edit_message_text(chat_id=call.message.chat.id, message_id=call.message.id, text="Лузер йоба )")
             bot.send_sticker(call.message.chat.id, dick)
 
 
@@ -87,7 +89,6 @@ def sticker_reply(message):
     to_sticker_reaction._react_to_sticker(sticker_responses, special_sticker_responses)
 
 
-
 @bot.message_handler(content_types=["photo"])
 def photo_reply(message):
     logger.debug(f"Photo From user_id --->>> {message.from_user.id} - {message.from_user.username}")
@@ -97,9 +98,7 @@ def photo_reply(message):
     to_photo_reaction._react_to_photo(froggy_sticker)
 
 
-
 if __name__ == "__main__":
     schedule.every(1).hour.at(":00").do(message_timer, bot=bot, chat_id=billi_chat_id, time_mapper=time_mapper)
     threading.Thread(target=schedule_checker).start()
     bot.infinity_polling()
-

@@ -12,5 +12,5 @@ def schedule_checker():
 
 
 def message_timer(bot, chat_id, time_mapper):
-    time_now = datetime.datetime.now(pytz.timezone('Europe/Kiev')).strftime('%H')
+    time_now = datetime.datetime.now(pytz.timezone("Europe/Kiev")).strftime("%H")
     bot.send_message(chat_id, text=f"{time_mapper.get(time_now)} блеать! Можна на годинник не дивицця!")
