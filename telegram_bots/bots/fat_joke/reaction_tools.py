@@ -7,6 +7,11 @@ class Reactions:
         self.message = message
 
 
+class CommandHandler(Reactions):
+    def text_to_command(self, phrase):
+        self.bot.reply_to(self.message, text=phrase)
+
+
 class ToTextReactions(Reactions):
 
     def _text_to_text_reply(self, mapper):
