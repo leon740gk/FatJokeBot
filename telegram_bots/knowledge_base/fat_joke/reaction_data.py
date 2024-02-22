@@ -1,6 +1,6 @@
 import re
 
-from telegram_bots.knowledge_base.chat_members import VALODYA
+from telegram_bots.knowledge_base.fat_joke.chat_members import VALODYA
 
 # misc stickers
 froggy_sticker = "CAACAgIAAxkBAAPUZcvrZ2S53zFjRrjUOpAhgR4J4CEAAm0JAAIItxkCBbK_ShFrQjM0BA"
@@ -8,6 +8,7 @@ sergios_chair = "AgACAgIAAxkBAAIB-WXN55y__MRafzd2cTvFV25_LrhnAALc2TEbzp5wSrjxMe0
 heyhey = "CAACAgIAAx0CW-jr9QACciZlze6o7pwmCoG3SM2mT-arJ_SqLQACZzwAAiYi8Ettss0cMxi7hDQE"
 joy = "CAACAgIAAxkBAAPQZcvnCyvE_jb2Cju0g2nHvEDb7_gAAkA5AAIer_BLAf5ZG1GHQZ00BA"
 cunt = "CAACAgIAAxkBAAPSZcvolkf5M9vqwTYVo2TzUHJHlYkAAn83AAKf6HBJqpvoWKfSXlE0BA"
+dick = "CAACAgIAAxkBAAIC9mXXaDlMBzU0OEhhvaQnQX9ch84oAALoOgACWOKASEInCn_Fo1FYNAQ"
 moshonochnye_klemmy = "CAACAgIAAxkBAAICAWXN9uK4bXzY6J5MN8EFu0Ifs7icAAJqPAACQ_GBSPrRIWVm7p8HNAQ"
 raund = "CAACAgIAAxkBAAICcWXPTXcM0QrR5Zuk_GmXFITVNi1HAALZNwACvx9pSHgrvKDu231VNAQ"
 valody_harosh_yalozyt = "CAACAgIAAxkBAAIB0WXNEebJkeOJ5TvL-Y2h6x782Cm3AAK8MwAC8KCpSbS5ZTJkBjTNNAQ"
@@ -107,3 +108,8 @@ regex_reactions = {re.compile("\d{3}([.,])?(\d{3})?.*"): "Сергійко зб�
 
 
 to_person_reactions = {VALODYA: valody_harosh_yalozyt}
+
+
+commands_responses = {
+    "help": "Тут скоро буде список команд, які можна юзати :)"
+}
