@@ -110,4 +110,8 @@ regex_reactions = {re.compile("\d{3}([.,])?(\d{3})?.*"): "Сергійко зб�
 to_person_reactions = {VALODYA: valody_harosh_yalozyt}
 
 
-commands_responses = {"help": "Тут скоро буде список команд, які можна юзати :)"}
+commands_responses = {
+    "help": """
+    /test_your_brain - команда для вікторини.
+    """,
+}
