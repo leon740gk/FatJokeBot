@@ -9,7 +9,7 @@ class Reactions:
 
 class CommandHandler(Reactions):
     def text_to_command(self, phrase):
-        self.bot.reply_to(self.message, text=phrase)
+        self.bot.send_message(self.message.chat.id, text=phrase)
 
 
 class ToTextReactions(Reactions):

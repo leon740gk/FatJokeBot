@@ -1,15 +1,12 @@
 import logging
-import random
 import threading
 
 import schedule
 import telebot
-from telebot import types
 
-from knowledge_base.fat_joke.test_your_mind.qa_data import questionnaire
+from telegram_bots.db_sqlite.sqlitre_connection import DBConnection
 from telegram_bots.knowledge_base.fat_joke.chat_data import billi_chat_id
-from telegram_bots.knowledge_base.fat_joke.periodic_tasks import message_timer, schedule_checker
-from telegram_bots.knowledge_base.fat_joke.timer_data import time_mapper
+from telegram_bots.knowledge_base.fat_joke.periodic_tasks import message_timer, schedule_checker, test_your_brain
 from telegram_bots.knowledge_base.fat_joke.reaction_data import (
     sticker_responses,
     text_to_text_reactions,
@@ -29,6 +26,7 @@ from telegram_bots.bots.fat_joke.reaction_tools import (
     CommandHandler,
 )
 from telegram_bots.bots.fat_joke.token import fat_joke_token
+from telegram_bots.knowledge_base.fat_joke.test_your_mind.iq_level_data import define_iq_levels, iq_level_mapper
 
 logger = telebot.logger
 telebot.logger.setLevel(logging.DEBUG)
@@ -39,45 +37,69 @@ bot = telebot.TeleBot(BOT_TOKEN, skip_pending=True)
 
 @bot.message_handler(commands=["help"])
 def help(message):
-    logger.debug(f"message --->>> {message.from_user.id} - {message}")
     command_handler = CommandHandler(bot, message)
     command_handler.text_to_command(commands_responses.get("help"))
 
 
-@bot.message_handler(commands=["test_your_brain"])
-def test_your_brain(message):
-    pick_random_question = random.randint(1, len(questionnaire))
-    question_dict = questionnaire.get(pick_random_question)
-    question = list(question_dict.keys())[0]
-    answers_dict = question_dict.get(question)
+@bot.message_handler(commands=["show_iq"])
+def show_iq(message):
+    user_data_query = """
+    SELECT name, IQ_level FROM Users
+    """
+    user_data = db.select_query(user_data_query)
+    message_to_send = define_iq_levels(user_data, iq_level_mapper)
+    command_handler = CommandHandler(bot, message)
+    command_handler.text_to_command(message_to_send)
 
-    markup = types.InlineKeyboardMarkup(row_width=2)
-    answer_1 = types.InlineKeyboardButton(text=answers_dict.get("1")[0], callback_data=answers_dict.get("1")[1])
-    answer_2 = types.InlineKeyboardButton(text=answers_dict.get("2")[0], callback_data=answers_dict.get("2")[1])
-    answer_3 = types.InlineKeyboardButton(text=answers_dict.get("3")[0], callback_data=answers_dict.get("3")[1])
-    answer_4 = types.InlineKeyboardButton(text=answers_dict.get("4")[0], callback_data=answers_dict.get("4")[1])
 
-    markup.add(answer_1, answer_2, answer_3, answer_4)
-    bot.send_message(message.chat.id, text=question, reply_markup=markup)
+@bot.message_handler(commands=["stream"])
+def stream(message):
+    command_handler = CommandHandler(bot, message)
+    command_handler.text_to_command(commands_responses.get("stream"))
 
 
 @bot.callback_query_handler(func=lambda call: True)
 def callback(call):
     if call.message:
+        user_id = call.from_user.id
+        select_query_iq_level = f"""
+            SELECT iq_level, name FROM Users WHERE telegram_id = {user_id}
+        """
+        results = db.select_query(select_query_iq_level)
+        user_iq_old = results[0][0]
+        user_name = results[0][1]
         if call.data == "correct":
+            user_iq_new = user_iq_old + 1
+            success_message = f"""
+            Твій рівень IQ підріс з {user_iq_old} до {user_iq_new}!
+{user_name} розумнішає! 
+Ай молодчинка :)
+            """
             bot.edit_message_text(
-                chat_id=call.message.chat.id, message_id=call.message.id, text="Таки так! Візьми з полки пиріжок"
+                chat_id=call.message.chat.id, message_id=call.message.id, text=success_message
             )
             bot.send_sticker(call.message.chat.id, raund)
         else:
-            bot.edit_message_text(chat_id=call.message.chat.id, message_id=call.message.id, text="Лузер йоба )")
+            user_iq_new = user_iq_old - 1
+            fail_message = f"""
+            Твій рівень IQ впав з {user_iq_old} до {user_iq_new}!
+Ой-ой, {user_name} потроху тупіє :( 
+Будеш ням-ням дімідрольчик?
+            """
+            bot.edit_message_text(
+                chat_id=call.message.chat.id, message_id=call.message.id, text=fail_message
+            )
             bot.send_sticker(call.message.chat.id, dick)
+        commit_query_iq_level = f"""
+            UPDATE Users SET iq_level = {user_iq_new} WHERE telegram_id = {user_id}
+        """
+        db.commit_query(commit_query_iq_level)
 
 
 @bot.message_handler(content_types=["text"])
 def text_reply(message):
     logger.debug(f"Chat id --->>> {message.chat.id}")
-    logger.debug(f"file_id --->>> {message}")
+    logger.debug(f"user_id --->>> {message.from_user.id}")
 
     to_text_reaction = ToTextReactions(bot, message)
     to_text_reaction._text_to_text_reply(text_to_text_reactions)
@@ -106,6 +128,9 @@ def photo_reply(message):
 
 
 if __name__ == "__main__":
-    schedule.every(1).hour.at(":00").do(message_timer, bot=bot, chat_id=billi_chat_id, time_mapper=time_mapper)
+    db = DBConnection()
+    schedule.every(1).hour.at(":00").do(message_timer, bot=bot, chat_id=billi_chat_id)
+    schedule.every(5).minutes.do(test_your_brain, bot=bot, chat_id=billi_chat_id)
     threading.Thread(target=schedule_checker).start()
     bot.infinity_polling()
+    db.close_connection()
