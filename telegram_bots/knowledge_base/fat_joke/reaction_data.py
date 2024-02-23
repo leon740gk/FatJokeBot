@@ -9,6 +9,9 @@ heyhey = "CAACAgIAAx0CW-jr9QACciZlze6o7pwmCoG3SM2mT-arJ_SqLQACZzwAAiYi8Ettss0cMx
 joy = "CAACAgIAAxkBAAPQZcvnCyvE_jb2Cju0g2nHvEDb7_gAAkA5AAIer_BLAf5ZG1GHQZ00BA"
 cunt = "CAACAgIAAxkBAAPSZcvolkf5M9vqwTYVo2TzUHJHlYkAAn83AAKf6HBJqpvoWKfSXlE0BA"
 dick = "CAACAgIAAxkBAAIC9mXXaDlMBzU0OEhhvaQnQX9ch84oAALoOgACWOKASEInCn_Fo1FYNAQ"
+dick_short = "AgAD6DoAAljigEg"
+dick_sergio_short = "AgAD2UMAAuk2EUo"
+dildo_sergio_short = "AgADED4AAq-5MUo"
 moshonochnye_klemmy = "CAACAgIAAxkBAAICAWXN9uK4bXzY6J5MN8EFu0Ifs7icAAJqPAACQ_GBSPrRIWVm7p8HNAQ"
 raund = "CAACAgIAAxkBAAICcWXPTXcM0QrR5Zuk_GmXFITVNi1HAALZNwACvx9pSHgrvKDu231VNAQ"
 valody_harosh_yalozyt = "CAACAgIAAxkBAAIB0WXNEebJkeOJ5TvL-Y2h6x782Cm3AAK8MwAC8KCpSbS5ZTJkBjTNNAQ"
@@ -100,8 +103,9 @@ sticker_to_text_reactions = {
 }
 
 special_sticker_responses = {
-    "AgAD2UMAAuk2EUo": ["Курс Защекоина (с) растет!!!", "ZashceCoin (с) to the 'Withcer'!!!"],
-    "AgADED4AAq-5MUo": ["Опа! Основной эмитент новой криптовалюты :)", "Listing and halving!!!", "Try my tools :)"],
+    dick_sergio_short: ["Курс Защекоина (с) растет!!!", "ZashceCoin (с) to the 'Withcer'!!!"],
+    dildo_sergio_short: ["Опа! Основной эмитент новой криптовалюты :)", "Listing and halving!!!", "Try my tools :)"],
+    dick_short: ["Опапа! Внєзапно!"],
 }
 
 regex_reactions = {re.compile("\d{3}([.,])?(\d{3})?.*"): "Сергійко збирає на тренажер!"}
@@ -112,6 +116,16 @@ to_person_reactions = {VALODYA: valody_harosh_yalozyt}
 
 commands_responses = {
     "help": """
-    /test_your_brain - команда для вікторини.
+/stream - дізнатися коли наступний стрім.
+/show_iq - дізнатися рівень IQ групи.
+    """,
+    "stream": """
+    Наступний стрім:
+https://youtube.com/live/PhmYPuOBkpY
     """,
 }
+
+
+# help - Help
+# stream - When is the next stream
+# show_iq - Show IQ level of the group
