@@ -68,6 +68,7 @@ def callback(call):
         results = db.select_query(select_query_iq_level)
         user_iq_old = results[0][0]
         user_name = results[0][1]
+        logger.debug(f"answer from user_id --->>> {user_id} name --->>> {user_name}")
         if call.data == "correct":
             user_iq_new = user_iq_old + 1
             success_message = f"""
@@ -94,8 +95,7 @@ def callback(call):
 
 @bot.message_handler(content_types=["text"])
 def text_reply(message):
-    logger.debug(f"Chat id --->>> {message.chat.id}")
-    logger.debug(f"user_id --->>> {message.from_user.id}")
+    logger.debug(f"message from user_id --->>> {message.from_user.id} username --->>> {message.from_user.username}")
 
     to_text_reaction = ToTextReactions(bot, message)
     to_text_reaction._text_to_text_reply(text_to_text_reactions)

@@ -43,7 +43,10 @@ class ToTextReactions(Reactions):
         ]
 
         for sticker in something_to_say:
-            self.bot.send_sticker(self.message.chat.id, sticker=sticker)
+            if isinstance(sticker, str):
+                self.bot.send_sticker(self.message.chat.id, sticker=sticker)
+            elif isinstance(sticker, list):
+                self.bot.send_sticker(self.message.chat.id, sticker=random.choice(sticker))
 
     def _photo_to_text_reply(self, mapper):
         something_to_say = [
