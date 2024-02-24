@@ -15,6 +15,14 @@ dildo_sergio_short = "AgADED4AAq-5MUo"
 moshonochnye_klemmy = "CAACAgIAAxkBAAICAWXN9uK4bXzY6J5MN8EFu0Ifs7icAAJqPAACQ_GBSPrRIWVm7p8HNAQ"
 raund = "CAACAgIAAxkBAAICcWXPTXcM0QrR5Zuk_GmXFITVNi1HAALZNwACvx9pSHgrvKDu231VNAQ"
 valody_harosh_yalozyt = "CAACAgIAAxkBAAIB0WXNEebJkeOJ5TvL-Y2h6x782Cm3AAK8MwAC8KCpSbS5ZTJkBjTNNAQ"
+adolf_1 = "CAACAgIAAxkBAAIDhWXZ7TPdoK98TxScisee_ghxHSVWAAIGAAMc3zEVla6zj72xd240BA"
+adolf_2 = "CAACAgIAAxkBAAIDh2XZ7VPgX8iuFK_FzcuKY9KxuWzQAAIJAAMc3zEVjgLFmyRXCps0BA"
+adolf_3 = "CAACAgIAAxkBAAIDiWXZ7WTEyRWqQcxGj9js2OOsWo0uAAItAAMc3zEVg7z9Nsn7x2c0BA"
+adolf_ne_pidu = "CAACAgIAAxkBAAIDi2XZ7jMnlYawKHeOcxkWiz4TUIZsAAIvAAMc3zEVPT0yMMx4vDs0BA"
+nigtmare_1 = "CAACAgIAAxkBAAIDzWXaW2BxZiXhTxVkF_9CPZXubTP1AAI_NQACdc5oSG5ulKIop3VsNAQ"
+
+adolf_set = [adolf_1, adolf_2, adolf_3]
+
 
 # hentai
 hentai_01 = "AgACAgIAAxkBAAICH2XOQKCVh2ZBZxQ6NOW54XkZhkPGAAIq3TEbzp5wSsISg3zKYLArAQADAgADcwADNAQ"
@@ -57,9 +65,6 @@ sticker_responses = [
     "Нужно больше стикеров! (с)",
     "Так, а де ж внєзапний???",
     "Ну нормуль.",
-    "Це не прикольно.",
-    "Ой все.",
-    "Харош засирать чат.",
 ]
 
 sergios_rules = [
@@ -87,9 +92,14 @@ text_to_text_reactions = {
     ("влад", "slave"): "What is love? Baby don't hurt me!",
     ("кабачок",): "Кабачок, ти 2 неділі YappyDoor :)",
     ("саня",): "Boss of the GYM!",
-    ("жах", "кошмар"): "Кошмара, де стріми???",
+    ("жахіття", "кошмар"): "Кошмара, де стріми???",
     ("сучка", "сучку", "сучечка"): "Сучка в чаті тільки одна )) гаф-гаф",
     ("лікарня", "палата", "дурка", "дурдом"): "Край родной, навєк любімий!",
+    ("банду",): "Геть!",
+    ("бандера", "бендера", "батько"): "Батько наш Бандера! Україна - мати!",
+    ("слава україні",): "Героям Слава!!!",
+    ("русский", "руський", "рузький", "руснявий"): "Руський воєний корабль, іди на хуй!!!",
+    ("слава нації",): "Смерть ворогам!",
 }
 
 photo_to_text_reactions = {("тренажер",): sergios_chair}
@@ -100,6 +110,9 @@ sticker_to_text_reactions = {
     ("певень", "питух", "петух", "півень"): heyhey,
     ("фашист", "фашик", "адик", "адік", "адольф"): moshonochnye_klemmy,
     ("раунд",): raund,
+    ("хайль", "зиг", "слава україні"): adolf_set,
+    ("розбійник",): adolf_ne_pidu,
+    ("жах",): nigtmare_1,
 }
 
 special_sticker_responses = {
@@ -121,7 +134,7 @@ commands_responses = {
     """,
     "stream": """
     Наступний стрім:
-https://youtube.com/live/PhmYPuOBkpY
+Поки не відомо... запитайте у того ушльопка, що стрімить )
     """,
 }
 
