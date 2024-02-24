@@ -25,7 +25,7 @@ from telegram_bots.bots.fat_joke.reaction_tools import (
     ToStickerReactions,
     CommandHandler,
 )
-from telegram_bots.bots.fat_joke.token import fat_joke_token
+from telegram_bots.bots.fat_joke.token_for_fat_joke import fat_joke_token
 from telegram_bots.knowledge_base.fat_joke.test_your_mind.iq_level_data import define_iq_levels, iq_level_mapper
 
 logger = telebot.logger
@@ -75,9 +75,7 @@ def callback(call):
 {user_name} розумнішає! 
 Ай молодчинка :)
             """
-            bot.edit_message_text(
-                chat_id=call.message.chat.id, message_id=call.message.id, text=success_message
-            )
+            bot.edit_message_text(chat_id=call.message.chat.id, message_id=call.message.id, text=success_message)
             bot.send_sticker(call.message.chat.id, raund)
         else:
             user_iq_new = user_iq_old - 1
@@ -86,9 +84,7 @@ def callback(call):
 Ой-ой, {user_name} потроху тупіє :( 
 Будеш ням-ням дімідрольчик?
             """
-            bot.edit_message_text(
-                chat_id=call.message.chat.id, message_id=call.message.id, text=fail_message
-            )
+            bot.edit_message_text(chat_id=call.message.chat.id, message_id=call.message.id, text=fail_message)
             bot.send_sticker(call.message.chat.id, dick)
         commit_query_iq_level = f"""
             UPDATE Users SET iq_level = {user_iq_new} WHERE telegram_id = {user_id}

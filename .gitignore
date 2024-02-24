@@ -2,6 +2,6 @@
 __pycache__
 
 .idea
-telegram_bots/bots/fat_joke/token.py
+telegram_bots/bots/fat_joke/token_for_fat_joke.py
 
 .DS_Store
