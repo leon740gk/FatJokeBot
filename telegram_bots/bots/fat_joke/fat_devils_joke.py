@@ -19,6 +19,7 @@ from telegram_bots.knowledge_base.fat_joke.reaction_data import (
     dick,
     raund,
     genius,
+    animation_to_text_reactions,
 )
 from telegram_bots.knowledge_base.fat_joke.l_podreviansjkyi.philosophy import bot_philosophy
 from telegram_bots.bots.fat_joke.reaction_tools import (
@@ -111,6 +112,7 @@ def text_reply(message):
     to_text_reaction._text_to_text_reply(text_to_text_reactions)
     to_text_reaction._sticker_to_text_reply(sticker_to_text_reactions)
     to_text_reaction._photo_to_text_reply(photo_to_text_reactions)
+    to_text_reaction._animation_to_text_reply(animation_to_text_reactions)
     to_text_reaction._bots_philosophy(bot_philosophy)
 
 
@@ -135,6 +137,13 @@ def photo_reply(message):
 
     to_photo_reaction = ToPhotoReactions(bot, message)
     to_photo_reaction._react_to_photo(froggy_sticker)
+
+
+@bot.message_handler(content_types=["animation"])
+def animation_reply(message):
+    user_id = message.from_user.id
+    logger.debug(f"Photo From user_id --->>> {user_id} - {message.from_user.username}")
+    logger.debug(f"file_id --->>> {message.document.file_id}")
 
 
 if __name__ == "__main__":

@@ -26,6 +26,10 @@ sergios_chair = "AgACAgIAAxkBAAIB-WXN55y__MRafzd2cTvFV25_LrhnAALc2TEbzp5wSrjxMe0
 sternenko = "AgACAgIAAxkBAAID6WXbOYSrB9E9KsWG0fpLdmVmm_qDAALt3zEbUQ7YSozyNLxcluT8AQADAgADcwADNAQ"
 genius = "AgACAgIAAxkBAAIECGXbVD-7ycYJ-mskFcD7Br2QB9-jAAKd4DEbUQ7YSoxzQQYFlt8RAQADAgADcwADNAQ"
 
+# Misc animations
+sadovnik = "CgACAgQAAxkBAAIEI2XbiteY5s3hVrHx60PEY0fyKvuHAAL7AgACrTEVU4lVcKpV3I5lNAQ"
+astanavites = "CgACAgQAAxkBAAIEJmXbjE8o_pWBf0itrr-6XmyWSLFKAALzAgACEhoNUzao3AdnIYLkNAQ"
+
 adolf_set = [adolf_1, adolf_2, adolf_3]
 
 
@@ -118,6 +122,11 @@ sticker_to_text_reactions = {
     ("раунд",): raund,
     ("хайль", "зиг", "слава україні"): adolf_set,
     ("розбійник",): adolf_ne_pidu,
+}
+
+animation_to_text_reactions = {
+    ("садовнік", "садовник"): sadovnik,
+    ("останови", "астанави", "зупинити", "заканчивай"): astanavites,
 }
 
 special_sticker_responses = {

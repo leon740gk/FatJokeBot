@@ -62,6 +62,20 @@ class ToTextReactions(Reactions):
             elif isinstance(photo, list):
                 self.bot.send_photo(self.message.chat.id, photo=random.choice(photo))
 
+    def _animation_to_text_reply(self, mapper):
+        something_to_say = [
+            mapper.get(keywords)
+            for keywords in mapper.keys()
+            for i in keywords
+            if i.lower() in self.message.text.lower()
+        ]
+
+        for animation in something_to_say:
+            if isinstance(animation, str):
+                self.bot.send_animation(self.message.chat.id, animation=animation)
+            elif isinstance(animation, list):
+                self.bot.send_animation(self.message.chat.id, animation=random.choice(animation))
+
     def _bots_philosophy(self, bot_philosophy):
         frequency = 10
         say_something = random.randint(0, frequency)
