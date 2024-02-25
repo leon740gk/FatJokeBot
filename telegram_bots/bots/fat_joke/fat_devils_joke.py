@@ -4,9 +4,10 @@ import threading
 import schedule
 import telebot
 
+from telegram_bots.bots.fat_joke.activity_hadling_tools import ActivityHandler
 from telegram_bots.db_sqlite.sqlitre_connection import DBConnection
-from telegram_bots.knowledge_base.fat_joke.chat_data import billi_chat_id
-from telegram_bots.knowledge_base.fat_joke.periodic_tasks import message_timer, schedule_checker, test_your_brain
+from telegram_bots.knowledge_base.fat_joke.chat_data import billi_chat_id, test_004_chat_id
+from telegram_bots.bots.fat_joke.periodic_tasks import message_timer, schedule_checker, test_your_brain, we_miss_you
 from telegram_bots.knowledge_base.fat_joke.reaction_data import (
     sticker_responses,
     text_to_text_reactions,
@@ -17,6 +18,7 @@ from telegram_bots.knowledge_base.fat_joke.reaction_data import (
     commands_responses,
     dick,
     raund,
+    genius,
 )
 from telegram_bots.knowledge_base.fat_joke.l_podreviansjkyi.philosophy import bot_philosophy
 from telegram_bots.bots.fat_joke.reaction_tools import (
@@ -26,23 +28,36 @@ from telegram_bots.bots.fat_joke.reaction_tools import (
     CommandHandler,
 )
 from telegram_bots.bots.fat_joke.token_for_fat_joke import fat_joke_token
-from telegram_bots.knowledge_base.fat_joke.test_your_mind.iq_level_data import define_iq_levels, iq_level_mapper
+from telegram_bots.bots.fat_joke.iq_level_tools import (
+    define_iq_levels,
+    iq_level_mapper,
+    get_user_iq_and_name,
+    calculate_id,
+    change_iq,
+    did_user_answer_this_question,
+    get_anti_cheat_message,
+)
 
 logger = telebot.logger
 telebot.logger.setLevel(logging.DEBUG)
 
 BOT_TOKEN = fat_joke_token
 bot = telebot.TeleBot(BOT_TOKEN, skip_pending=True)
+activity_handler = ActivityHandler(logger)
 
 
 @bot.message_handler(commands=["help"])
 def help(message):
+    user_id = message.from_user.id
+    activity_handler.update_user_activity_data(user_id, db)
     command_handler = CommandHandler(bot, message)
     command_handler.text_to_command(commands_responses.get("help"))
 
 
 @bot.message_handler(commands=["show_iq"])
 def show_iq(message):
+    user_id = message.from_user.id
+    activity_handler.update_user_activity_data(user_id, db)
     user_data_query = """
     SELECT name, IQ_level FROM Users
     """
@@ -54,6 +69,8 @@ def show_iq(message):
 
 @bot.message_handler(commands=["stream"])
 def stream(message):
+    user_id = message.from_user.id
+    activity_handler.update_user_activity_data(user_id, db)
     command_handler = CommandHandler(bot, message)
     command_handler.text_to_command(commands_responses.get("stream"))
 
@@ -62,41 +79,34 @@ def stream(message):
 def callback(call):
     if call.message:
         user_id = call.from_user.id
-        select_query_iq_level = f"""
-            SELECT iq_level, name FROM Users WHERE telegram_id = {user_id}
-        """
-        results = db.select_query(select_query_iq_level)
-        user_iq_old = results[0][0]
-        user_name = results[0][1]
+        activity_handler.update_user_activity_data(user_id, db)
+        user_iq_old, user_name = get_user_iq_and_name(user_id, db)
         logger.debug(f"answer from user_id --->>> {user_id} name --->>> {user_name}")
-        if call.data == "correct":
-            user_iq_new = user_iq_old + 1
-            success_message = f"""
-            Твій рівень IQ підріс з {user_iq_old} до {user_iq_new}!
-{user_name} розумнішає! 
-Ай молодчинка :)
-            """
-            bot.edit_message_text(chat_id=call.message.chat.id, message_id=call.message.id, text=success_message)
-            bot.send_sticker(call.message.chat.id, raund)
+        split_answer = call.data.split(" ")
+        if len(split_answer) == 2:
+            question_number = split_answer[1]
+            they_did = did_user_answer_this_question(user_id, question_number, db)
+            if they_did:
+                cheat_message = get_anti_cheat_message(user_name)
+                bot.edit_message_text(chat_id=call.message.chat.id, message_id=call.message.id, text=cheat_message)
+                bot.send_photo(call.message.chat.id, genius)
+                return
+            else:
+                user_iq_new, success_message = calculate_id(user_iq_old, user_name, increase=True)
+                bot.edit_message_text(chat_id=call.message.chat.id, message_id=call.message.id, text=success_message)
+                bot.send_sticker(call.message.chat.id, raund)
         else:
-            user_iq_new = user_iq_old - 1
-            fail_message = f"""
-            Твій рівень IQ впав з {user_iq_old} до {user_iq_new}!
-Ой-ой, {user_name} потроху тупіє :( 
-Будеш ням-ням дімідрольчик?
-            """
+            user_iq_new, fail_message = calculate_id(user_iq_old, user_name, increase=False)
             bot.edit_message_text(chat_id=call.message.chat.id, message_id=call.message.id, text=fail_message)
             bot.send_sticker(call.message.chat.id, dick)
-        commit_query_iq_level = f"""
-            UPDATE Users SET iq_level = {user_iq_new} WHERE telegram_id = {user_id}
-        """
-        db.commit_query(commit_query_iq_level)
+        change_iq(user_id, user_iq_new, db)
 
 
 @bot.message_handler(content_types=["text"])
 def text_reply(message):
-    logger.debug(f"message from user_id --->>> {message.from_user.id} username --->>> {message.from_user.username}")
-
+    user_id = message.from_user.id
+    logger.debug(f"message from user_id --->>> {user_id} username --->>> {message.from_user.username}")
+    activity_handler.update_user_activity_data(user_id, db)
     to_text_reaction = ToTextReactions(bot, message)
     to_text_reaction._text_to_text_reply(text_to_text_reactions)
     to_text_reaction._sticker_to_text_reply(sticker_to_text_reactions)
@@ -106,9 +116,11 @@ def text_reply(message):
 
 @bot.message_handler(content_types=["sticker"])
 def sticker_reply(message):
-    logger.debug(f"Sticker From user_id --->>> {message.from_user.id} - {message.from_user.username}")
+    user_id = message.from_user.id
+    logger.debug(f"Sticker From user_id --->>> {user_id} - {message.from_user.username}")
     logger.debug(f"Sticker file_unique_id --->>> {message.sticker.file_unique_id}")
     logger.debug(f"Sticker file_id --->>> {message.sticker.file_id}")
+    activity_handler.update_user_activity_data(user_id, db)
 
     to_sticker_reaction = ToStickerReactions(bot, message)
     to_sticker_reaction._react_to_sticker(sticker_responses, special_sticker_responses)
@@ -116,8 +128,10 @@ def sticker_reply(message):
 
 @bot.message_handler(content_types=["photo"])
 def photo_reply(message):
-    logger.debug(f"Photo From user_id --->>> {message.from_user.id} - {message.from_user.username}")
+    user_id = message.from_user.id
+    logger.debug(f"Photo From user_id --->>> {user_id} - {message.from_user.username}")
     logger.debug(f"file_id --->>> {message.json.get('photo')[0]['file_id']}")
+    activity_handler.update_user_activity_data(user_id, db)
 
     to_photo_reaction = ToPhotoReactions(bot, message)
     to_photo_reaction._react_to_photo(froggy_sticker)
@@ -127,6 +141,8 @@ if __name__ == "__main__":
     db = DBConnection()
     schedule.every(1).hour.at(":00").do(message_timer, bot=bot, chat_id=billi_chat_id)
     schedule.every(5).minutes.do(test_your_brain, bot=bot, chat_id=billi_chat_id)
+    schedule.every().day.at("11:55").do(activity_handler.check_daily_activity, db=db)
+    schedule.every().day.at("12:00").do(we_miss_you, bot=bot, chat_id=billi_chat_id, db=db)
     threading.Thread(target=schedule_checker).start()
     bot.infinity_polling()
     db.close_connection()
