@@ -4,7 +4,6 @@ from telegram_bots.knowledge_base.fat_joke.chat_members import VALODYA
 
 # misc stickers
 froggy_sticker = "CAACAgIAAxkBAAPUZcvrZ2S53zFjRrjUOpAhgR4J4CEAAm0JAAIItxkCBbK_ShFrQjM0BA"
-sergios_chair = "AgACAgIAAxkBAAIB-WXN55y__MRafzd2cTvFV25_LrhnAALc2TEbzp5wSrjxMe0rR402AQADAgADcwADNAQ"
 heyhey = "CAACAgIAAx0CW-jr9QACciZlze6o7pwmCoG3SM2mT-arJ_SqLQACZzwAAiYi8Ettss0cMxi7hDQE"
 joy = "CAACAgIAAxkBAAPQZcvnCyvE_jb2Cju0g2nHvEDb7_gAAkA5AAIer_BLAf5ZG1GHQZ00BA"
 cunt = "CAACAgIAAxkBAAPSZcvolkf5M9vqwTYVo2TzUHJHlYkAAn83AAKf6HBJqpvoWKfSXlE0BA"
@@ -20,6 +19,12 @@ adolf_2 = "CAACAgIAAxkBAAIDh2XZ7VPgX8iuFK_FzcuKY9KxuWzQAAIJAAMc3zEVjgLFmyRXCps0B
 adolf_3 = "CAACAgIAAxkBAAIDiWXZ7WTEyRWqQcxGj9js2OOsWo0uAAItAAMc3zEVg7z9Nsn7x2c0BA"
 adolf_ne_pidu = "CAACAgIAAxkBAAIDi2XZ7jMnlYawKHeOcxkWiz4TUIZsAAIvAAMc3zEVPT0yMMx4vDs0BA"
 nigtmare_1 = "CAACAgIAAxkBAAIDzWXaW2BxZiXhTxVkF_9CPZXubTP1AAI_NQACdc5oSG5ulKIop3VsNAQ"
+wanted = "CAACAgIAAxkBAAIEGWXbg9nB54joVC7MeYiwePTfed0oAALHNQAChnqASAoL1HPmKgs3NAQ"
+
+# Misc photos
+sergios_chair = "AgACAgIAAxkBAAIB-WXN55y__MRafzd2cTvFV25_LrhnAALc2TEbzp5wSrjxMe0rR402AQADAgADcwADNAQ"
+sternenko = "AgACAgIAAxkBAAID6WXbOYSrB9E9KsWG0fpLdmVmm_qDAALt3zEbUQ7YSozyNLxcluT8AQADAgADcwADNAQ"
+genius = "AgACAgIAAxkBAAIECGXbVD-7ycYJ-mskFcD7Br2QB9-jAAKd4DEbUQ7YSoxzQQYFlt8RAQADAgADcwADNAQ"
 
 adolf_set = [adolf_1, adolf_2, adolf_3]
 
@@ -100,9 +105,10 @@ text_to_text_reactions = {
     ("слава україні",): "Героям Слава!!!",
     ("русский", "руський", "рузький", "руснявий"): "Руський воєний корабль, іди на хуй!!!",
     ("слава нації",): "Смерть ворогам!",
+    ("жах",): "Я ж кажу, який жах...",
 }
 
-photo_to_text_reactions = {("тренажер",): sergios_chair}
+photo_to_text_reactions = {("тренажер",): sergios_chair, ("жах",): sternenko}
 
 sticker_to_text_reactions = {
     ("кайф", "каеф"): joy,
@@ -112,7 +118,6 @@ sticker_to_text_reactions = {
     ("раунд",): raund,
     ("хайль", "зиг", "слава україні"): adolf_set,
     ("розбійник",): adolf_ne_pidu,
-    ("жах",): nigtmare_1,
 }
 
 special_sticker_responses = {
