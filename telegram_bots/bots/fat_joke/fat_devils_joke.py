@@ -1,4 +1,5 @@
 import logging
+import random
 import threading
 
 import schedule
@@ -8,6 +9,7 @@ from telegram_bots.bots.fat_joke.activity_hadling_tools import ActivityHandler
 from telegram_bots.db_sqlite.sqlitre_connection import DBConnection
 from telegram_bots.knowledge_base.fat_joke.chat_data import billi_chat_id, test_004_chat_id
 from telegram_bots.bots.fat_joke.periodic_tasks import message_timer, schedule_checker, test_your_brain, we_miss_you
+from telegram_bots.knowledge_base.fat_joke.chat_members import USER_IDS, ROMANUIK, ME
 from telegram_bots.knowledge_base.fat_joke.reaction_data import (
     sticker_responses,
     text_to_text_reactions,
@@ -37,6 +39,7 @@ from telegram_bots.bots.fat_joke.iq_level_tools import (
     change_iq,
     did_user_answer_this_question,
     get_anti_cheat_message,
+    get_already_answered_questions,
 )
 
 logger = telebot.logger
@@ -53,6 +56,15 @@ def help(message):
     activity_handler.update_user_activity_data(user_id, db)
     command_handler = CommandHandler(bot, message)
     command_handler.text_to_command(commands_responses.get("help"))
+
+
+@bot.message_handler(commands=["already_answered_questions"])
+def already_answered_questions(message):
+    user_id = message.from_user.id
+    answer = get_already_answered_questions(user_id, db)
+    activity_handler.update_user_activity_data(user_id, db)
+    command_handler = CommandHandler(bot, message)
+    command_handler.text_to_command(answer)
 
 
 @bot.message_handler(commands=["show_iq"])
@@ -84,6 +96,9 @@ def callback(call):
         user_iq_old, user_name = get_user_iq_and_name(user_id, db)
         logger.debug(f"answer from user_id --->>> {user_id} name --->>> {user_name}")
         split_answer = call.data.split(" ")
+        # not_this_time = random.choice([True, True, False])
+        # if user_id in [USER_IDS.get(ME)]:
+        #     return
         if len(split_answer) == 2:
             question_number = split_answer[1]
             they_did = did_user_answer_this_question(user_id, question_number, db)
@@ -149,7 +164,7 @@ def animation_reply(message):
 if __name__ == "__main__":
     db = DBConnection()
     schedule.every(1).hour.at(":00").do(message_timer, bot=bot, chat_id=billi_chat_id)
-    schedule.every(5).minutes.do(test_your_brain, bot=bot, chat_id=billi_chat_id)
+    schedule.every(10).minutes.do(test_your_brain, bot=bot, chat_id=billi_chat_id)
     schedule.every().day.at("11:55").do(activity_handler.check_daily_activity, db=db)
     schedule.every().day.at("12:00").do(we_miss_you, bot=bot, chat_id=billi_chat_id, db=db)
     threading.Thread(target=schedule_checker).start()
