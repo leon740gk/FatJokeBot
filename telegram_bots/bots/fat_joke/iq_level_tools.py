@@ -89,3 +89,20 @@ def get_anti_cheat_message(user_name):
 От як тобі не соромно, GENIUS?
             """
     return message
+
+
+def get_already_answered_questions(user_id, db):
+    answered_questions_query = f"""
+    SELECT questionare_done FROM Users WHERE telegram_id = {user_id}
+    """
+    result = db.select_query(answered_questions_query)[0][0]
+    result_raw = json.loads(result)
+    if not result_raw:
+        return "Ото лінива срака! На жодне питання ще не відповіли ("
+    result = [int(i) for i in result_raw]
+    result.sort()
+    answer = ["Ви вже відповіли на наступні питання:\n"]
+    for question_id in result:
+        answer.append(f"{question_id},")
+    answer_string = "".join(answer)
+    return answer_string

@@ -25,10 +25,13 @@ wanted = "CAACAgIAAxkBAAIEGWXbg9nB54joVC7MeYiwePTfed0oAALHNQAChnqASAoL1HPmKgs3NA
 sergios_chair = "AgACAgIAAxkBAAIB-WXN55y__MRafzd2cTvFV25_LrhnAALc2TEbzp5wSrjxMe0rR402AQADAgADcwADNAQ"
 sternenko = "AgACAgIAAxkBAAID6WXbOYSrB9E9KsWG0fpLdmVmm_qDAALt3zEbUQ7YSozyNLxcluT8AQADAgADcwADNAQ"
 genius = "AgACAgIAAxkBAAIECGXbVD-7ycYJ-mskFcD7Br2QB9-jAAKd4DEbUQ7YSoxzQQYFlt8RAQADAgADcwADNAQ"
+anus = "AgACAgIAAx0CW-jr9QACh9Fl3On33Scm_uvd3OkDqn-Gc1mVTwACd9cxG8Gf6EqwGkHuDeLRRwEAAwIAA3MAAzQE"
 
 # Misc animations
 sadovnik = "CgACAgQAAxkBAAIEI2XbiteY5s3hVrHx60PEY0fyKvuHAAL7AgACrTEVU4lVcKpV3I5lNAQ"
 astanavites = "CgACAgQAAxkBAAIEJmXbjE8o_pWBf0itrr-6XmyWSLFKAALzAgACEhoNUzao3AdnIYLkNAQ"
+burning_ass = "CgACAgQAAx0CW-jr9QAChU5l3GnDF_JU8Lk7rCSb8fFkKU2KbgACDgMAAo-rDFMBl6wtCC7A7jQE"
+burning_ass_2 = "CgACAgQAAx0CW-jr9QAChVVl3GsjZejadoN-RvvLhG6UQbuQcAACMQMAAlvPBFNRIe0ZNDV2CzQE"
 
 adolf_set = [adolf_1, adolf_2, adolf_3]
 
@@ -90,14 +93,17 @@ sergios_rules = [
 ]
 
 volodymyr_rules = [
-    "3 заповіді Валоді. Заповідь 1. Жизь хуйовая.",
-    "3 заповіді Валоді. Заповідь 2. Айфон - хуйня.",
-    "3 заповіді Валоді. Заповідь 3. Пить - то западло.",
+    "5 заповідей Володі. Заповідь 1. Жизь хуйовая.",
+    "5 заповідей Володі. Заповідь 2. Айфон - хуйня.",
+    "5 заповідей Володі. Заповідь 3. Пить - то западло.",
+    "5 заповідей Володі. Заповідь 4. Дота - хуйня; ВОВ - збс тєма, кек.",
+    "5 заповідей Володі. Заповідь 5. Зустрів Валодю - впиздь молотом по їбалу. А Зустрів Володимира - пригости пивом.",
 ]
 
 text_to_text_reactions = {
     ("сірожа", "серий", "сергій", "сіроня", "сережа", "серега", "серёга"): sergios_rules,
-    ("вова", "валодя", "володя"): volodymyr_rules,
+    ("вова", "володя"): volodymyr_rules,
+    ("валодя",): "Не Валодя він тобі, а Володимир! Урюк невмитий!",
     ("влад", "slave"): "What is love? Baby don't hurt me!",
     ("кабачок",): "Кабачок, ти 2 неділі YappyDoor :)",
     ("саня",): "Boss of the GYM!",
@@ -112,7 +118,7 @@ text_to_text_reactions = {
     ("жах",): "Я ж кажу, який жах...",
 }
 
-photo_to_text_reactions = {("тренажер",): sergios_chair, ("жах",): sternenko}
+photo_to_text_reactions = {("тренажер",): sergios_chair, ("жах",): sternenko, ("анус", "анал"): anus}
 
 sticker_to_text_reactions = {
     ("кайф", "каеф"): joy,
@@ -127,6 +133,7 @@ sticker_to_text_reactions = {
 animation_to_text_reactions = {
     ("садовнік", "садовник"): sadovnik,
     ("останови", "астанави", "зупинити", "заканчивай"): astanavites,
+    ("горит", "дупа", "жопа"): [burning_ass, burning_ass_2],
 }
 
 special_sticker_responses = {
@@ -145,6 +152,7 @@ commands_responses = {
     "help": """
 /stream - дізнатися коли наступний стрім.
 /show_iq - дізнатися рівень IQ групи.
+/already_answered_questions - питання, на які вже дана вірна відповідь
     """,
     "stream": """
     Наступний стрім:
@@ -156,3 +164,4 @@ commands_responses = {
 # help - Help
 # stream - When is the next stream
 # show_iq - Show IQ level of the group
+# already_answered_questions - know all questions you answered already
