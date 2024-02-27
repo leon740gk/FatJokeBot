@@ -20,6 +20,9 @@ adolf_3 = "CAACAgIAAxkBAAIDiWXZ7WTEyRWqQcxGj9js2OOsWo0uAAItAAMc3zEVg7z9Nsn7x2c0B
 adolf_ne_pidu = "CAACAgIAAxkBAAIDi2XZ7jMnlYawKHeOcxkWiz4TUIZsAAIvAAMc3zEVPT0yMMx4vDs0BA"
 nigtmare_1 = "CAACAgIAAxkBAAIDzWXaW2BxZiXhTxVkF_9CPZXubTP1AAI_NQACdc5oSG5ulKIop3VsNAQ"
 wanted = "CAACAgIAAxkBAAIEGWXbg9nB54joVC7MeYiwePTfed0oAALHNQAChnqASAoL1HPmKgs3NAQ"
+genuis_sticker = "CAACAgIAAxkBAAIEf2XdvV5p_PBRlqF4JhkuehGQrx-NAAJoPQACXDPxSjb_rh4_iMEaNAQ"
+smart_nigga = "CAACAgIAAxkBAAIEg2XdviAh9zXI1nm1jxhbY89FmUsnAALiQAACjAzwSle0sL-uvGFINAQ"
+eisenhorn = "CAACAgIAAxkBAAIEk2Xd6zaNJoGBDD2BvNoewLlBE_DHAAJDRAACYu7wSp4WyuBj7W4rNAQ"
 
 # Misc photos
 sergios_chair = "AgACAgIAAxkBAAIB-WXN55y__MRafzd2cTvFV25_LrhnAALc2TEbzp5wSrjxMe0rR402AQADAgADcwADNAQ"
@@ -107,7 +110,7 @@ text_to_text_reactions = {
     ("влад", "slave"): "What is love? Baby don't hurt me!",
     ("кабачок",): "Кабачок, ти 2 неділі YappyDoor :)",
     ("саня",): "Boss of the GYM!",
-    ("жахіття", "кошмар"): "Кошмара, де стріми???",
+    ("жахіття", "кошмар"): "Бот Кошмарику, де стріми???",
     ("сучка", "сучку", "сучечка"): "Сучка в чаті тільки одна )) гаф-гаф",
     ("лікарня", "палата", "дурка", "дурдом"): "Край родной, навєк любімий!",
     ("банду",): "Геть!",
@@ -116,6 +119,7 @@ text_to_text_reactions = {
     ("русский", "руський", "рузький", "руснявий"): "Руський воєний корабль, іди на хуй!!!",
     ("слава нації",): "Смерть ворогам!",
     ("жах",): "Я ж кажу, який жах...",
+    ("ушльопок",): "Та звідки йому знати? Він не знає як його звати...ьуь",
 }
 
 photo_to_text_reactions = {("тренажер",): sergios_chair, ("жах",): sternenko, ("анус", "анал"): anus}
