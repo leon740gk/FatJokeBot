@@ -24,20 +24,30 @@ class ActivityHandler:
 
         return time_delta_days
 
-    def _save_last_activity_data(self, user_id, db, last_activity_delta):
+    def _save_last_activity_data(self, user_id, db):
         now = datetime.now().strftime(self.date_format)
         activity_update_query = f"""
         UPDATE Users SET 
-        activity_delta = {last_activity_delta},
         last_message_date = '{now}'
         WHERE telegram_id = {user_id}
         """
         db.commit_query(activity_update_query)
 
+    def _save_delta(self, user_id, db, last_activity_delta):
+        activity_update_query = f"""
+        UPDATE Users SET 
+        activity_delta = {last_activity_delta}
+        WHERE telegram_id = {user_id}
+        """
+        db.commit_query(activity_update_query)
+
     def update_user_activity_data(self, user_id, db):
+        self._save_last_activity_data(user_id, db)
+
+    def update_user_activity_delta(self, user_id, db):
         last_activity_date = self._get_last_activity_data(user_id, db)
         activity_delta_days = self._calculate_time_delta(last_activity_date)
-        self._save_last_activity_data(user_id, db, activity_delta_days)
+        self._save_delta(user_id, db, activity_delta_days)
 
     def check_daily_activity(self, db):
         select_all_user_ids_query = """
@@ -47,4 +57,4 @@ class ActivityHandler:
         result = [i[0] for i in result_raw]
 
         for user_id in result:
-            self.update_user_activity_data(user_id, db)
+            self.update_user_activity_delta(user_id, db)

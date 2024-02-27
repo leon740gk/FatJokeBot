@@ -23,8 +23,12 @@ def define_iq_levels(user_data, iq_level_mapper):
         new_user_data.append((u_data[0], u_data[1], iq_level_mapper.get(iq_low_limit)))
 
     new_user_data = sorted(new_user_data, key=lambda x: -x[1])
+    prize_places = {3: "🥉", 2: "🥈", 1: "🥇"}
+    places = 1
     for i in new_user_data:
-        data_to_print.append(f"{i[0]} має рівень інтелекту: {i[1]}. {i[2]}\n==============\n")
+        prize = prize_places.get(places, "🍆")
+        data_to_print.append(f"{prize} --- {i[0]} має рівень інтелекту: {i[1]}. {i[2]}\n==============\n")
+        places += 1
 
     return "".join(data_to_print)
 
