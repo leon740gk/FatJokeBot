@@ -1,17 +1,19 @@
 import json
 
+from telegram_bots.bots.fat_joke.periodic_tasks import CURRENT_DISCIPLINE
+
 iq_level_mapper = {
-    0: "Пускає слину...",
-    71: "Мавпа з гранатою",
-    85: "Homo Sapiens звичайний",
-    116: "Людина, якій черепушка жме :)",
-    145: "Мега мозок!",
-    160: "Кодзіма нервово курить...",
-    500: "Boss of the GYM!!!",
+    0: ["Пускає слину...", "🤤"],
+    71: ["Мавпа з гранатою", "🙊"],
+    85: ["Homo Sapiens звичайний", "🙂"],
+    116: ["Людина, якій черепушка жме :)", "🤓"],
+    145: ["Мега мозок!", "🤯"],
+    160: ["Кодзіма нервово курить...", "🤩"],
+    500: ["Boss of the GYM!!!", "😈"],
 }
 
 
-def define_iq_levels(user_data, iq_level_mapper):
+def define_iq_levels(user_data):
     new_user_data = []
     data_to_print = []
     iq_int_levels = list(iq_level_mapper.keys())
@@ -24,10 +26,13 @@ def define_iq_levels(user_data, iq_level_mapper):
 
     new_user_data = sorted(new_user_data, key=lambda x: -x[1])
     prize_places = {3: "🥉", 2: "🥈", 1: "🥇"}
+    prizes_to_levels = {}
     places = 1
     for i in new_user_data:
-        prize = prize_places.get(places, "🍆")
-        data_to_print.append(f"{prize} --- {i[0]} має рівень інтелекту: {i[1]}. {i[2]}\n==============\n")
+        prize = prize_places.get(places, "")
+        data_to_print.append(
+            f"{prize}{i[0]} має рівень інтелекту: {i[1]}. \n{i[2][0]} -> {i[2][1]}\n=============================\n"
+        )
         places += 1
 
     return "".join(data_to_print)
@@ -110,3 +115,19 @@ def get_already_answered_questions(user_id, db):
         answer.append(f"{question_id},")
     answer_string = "".join(answer)
     return answer_string
+
+
+def get_quiz_leaders(db):
+    select_answered_questions_query = """
+    SELECT name, questionare_done FROM Users;
+    """
+    result = db.select_query(select_answered_questions_query)
+    sorted_results = sorted(result, key=lambda x: -len(json.loads(x[1])))
+    strings_to_print = [f"Лідери у дисципліні {CURRENT_DISCIPLINE}vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv\n"]
+    for i in sorted_results[:3]:
+        answers_count = len(json.loads(i[1]))
+        if answers_count:
+            string_to_print = f"{i[0]}: {answers_count} вірних відповідей\n==============================\n"
+            strings_to_print.append(string_to_print)
+
+    return "".join(strings_to_print)

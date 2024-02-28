@@ -7,8 +7,15 @@ import schedule
 from telebot import types
 
 from telegram_bots.knowledge_base.fat_joke.reaction_data import wanted
-from telegram_bots.knowledge_base.fat_joke.test_your_mind.ukr_language.qa_data import questionnaire
+from telegram_bots.knowledge_base.fat_joke.test_your_mind.ukr_language.qa_data import questionnaire as ukr_lang_q
+from telegram_bots.knowledge_base.fat_joke.test_your_mind.geography.qa_data import questionnaire as geo_q
 from telegram_bots.knowledge_base.fat_joke.timer_data import time_mapper
+
+
+UKR_LANG = "Українська мова.\n"
+GEOGRAPHY = "Географія. \n"
+q_mapper = {UKR_LANG: ukr_lang_q, GEOGRAPHY: geo_q}
+CURRENT_DISCIPLINE = GEOGRAPHY
 
 
 def schedule_checker():
@@ -19,13 +26,14 @@ def schedule_checker():
 
 def message_timer(bot, chat_id):
     time_now = datetime.datetime.now(pytz.timezone("Europe/Kiev")).strftime("%H")
-    bot.send_message(chat_id, text=f"{time_mapper.get(time_now)} блеать! Можна на годинник не дивицця!")
+    bot.send_message(chat_id, text=f"Бам!!!\n{time_mapper.get(time_now)} блеать! Можна на годинник не дивицця!")
 
 
 def test_your_brain(bot, chat_id):
-    category = "Українська мова.\n"
-    pick_random_question = random.randint(1, len(questionnaire))
-    question_dict = questionnaire.get(pick_random_question)
+    category = CURRENT_DISCIPLINE
+    questions = q_mapper.get(category)
+    pick_random_question = random.randint(1, len(questions))
+    question_dict = questions.get(pick_random_question)
     question = list(question_dict.keys())[0]
     answers_dict = question_dict.get(question)
 
