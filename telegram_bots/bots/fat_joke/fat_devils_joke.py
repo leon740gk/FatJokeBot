@@ -1,5 +1,4 @@
 import logging
-import random
 import threading
 
 import schedule
@@ -18,10 +17,10 @@ from telegram_bots.knowledge_base.fat_joke.reaction_data import (
     special_sticker_responses,
     photo_to_text_reactions,
     commands_responses,
-    genius,
     animation_to_text_reactions,
     genuis_sticker,
     smart_nigga,
+    red_blink,
 )
 from telegram_bots.knowledge_base.fat_joke.l_podreviansjkyi.philosophy import bot_philosophy
 from telegram_bots.bots.fat_joke.reaction_tools import (
@@ -33,13 +32,13 @@ from telegram_bots.bots.fat_joke.reaction_tools import (
 from telegram_bots.bots.fat_joke.token_for_fat_joke import fat_joke_token
 from telegram_bots.bots.fat_joke.iq_level_tools import (
     define_iq_levels,
-    iq_level_mapper,
     get_user_iq_and_name,
     calculate_id,
     change_iq,
     did_user_answer_this_question,
     get_anti_cheat_message,
     get_already_answered_questions,
+    get_quiz_leaders,
 )
 
 logger = telebot.logger
@@ -67,6 +66,15 @@ def already_answered_questions(message):
     command_handler.text_to_command(answer)
 
 
+@bot.message_handler(commands=["show_leaders"])
+def show_leaders(message):
+    user_id = message.from_user.id
+    answer = get_quiz_leaders(db)
+    activity_handler.update_user_activity_data(user_id, db)
+    command_handler = CommandHandler(bot, message)
+    command_handler.text_to_command(answer)
+
+
 @bot.message_handler(commands=["show_iq"])
 def show_iq(message):
     user_id = message.from_user.id
@@ -75,7 +83,7 @@ def show_iq(message):
     SELECT name, IQ_level FROM Users
     """
     user_data = db.select_query(user_data_query)
-    message_to_send = define_iq_levels(user_data, iq_level_mapper)
+    message_to_send = define_iq_levels(user_data)
     command_handler = CommandHandler(bot, message)
     command_handler.text_to_command(message_to_send)
 
@@ -104,8 +112,8 @@ def callback(call):
             they_did = did_user_answer_this_question(user_id, question_number, db)
             if they_did:
                 cheat_message = get_anti_cheat_message(user_name)
+                bot.send_animation(call.message.chat.id, red_blink)
                 bot.edit_message_text(chat_id=call.message.chat.id, message_id=call.message.id, text=cheat_message)
-                bot.send_photo(call.message.chat.id, genius)
                 return
             else:
                 user_iq_new, success_message = calculate_id(user_iq_old, user_name, increase=True)
@@ -157,7 +165,7 @@ def photo_reply(message):
 @bot.message_handler(content_types=["animation"])
 def animation_reply(message):
     user_id = message.from_user.id
-    logger.debug(f"Photo From user_id --->>> {user_id} - {message.from_user.username}")
+    logger.debug(f"animation From user_id --->>> {user_id} - {message.from_user.username}")
     logger.debug(f"file_id --->>> {message.document.file_id}")
 
 

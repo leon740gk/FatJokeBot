@@ -35,6 +35,7 @@ sadovnik = "CgACAgQAAxkBAAIEI2XbiteY5s3hVrHx60PEY0fyKvuHAAL7AgACrTEVU4lVcKpV3I5l
 astanavites = "CgACAgQAAxkBAAIEJmXbjE8o_pWBf0itrr-6XmyWSLFKAALzAgACEhoNUzao3AdnIYLkNAQ"
 burning_ass = "CgACAgQAAx0CW-jr9QAChU5l3GnDF_JU8Lk7rCSb8fFkKU2KbgACDgMAAo-rDFMBl6wtCC7A7jQE"
 burning_ass_2 = "CgACAgQAAx0CW-jr9QAChVVl3GsjZejadoN-RvvLhG6UQbuQcAACMQMAAlvPBFNRIe0ZNDV2CzQE"
+red_blink = "CgACAgQAAxkBAAIEmmXfFGMvnmkfOj15m_zsivbOZF0_AAI3AwACyaodU4J2i3NmQUFaNAQ"
 
 adolf_set = [adolf_1, adolf_2, adolf_3]
 
@@ -157,6 +158,7 @@ commands_responses = {
 /stream - дізнатися коли наступний стрім.
 /show_iq - дізнатися рівень IQ групи.
 /already_answered_questions - питання, на які вже дана вірна відповідь
+/show_leaders - показати лідерів в опитуванні
     """,
     "stream": """
     Наступний стрім:
@@ -169,3 +171,4 @@ commands_responses = {
 # stream - When is the next stream
 # show_iq - Show IQ level of the group
 # already_answered_questions - know all questions you answered already
+# show_leaders - show quiz leaders
