@@ -9,13 +9,15 @@ from telebot import types
 from telegram_bots.knowledge_base.fat_joke.reaction_data import wanted
 from telegram_bots.knowledge_base.fat_joke.test_your_mind.ukr_language.qa_data import questionnaire as ukr_lang_q
 from telegram_bots.knowledge_base.fat_joke.test_your_mind.geography.qa_data import questionnaire as geo_q
+from telegram_bots.knowledge_base.fat_joke.test_your_mind.biology.qa_data import questionnaire as bio_q
 from telegram_bots.knowledge_base.fat_joke.timer_data import time_mapper
 
 
 UKR_LANG = "Українська мова.\n"
 GEOGRAPHY = "Географія. \n"
-q_mapper = {UKR_LANG: ukr_lang_q, GEOGRAPHY: geo_q}
-CURRENT_DISCIPLINE = GEOGRAPHY
+BIOLOGY = "Біологія. \n"
+q_mapper = {UKR_LANG: ukr_lang_q, GEOGRAPHY: geo_q, BIOLOGY: bio_q}
+CURRENT_DISCIPLINE = BIOLOGY
 
 
 def schedule_checker():
