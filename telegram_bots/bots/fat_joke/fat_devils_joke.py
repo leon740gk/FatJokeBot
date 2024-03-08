@@ -102,13 +102,12 @@ def callback(call):
         user_id = call.from_user.id
         activity_handler.update_user_activity_data(user_id, db)
         user_iq_old, user_name = get_user_iq_and_name(user_id, db)
-        logger.debug(f"answer from user_id --->>> {user_id} name --->>> {user_name}")
         split_answer = call.data.split(" ")
-        # not_this_time = random.choice([True, True, False])
-        # if user_id in [USER_IDS.get(ME)]:
-        #     return
         if len(split_answer) == 2:
             question_number = split_answer[1]
+            logger.debug(
+                f"answer from user_id --->>> {user_id} name --->>> {user_name}; question_number: {question_number}"
+            )
             they_did = did_user_answer_this_question(user_id, question_number, db)
             if they_did:
                 cheat_message = get_anti_cheat_message(user_name)
@@ -120,6 +119,7 @@ def callback(call):
                 bot.edit_message_text(chat_id=call.message.chat.id, message_id=call.message.id, text=success_message)
                 bot.send_sticker(call.message.chat.id, smart_nigga)
         else:
+            logger.debug(f"answer from user_id --->>> {user_id} name --->>> {user_name}")
             user_iq_new, fail_message = calculate_id(user_iq_old, user_name, increase=False)
             bot.edit_message_text(chat_id=call.message.chat.id, message_id=call.message.id, text=fail_message)
             bot.send_sticker(call.message.chat.id, genuis_sticker)
@@ -172,7 +172,7 @@ def animation_reply(message):
 if __name__ == "__main__":
     db = DBConnection()
     schedule.every(1).hour.at(":00").do(message_timer, bot=bot, chat_id=billi_chat_id)
-    schedule.every(10).minutes.do(test_your_brain, bot=bot, chat_id=billi_chat_id)
+    schedule.every(5).minutes.do(test_your_brain, bot=bot, chat_id=billi_chat_id)
     schedule.every().day.at("14:00").do(activity_handler.check_daily_activity, db=db)
     schedule.every().day.at("15:00").do(we_miss_you, bot=bot, chat_id=billi_chat_id, db=db)
     threading.Thread(target=schedule_checker).start()
