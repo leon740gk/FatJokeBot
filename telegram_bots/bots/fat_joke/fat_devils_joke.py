@@ -8,7 +8,6 @@ from telegram_bots.bots.fat_joke.activity_hadling_tools import ActivityHandler
 from telegram_bots.db_sqlite.sqlitre_connection import DBConnection
 from telegram_bots.knowledge_base.fat_joke.chat_data import billi_chat_id, test_004_chat_id
 from telegram_bots.bots.fat_joke.periodic_tasks import message_timer, schedule_checker, test_your_brain, we_miss_you
-from telegram_bots.knowledge_base.fat_joke.chat_members import USER_IDS, ROMANUIK, ME
 from telegram_bots.knowledge_base.fat_joke.reaction_data import (
     sticker_responses,
     text_to_text_reactions,
@@ -172,8 +171,8 @@ def animation_reply(message):
 if __name__ == "__main__":
     db = DBConnection()
     schedule.every(1).hour.at(":00").do(message_timer, bot=bot, chat_id=billi_chat_id)
-    schedule.every(5).minutes.do(test_your_brain, bot=bot, chat_id=billi_chat_id)
-    schedule.every().day.at("14:00").do(activity_handler.check_daily_activity, db=db)
+    # schedule.every(15).minutes.do(test_your_brain, bot=bot, chat_id=billi_chat_id)
+    schedule.every().day.at("14:55").do(activity_handler.check_daily_activity, db=db)
     schedule.every().day.at("15:00").do(we_miss_you, bot=bot, chat_id=billi_chat_id, db=db)
     threading.Thread(target=schedule_checker).start()
     bot.infinity_polling()
