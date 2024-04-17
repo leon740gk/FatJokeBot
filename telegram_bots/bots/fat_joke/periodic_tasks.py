@@ -11,6 +11,7 @@ from telegram_bots.knowledge_base.fat_joke.test_your_mind.ukr_language.qa_data i
 from telegram_bots.knowledge_base.fat_joke.test_your_mind.geography.qa_data import questionnaire as geo_q
 from telegram_bots.knowledge_base.fat_joke.test_your_mind.biology.qa_data import questionnaire as bio_q
 from telegram_bots.knowledge_base.fat_joke.test_your_mind.new_qa.qa_data import questionnaire as general_q
+from telegram_bots.knowledge_base.fat_joke.test_your_mind.mlbb.qa_data import questionnaire as mlbb_q
 from telegram_bots.knowledge_base.fat_joke.timer_data import time_mapper
 
 
@@ -18,8 +19,9 @@ UKR_LANG = "Українська мова.\n"
 GEOGRAPHY = "Географія. \n"
 BIOLOGY = "Біологія. \n"
 GENERAL = "Мікс питань. \n"
-q_mapper = {UKR_LANG: ukr_lang_q, GEOGRAPHY: geo_q, BIOLOGY: bio_q, GENERAL: general_q}
-CURRENT_DISCIPLINE = GENERAL
+MLBB = "MLBB. \n"
+q_mapper = {UKR_LANG: ukr_lang_q, GEOGRAPHY: geo_q, BIOLOGY: bio_q, GENERAL: general_q, MLBB: mlbb_q}
+CURRENT_DISCIPLINE = MLBB
 
 
 def schedule_checker():

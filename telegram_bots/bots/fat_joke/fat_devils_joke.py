@@ -157,8 +157,8 @@ def photo_reply(message):
     logger.debug(f"file_id --->>> {message.json.get('photo')[0]['file_id']}")
     activity_handler.update_user_activity_data(user_id, db)
 
-    to_photo_reaction = ToPhotoReactions(bot, message)
-    to_photo_reaction._react_to_photo(froggy_sticker)
+    # to_photo_reaction = ToPhotoReactions(bot, message)
+    # to_photo_reaction._react_to_photo(froggy_sticker)
 
 
 @bot.message_handler(content_types=["animation"])
@@ -171,7 +171,7 @@ def animation_reply(message):
 if __name__ == "__main__":
     db = DBConnection()
     schedule.every(1).hour.at(":00").do(message_timer, bot=bot, chat_id=billi_chat_id)
-    # schedule.every(15).minutes.do(test_your_brain, bot=bot, chat_id=billi_chat_id)
+    schedule.every(10).minutes.do(test_your_brain, bot=bot, chat_id=billi_chat_id)
     schedule.every().day.at("14:55").do(activity_handler.check_daily_activity, db=db)
     schedule.every().day.at("15:00").do(we_miss_you, bot=bot, chat_id=billi_chat_id, db=db)
     threading.Thread(target=schedule_checker).start()

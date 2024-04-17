@@ -123,7 +123,7 @@ text_to_text_reactions = {
     ("ушльопок",): "Та звідки йому знати? Він не знає як його звати...ьуь",
 }
 
-photo_to_text_reactions = {("тренажер",): sergios_chair, ("жах",): sternenko}
+photo_to_text_reactions = {("тренажер", "тренажёр"): sergios_chair, ("жах",): sternenko}
 
 sticker_to_text_reactions = {
     ("кайф", "каеф"): joy,
@@ -162,7 +162,7 @@ commands_responses = {
     """,
     "stream": """
     Наступний стрім:
-https://youtube.com/live/CiOcmi0UEZk
+та хз, сам жду 
     """,
 }
 
