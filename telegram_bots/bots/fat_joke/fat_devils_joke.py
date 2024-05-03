@@ -171,9 +171,9 @@ def animation_reply(message):
 if __name__ == "__main__":
     db = DBConnection()
     schedule.every(1).hour.at(":00").do(message_timer, bot=bot, chat_id=billi_chat_id)
-    schedule.every(10).minutes.do(test_your_brain, bot=bot, chat_id=billi_chat_id)
+    schedule.every(20).minutes.do(test_your_brain, bot=bot, chat_id=billi_chat_id)
     schedule.every().day.at("14:55").do(activity_handler.check_daily_activity, db=db)
-    schedule.every().day.at("15:00").do(we_miss_you, bot=bot, chat_id=billi_chat_id, db=db)
+    # schedule.every().day.at("15:00").do(we_miss_you, bot=bot, chat_id=billi_chat_id, db=db)
     threading.Thread(target=schedule_checker).start()
     bot.infinity_polling()
     db.close_connection()
