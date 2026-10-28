@@ -1,6 +1,13 @@
 {
   "code": "mlbb2",
   "title": "MLBB 2",
+  "aliases": [
+    "мобла",
+    "моба",
+    "мобайл",
+    "mobile",
+    "мл"
+  ],
   "shuffle_options": true,
   "questions": [
     {

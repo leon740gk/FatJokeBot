@@ -59,33 +59,46 @@ async def hourly_bam(bot, chat_id):
     await bot.send_message(chat_id, texts.hour_message(datetime.now(KYIV).strftime("%H")))
 
 
-async def ask_question(bot, db, chat_id, rng=random):
-    """Sends a quiz question of the current discipline; announces the winners first when a season ends."""
-    discipline = quiz.current_discipline(db)
-    picked = quiz.pick_question(db, discipline, rng)
-    if picked.finished_season:
-        await bot.send_message(chat_id, quiz.format_season_end(discipline, picked.finished_season, picked.winners))
-
-    rendered = quiz.render_question(picked.question, rng)
+def build_keyboard(rendered):
     keyboard = InlineKeyboardBuilder()
     for row in rendered.rows:
         for label, data in row:
             keyboard.button(text=label, callback_data=data)
     keyboard.adjust(*(len(row) for row in rendered.rows))
-    message = await bot.send_message(chat_id, rendered.text, reply_markup=keyboard.as_markup())
-    quiz_db.save_quiz_message(
-        db, message.chat.id, message.message_id, discipline, picked.season, picked.question.number
-    )
+    return keyboard.as_markup()
+
+
+async def ask_question(bot, db, chat_id, discipline=None, into_message_id=None, rng=random):
+    """Sends a quiz question, of the current discipline unless another one is given.
+
+    into_message_id turns an existing message (the topic picker) into the question instead of sending a new one.
+    When a season runs out of questions, the winners are announced first.
+    """
+    discipline = discipline or quiz.current_discipline(db)
+    picked = quiz.pick_question(db, discipline, rng)
+    if picked.finished_season:
+        await bot.send_message(chat_id, quiz.format_season_end(discipline, picked.finished_season, picked.winners))
+
+    rendered = quiz.render_question(picked.question, rng)
+    if into_message_id:
+        await bot.edit_message_text(
+            rendered.text, chat_id=chat_id, message_id=into_message_id, reply_markup=build_keyboard(rendered)
+        )
+        message_id = into_message_id
+    else:
+        message_id = (await bot.send_message(chat_id, rendered.text, reply_markup=build_keyboard(rendered))).message_id
+    quiz_db.save_quiz_message(db, chat_id, message_id, discipline, picked.season, picked.question.number)
 
 
 @chat_job
 async def scheduled_question(bot, db, chat_id, quiet_hours=None):
     if is_quiet(datetime.now(KYIV).hour, quiet_hours):
         return
-    if quiz_db.get_open_question(db, chat_id):
-        # the previous question is still open, don't pile them up
+    discipline = quiz.current_discipline(db)
+    if quiz_db.get_open_question(db, chat_id, discipline):
+        # the previous question of this discipline is still open, don't pile them up
         return
-    await ask_question(bot, db, chat_id)
+    await ask_question(bot, db, chat_id, discipline)
 
 
 async def close_expired_questions(bot, db, minutes):

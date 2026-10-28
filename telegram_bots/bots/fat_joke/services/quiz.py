@@ -7,6 +7,7 @@ from telegram_bots.bots.fat_joke.db import settings
 from telegram_bots.bots.fat_joke.db import users as users_db
 from telegram_bots.bots.fat_joke.services import iq
 from telegram_bots.bots.fat_joke.services.quiz_bank import load_disciplines
+from telegram_bots.bots.fat_joke.services.topics import resolve_discipline
 
 DISCIPLINES = load_disciplines()
 DEFAULT_DISCIPLINE = "mlbb2"
@@ -61,6 +62,27 @@ def set_discipline(db, code):
 
 def title(code):
     return DISCIPLINES[code].title
+
+
+def find_discipline(text):
+    return resolve_discipline(text, DISCIPLINES)
+
+
+def topic_callback_data(code):
+    return f"t {code}"
+
+
+def parse_topic_callback(data):
+    parts = (data or "").split(" ")
+    if len(parts) == 2 and parts[0] == "t" and parts[1] in DISCIPLINES:
+        return parts[1]
+    return None
+
+
+def render_topic_picker():
+    """Buttons with all disciplines for "/quiz" without a topic, two per row."""
+    buttons = [(discipline.title, topic_callback_data(code)) for code, discipline in DISCIPLINES.items()]
+    return RenderedQuestion("Яку тему хочете? 👇", [buttons[i : i + 2] for i in range(0, len(buttons), 2)])
 
 
 def get_question(discipline, number):
@@ -181,5 +203,6 @@ def format_disciplines(current):
     for code, discipline in DISCIPLINES.items():
         marker = "👉 " if code == current else ""
         lines.append(f"{marker}{code}: {discipline.title} ({len(discipline.questions)} питань)\n")
-    lines.append("\nЗмінити (тільки адміни чату): /discipline <код>")
+    lines.append("\nПитання з будь-якої теми: /quiz <тема>, наприклад /quiz мобла")
+    lines.append("\nЗмінити тему питань за розкладом (тільки адміни чату): /discipline <тема>")
     return "".join(lines)

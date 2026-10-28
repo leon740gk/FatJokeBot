@@ -155,27 +155,70 @@ def test_quiz_round(db, bot, dispatcher):
     assert "Чітер в чаті" in bot.session.of_type(methods.EditMessageText)[-1].text
 
 
-def test_quiz_command_asks_once_until_answered(db, bot, dispatcher):
-    feed(dispatcher, bot, **text_update(user(7, "Alex"), "/quiz"))
-    feed(dispatcher, bot, **text_update(user(7, "Alex"), "/quiz"))
+def test_quiz_command_with_topic_asks_once_per_topic(db, bot, dispatcher):
+    feed(dispatcher, bot, **text_update(user(7, "Alex"), "/quiz мобла"))
+    feed(dispatcher, bot, **text_update(user(7, "Alex"), "/quiz по мобле"))
+    feed(dispatcher, bot, **text_update(user(8, "Bob"), "/quiz по бухгалтерии"))
     texts = [request.text for request in bot.session.of_type(methods.SendMessage)]
-    assert texts[0].startswith("MLBB 2.") and texts[1].startswith("Спочатку відповідайте")
+    assert texts[0].startswith("MLBB 2.")
+    assert texts[1].startswith("Спочатку відповідайте на попереднє питання з теми MLBB 2")
+    assert texts[2].startswith("Бухгалтерия.")
+    assert {row[0] for row in db.fetch_all("SELECT discipline FROM QuizMessages")} == {"mlbb2", "accounting"}
+
+
+def test_quiz_command_without_topic_shows_picker(db, bot, dispatcher):
+    feed(dispatcher, bot, **text_update(user(7, "Alex"), "/quiz"))
+    picker = bot.session.of_type(methods.SendMessage)[-1]
+    buttons = {button.text: button.callback_data for row in picker.reply_markup.inline_keyboard for button in row}
+    assert picker.text.startswith("Яку тему") and buttons["Бухгалтерия"] == "t accounting"
+    picker_id = bot.session.next_message_id
+
+    feed(dispatcher, bot, **press(user(8, "Bob"), picker_id, "t accounting"))
+    edit = bot.session.of_type(methods.EditMessageText)[-1]
+    assert edit.message_id == picker_id and edit.text.startswith("Бухгалтерия.") and edit.reply_markup
+    assert quiz_db.get_open_question(db, CHAT.id, "accounting") == (picker_id,)
+
+    # a second press on the same picker doesn't overwrite the question
+    feed(dispatcher, bot, **press(user(7, "Alex"), picker_id, "t geo"))
+    assert bot.session.of_type(methods.AnswerCallbackQuery)[-1].text == "Тему вже вибрали"
+    assert quiz_db.get_open_question(db, CHAT.id, "geo") is None
+
+
+def test_picker_refuses_topic_with_open_question(db, bot, dispatcher):
+    feed(dispatcher, bot, **text_update(user(7, "Alex"), "/quiz бух"))
+    feed(dispatcher, bot, **text_update(user(7, "Alex"), "/quiz"))
+    feed(dispatcher, bot, **press(user(7, "Alex"), bot.session.next_message_id, "t accounting"))
+    assert bot.session.of_type(methods.AnswerCallbackQuery)[-1].show_alert
+    assert len(db.fetch_all("SELECT 1 FROM QuizMessages")) == 1
+
+
+def test_quiz_command_with_unknown_topic_shows_picker(db, bot, dispatcher):
+    feed(dispatcher, bot, **text_update(user(7, "Alex"), "/quiz ерунда"))
+    message = bot.session.of_type(methods.SendMessage)[-1]
+    assert message.text.startswith("Не знаю такої теми") and message.reply_markup
+
+
+def test_leaders_for_a_named_topic(db, bot, dispatcher):
+    feed(dispatcher, bot, **text_update(user(7, "Alex"), "/show_leaders бух"))
+    assert bot.session.of_type(methods.SendMessage)[-1].text.startswith("Лідери у дисципліні Бухгалтерия, сезон 1")
+    feed(dispatcher, bot, **text_update(user(7, "Alex"), "/already_answered_questions гео"))
+    assert bot.session.of_type(methods.SendMessage)[-1].text.startswith("Ото лінива срака")
 
 
 def test_discipline_command(db, bot, dispatcher):
     feed(dispatcher, bot, **text_update(user(7, "Alex"), "/discipline"))
     assert "👉 mlbb2" in bot.session.of_type(methods.SendMessage)[-1].text
 
-    feed(dispatcher, bot, **text_update(user(7, "Alex"), "/discipline geo"))
+    feed(dispatcher, bot, **text_update(user(7, "Alex"), "/discipline гео"))
     assert "тільки адміни" in bot.session.of_type(methods.SendMessage)[-1].text
     assert quiz.current_discipline(db) == "mlbb2"
 
     bot.session.admins.add(7)
     feed(dispatcher, bot, **text_update(user(7, "Alex"), "/discipline nope"))
-    assert "Немає такої дисципліни" in bot.session.of_type(methods.SendMessage)[-1].text
-    feed(dispatcher, bot, **text_update(user(7, "Alex"), "/discipline geo"))
+    assert "Не знаю такої теми" in bot.session.of_type(methods.SendMessage)[-1].text
+    feed(dispatcher, bot, **text_update(user(7, "Alex"), "/discipline географія"))
     assert quiz.current_discipline(db) == "geo"
-    feed(dispatcher, bot, **text_update(user(7, "Alex"), "/quiz"))
+    asyncio.run(scheduled_question(bot, db, chat_id=CHAT.id))
     assert bot.session.of_type(methods.SendMessage)[-1].text.startswith("Географія.")
 
 

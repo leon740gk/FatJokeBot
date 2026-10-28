@@ -154,10 +154,10 @@ commands_responses = {
     "help": """
 /stream - дізнатися коли наступний стрім.
 /show_iq - дізнатися рівень IQ групи.
-/quiz - нове питання вікторини прямо зараз
-/show_leaders - показати лідерів поточного сезону вікторини
-/already_answered_questions - питання, на які ви вже відповіли в цьому сезоні
-/discipline - список дисциплін вікторини, адміни можуть змінити поточну
+/quiz - питання вікторини: вибрати тему кнопкою або одразу /quiz мобла, /quiz бух
+/show_leaders - лідери сезону вікторини (можна з темою: /show_leaders бух)
+/already_answered_questions - питання, на які ви вже відповіли в цьому сезоні (можна з темою)
+/discipline - список тем вікторини, адміни можуть змінити тему питань за розкладом
 /chat_id - дізнатися ID цього чату
     """,
     "stream": """
@@ -170,7 +170,7 @@ commands_responses = {
 # help - Help
 # stream - When is the next stream
 # show_iq - Show IQ level of the group
-# quiz - Ask a quiz question now
+# quiz - Quiz question, pick a topic
 # show_leaders - Show quiz leaders of the current season
 # already_answered_questions - Questions you answered this season
 # discipline - Quiz disciplines, admins can switch

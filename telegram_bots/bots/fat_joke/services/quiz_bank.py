@@ -3,6 +3,7 @@
 {
   "code": "mlbb2",               # must match the file name, goes into callback_data
   "title": "MLBB 2",
+  "aliases": ["мобла", "моба"],  # optional, how people call the topic in "/quiz мобла"
   "shuffle_options": true,       # optional, shuffle options every time the question is asked
   "questions": [
     {"number": 1, "text": "...", "options": ["a", "b", "c", "d"], "correct": [1], "explanation": "optional"}
@@ -37,6 +38,7 @@ class Discipline:
     title: str
     questions: dict
     shuffle_options: bool = False
+    aliases: tuple = ()
 
 
 def _load_question(code, raw, path):
@@ -67,7 +69,11 @@ def load_discipline(path):
         questions[question.number] = question
     if not questions:
         raise ValueError(f"{path.name}: no questions")
-    return Discipline(code, raw["title"], questions, bool(raw.get("shuffle_options")))
+    aliases = raw.get("aliases", [])
+    if not isinstance(aliases, list) or not all(isinstance(alias, str) and alias.strip() for alias in aliases):
+        raise ValueError(f"{path.name}: aliases must be a list of non-empty strings")
+    aliases = tuple(alias.strip().lower() for alias in aliases)
+    return Discipline(code, raw["title"], questions, bool(raw.get("shuffle_options")), aliases)
 
 
 def load_disciplines(directory=QUIZ_DIR):

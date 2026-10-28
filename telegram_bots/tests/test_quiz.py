@@ -13,7 +13,8 @@ from telegram_bots.tests.conftest import FakeRandom, make_user
 
 
 def test_all_disciplines_load():
-    assert {"ukr", "geo", "bio", "mix", "mlbb", "mlbb2"} <= set(quiz.DISCIPLINES)
+    assert {"ukr", "geo", "bio", "mix", "mlbb", "mlbb2", "accounting"} <= set(quiz.DISCIPLINES)
+    assert len(quiz.DISCIPLINES["accounting"].questions) == 50
     assert len(quiz.DISCIPLINES["mlbb"].questions) == 100
     assert len(quiz.DISCIPLINES["mlbb2"].questions) == 50
     assert quiz.DISCIPLINES["mlbb2"].shuffle_options
@@ -231,3 +232,40 @@ def test_quiet_hours(value, hour, quiet):
 def test_quiet_hours_off(value):
     assert parse_quiet_hours(value) is None
     assert not is_quiet(3, parse_quiet_hours(value))
+
+
+@pytest.mark.parametrize(
+    "text, code",
+    [
+        ("мобла", "mlbb2"),
+        ("хочу вопрос по мобле", "mlbb2"),
+        ("MLBB", "mlbb"),
+        ("старая мобла", "mlbb"),
+        ("по бухгалтерии", "accounting"),
+        ("бухгалтерія", "accounting"),
+        ("Бухгалтерия", "accounting"),
+        ("географии", "geo"),
+        ("по українській", "ukr"),
+        ("accounting", "accounting"),
+        ("ерунда", None),
+        ("", None),
+        ("мобла бух", None),
+    ],
+)
+def test_find_discipline(text, code):
+    assert quiz.find_discipline(text) == code
+
+
+def test_topic_picker_has_every_discipline():
+    picker = quiz.render_topic_picker()
+    buttons = [button for row in picker.rows for button in row]
+    assert len(buttons) == len(quiz.DISCIPLINES) and all(len(row) <= 2 for row in picker.rows)
+    assert {quiz.parse_topic_callback(data) for _, data in buttons} == set(quiz.DISCIPLINES)
+    assert quiz.parse_topic_callback("t nope") is None and quiz.parse_topic_callback("q mlbb 1 1") is None
+
+
+def test_aliases_must_be_strings(tmp_path):
+    path = tmp_path / "test.json"
+    path.write_text(json.dumps({"code": "test", "title": "T", "aliases": [""], "questions": [GOOD]}), encoding="utf-8")
+    with pytest.raises(ValueError, match="aliases"):
+        load_discipline(path)

@@ -36,10 +36,18 @@ def save_quiz_message(db, chat_id, message_id, discipline, season, question_numb
     )
 
 
-def get_open_question(db, chat_id):
-    return db.fetch_one(
-        "SELECT message_id FROM QuizMessages WHERE chat_id = ? AND answered_by IS NULL AND closed_at IS NULL",
-        (chat_id,),
+def get_open_question(db, chat_id, discipline=None):
+    """An unanswered question in the chat that is still open, of one discipline or of any."""
+    query = "SELECT message_id FROM QuizMessages WHERE chat_id = ? AND answered_by IS NULL AND closed_at IS NULL"
+    if discipline is None:
+        return db.fetch_one(query, (chat_id,))
+    return db.fetch_one(query + " AND discipline = ?", (chat_id, discipline))
+
+
+def is_quiz_message(db, chat_id, message_id):
+    return (
+        db.fetch_one("SELECT 1 FROM QuizMessages WHERE chat_id = ? AND message_id = ?", (chat_id, message_id))
+        is not None
     )
 
 

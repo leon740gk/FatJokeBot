@@ -1,6 +1,10 @@
 {
   "code": "mlbb",
   "title": "MLBB",
+  "aliases": [
+    "старая мобла",
+    "mlbb1"
+  ],
   "questions": [
     {
       "number": 1,
