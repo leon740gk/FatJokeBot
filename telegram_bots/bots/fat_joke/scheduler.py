@@ -144,7 +144,7 @@ def create_scheduler(
         close_expired_questions, "interval", minutes=1, kwargs={"bot": bot, "db": db, "minutes": answer_minutes}
     )
     if db_path and backup_dir:
-        # the laptop may sleep at 04:00, so a missed backup still runs when it wakes up the same day
+        # the bot may be down at 04:00 (laptop asleep, restart), so a missed backup still runs later the same day
         scheduler.add_job(
             backup,
             "cron",

@@ -1,0 +1,22 @@
+[Unit]
+Description=FatJokeBot Telegram bot
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+Type=simple
+User=bot
+WorkingDirectory=/home/bot/FatJokeBot
+ExecStart=/home/bot/FatJokeBot/.venv/bin/python -m telegram_bots.bots.fat_joke.main
+Environment=PYTHONUNBUFFERED=1
+Restart=always
+RestartSec=10
+# polling stops cleanly on SIGTERM, give it time to close the database
+TimeoutStopSec=30
+
+NoNewPrivileges=true
+ProtectSystem=strict
+PrivateTmp=true
+
+[Install]
+WantedBy=multi-user.target
