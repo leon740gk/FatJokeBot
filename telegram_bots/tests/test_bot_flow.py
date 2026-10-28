@@ -157,3 +157,11 @@ def test_scheduler_jobs(db, bot):
     assert asyncio.run(job_ids("", False)) == ["update_activity"]
     assert asyncio.run(job_ids(CHAT.id, False)) == ["hourly_bam", "send_quiz_question", "update_activity"]
     assert "we_miss_you" in asyncio.run(job_ids(CHAT.id, True))
+
+
+def test_scheduler_backup_job(db, bot, tmp_path):
+    async def backup_job():
+        scheduler = create_scheduler(bot, db, "", db_path=tmp_path / "bot.db", backup_dir=tmp_path / "backups")
+        return next(job for job in scheduler.get_jobs() if job.func.__name__ == "backup")
+
+    assert asyncio.run(backup_job()).misfire_grace_time >= 12 * 60 * 60

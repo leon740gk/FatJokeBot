@@ -24,6 +24,7 @@ def get_bot_token():
 
 MAIN_CHAT_ID = os.getenv("FAT_JOKE_MAIN_CHAT_ID", "")
 DB_PATH = os.getenv("FAT_JOKE_DB_PATH") or str(PROJECT_ROOT / "telegram_bots" / "db_sqlite" / "my_database.db")
+BACKUP_DIR = os.getenv("FAT_JOKE_BACKUP_DIR") or str(PROJECT_ROOT / "backups")
 LOG_LEVEL = os.getenv("FAT_JOKE_LOG_LEVEL", "INFO").upper()
 # "we miss you" roll call of inactive members, was switched off in the old version
 MISS_YOU_ENABLED = _flag("FAT_JOKE_MISS_YOU_ENABLED")

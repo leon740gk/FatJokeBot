@@ -7,6 +7,7 @@ from apscheduler.schedulers.asyncio import AsyncIOScheduler
 
 from telegram_bots.bots.fat_joke.db import quiz as quiz_db
 from telegram_bots.bots.fat_joke.db import users as users_db
+from telegram_bots.bots.fat_joke.db.backup import backup_database
 from telegram_bots.bots.fat_joke.services import quiz, texts
 from telegram_bots.knowledge_base.fat_joke.reaction_data import wanted
 
@@ -39,9 +40,24 @@ async def we_miss_you(bot, db, chat_id):
         await bot.send_sticker(chat_id, wanted)
 
 
-def create_scheduler(bot, db, chat_id, miss_you_enabled=False):
+async def backup(db_path, backup_dir):
+    backup_database(db_path, backup_dir)
+
+
+def create_scheduler(bot, db, chat_id, miss_you_enabled=False, db_path=None, backup_dir=None):
     scheduler = AsyncIOScheduler(timezone=KYIV)
     scheduler.add_job(update_activity, "cron", hour=14, minute=55, kwargs={"db": db})
+    if db_path and backup_dir:
+        # the laptop may sleep at 04:00, so a missed backup still runs when it wakes up the same day
+        scheduler.add_job(
+            backup,
+            "cron",
+            hour=4,
+            minute=0,
+            misfire_grace_time=20 * 60 * 60,
+            coalesce=True,
+            kwargs={"db_path": db_path, "backup_dir": backup_dir},
+        )
     if not chat_id:
         logger.warning("FAT_JOKE_MAIN_CHAT_ID is not set, chat messages on a schedule are off")
         return scheduler
