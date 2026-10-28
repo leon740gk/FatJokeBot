@@ -34,6 +34,9 @@ def build_dispatcher(db):
 
 async def main():
     logging.basicConfig(level=LOG_LEVEL, format="%(asctime)s %(levelname)s %(name)s: %(message)s")
+    if LOG_LEVEL != "DEBUG":
+        # APScheduler logs two lines for every run of the every-minute job; errors still show up
+        logging.getLogger("apscheduler").setLevel(logging.WARNING)
     if Path(DB_PATH).exists():
         backup_if_stale(DB_PATH, BACKUP_DIR)
     db = Database(DB_PATH)
