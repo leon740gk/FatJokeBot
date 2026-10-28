@@ -21,7 +21,15 @@ BIOLOGY = "Біологія. \n"
 GENERAL = "Мікс питань. \n"
 MLBB = "MLBB. \n"
 q_mapper = {UKR_LANG: ukr_lang_q, GEOGRAPHY: geo_q, BIOLOGY: bio_q, GENERAL: general_q, MLBB: mlbb_q}
+# short codes go into callback_data, so question numbers from different disciplines don't collide
+discipline_codes = {UKR_LANG: "ukr", GEOGRAPHY: "geo", BIOLOGY: "bio", GENERAL: "mix", MLBB: "mlbb"}
 CURRENT_DISCIPLINE = MLBB
+CURRENT_DISCIPLINE_CODE = discipline_codes[CURRENT_DISCIPLINE]
+
+
+def make_answer_callback_data(question_number, answer):
+    is_correct = 1 if answer[1].startswith("correct") else 0
+    return f"q {CURRENT_DISCIPLINE_CODE} {question_number} {is_correct}"
 
 
 def schedule_checker():
@@ -44,12 +52,15 @@ def test_your_brain(bot, chat_id):
     answers_dict = question_dict.get(question)
 
     markup = types.InlineKeyboardMarkup(row_width=2)
-    answer_1 = types.InlineKeyboardButton(text=answers_dict.get("1")[0], callback_data=answers_dict.get("1")[1])
-    answer_2 = types.InlineKeyboardButton(text=answers_dict.get("2")[0], callback_data=answers_dict.get("2")[1])
-    answer_3 = types.InlineKeyboardButton(text=answers_dict.get("3")[0], callback_data=answers_dict.get("3")[1])
-    answer_4 = types.InlineKeyboardButton(text=answers_dict.get("4")[0], callback_data=answers_dict.get("4")[1])
+    buttons = [
+        types.InlineKeyboardButton(
+            text=answers_dict.get(key)[0],
+            callback_data=make_answer_callback_data(pick_random_question, answers_dict.get(key)),
+        )
+        for key in ["1", "2", "3", "4"]
+    ]
     q_text_plus_category = category + question
-    markup.add(answer_1, answer_2, answer_3, answer_4)
+    markup.add(*buttons)
     bot.send_message(chat_id, text=q_text_plus_category, reply_markup=markup)
 
 

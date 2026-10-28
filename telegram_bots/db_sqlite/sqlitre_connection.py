@@ -7,14 +7,15 @@ class DBConnection:
         self.db_connection = sqlite3.connect(db_name, check_same_thread=False)
         self.db_cursor = self.db_connection.cursor()
 
-    def select_query(self, query):
-        self.db_cursor.execute(query)
+    def select_query(self, query, params=()):
+        self.db_cursor.execute(query, params)
         result = self.db_cursor.fetchall()
         return result
 
-    def commit_query(self, query):
-        self.db_cursor.execute(query)
+    def commit_query(self, query, params=()):
+        self.db_cursor.execute(query, params)
         self.db_connection.commit()
+        return self.db_cursor.rowcount
 
     def close_connection(self):
         self.db_connection.close()

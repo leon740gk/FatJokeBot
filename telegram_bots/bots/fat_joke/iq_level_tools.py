@@ -1,6 +1,9 @@
 import json
 
-from telegram_bots.bots.fat_joke.periodic_tasks import CURRENT_DISCIPLINE
+from telegram_bots.bots.fat_joke.periodic_tasks import CURRENT_DISCIPLINE, CURRENT_DISCIPLINE_CODE
+
+DEFAULT_IQ = 100
+LEGACY_DISCIPLINE = "legacy"
 
 iq_level_mapper = {
     0: ["Пускає слину...", "🤤"],
@@ -38,11 +41,58 @@ def define_iq_levels(user_data):
     return "".join(data_to_print)
 
 
-def get_user_iq_and_name(user_id, db):
-    select_query_iq_level = f"""
-        SELECT iq_level, name FROM Users WHERE telegram_id = {user_id}
+def init_answers_table(db):
+    create_table_query = """
+    CREATE TABLE IF NOT EXISTS Answers (
+        id INTEGER PRIMARY KEY,
+        telegram_id INTEGER NOT NULL,
+        discipline TEXT NOT NULL,
+        question_number INTEGER NOT NULL,
+        is_correct INTEGER NOT NULL,
+        answered_at TEXT DEFAULT CURRENT_TIMESTAMP,
+        UNIQUE (telegram_id, discipline, question_number)
+    )
     """
-    results = db.select_query(select_query_iq_level)
+    db.commit_query(create_table_query)
+
+    # Users.questionare_done kept bare question numbers without a discipline,
+    # so the old correct answers are moved over under a separate "legacy" discipline
+    users_data = db.select_query("SELECT telegram_id, questionare_done FROM Users")
+    for user_id, questionare_done in users_data:
+        for question_number in json.loads(questionare_done or "[]"):
+            db.commit_query(
+                """
+                INSERT OR IGNORE INTO Answers (telegram_id, discipline, question_number, is_correct)
+                VALUES (?, ?, ?, 1)
+                """,
+                (user_id, LEGACY_DISCIPLINE, int(question_number)),
+            )
+
+
+def register_user(from_user, db):
+    insert_user_query = """
+    INSERT INTO Users (telegram_id, name, username, iq_level, questionare_done)
+    SELECT ?, ?, ?, ?, '[]'
+    WHERE NOT EXISTS (SELECT 1 FROM Users WHERE telegram_id = ?)
+    """
+    name = from_user.first_name or from_user.username or str(from_user.id)
+    db.commit_query(insert_user_query, (from_user.id, name, from_user.username, DEFAULT_IQ, from_user.id))
+
+
+def parse_answer_callback(callback_data):
+    # "q <discipline> <question_number> <is_correct>", see make_answer_callback_data
+    split_answer = callback_data.split(" ")
+    if len(split_answer) != 4 or split_answer[0] != "q":
+        return None
+    _, discipline, question_number, is_correct = split_answer
+    return discipline, int(question_number), is_correct == "1"
+
+
+def get_user_iq_and_name(user_id, db):
+    select_query_iq_level = """
+        SELECT iq_level, name FROM Users WHERE telegram_id = ?
+    """
+    results = db.select_query(select_query_iq_level, (user_id,))
     user_iq_old = results[0][0]
     user_name = results[0][1]
 
@@ -69,26 +119,20 @@ def calculate_id(user_iq_old, user_name, increase=False):
 
 
 def change_iq(user_id, user_iq_new, db):
-    commit_query_iq_level = f"""
-        UPDATE Users SET iq_level = {user_iq_new} WHERE telegram_id = {user_id}
+    commit_query_iq_level = """
+        UPDATE Users SET iq_level = ? WHERE telegram_id = ?
     """
-    db.commit_query(commit_query_iq_level)
+    db.commit_query(commit_query_iq_level, (user_iq_new, user_id))
 
 
-def did_user_answer_this_question(user_id, question_number, db):
-    select_questions_query = f"""
-    SELECT questionare_done from Users WHERE telegram_id = {user_id}
+def save_answer(user_id, discipline, question_number, is_correct, db):
+    """Returns False if the user has already answered this question, right or wrong."""
+    insert_answer_query = """
+    INSERT OR IGNORE INTO Answers (telegram_id, discipline, question_number, is_correct)
+    VALUES (?, ?, ?, ?)
     """
-    result = json.loads(db.select_query(select_questions_query)[0][0])
-    if question_number not in result:
-        result.append(question_number)
-        new_result = json.dumps(result)
-        update_question_query = f"""
-        UPDATE Users SET questionare_done = '{new_result}' WHERE telegram_id = {user_id}
-        """
-        db.commit_query(update_question_query)
-        return False
-    return True
+    inserted_rows = db.commit_query(insert_answer_query, (user_id, discipline, question_number, int(is_correct)))
+    return inserted_rows == 1
 
 
 def get_anti_cheat_message(user_name):
@@ -101,33 +145,32 @@ def get_anti_cheat_message(user_name):
 
 
 def get_already_answered_questions(user_id, db):
-    answered_questions_query = f"""
-    SELECT questionare_done FROM Users WHERE telegram_id = {user_id}
+    answered_questions_query = """
+    SELECT question_number FROM Answers WHERE telegram_id = ? AND discipline = ? ORDER BY question_number
     """
-    result = db.select_query(answered_questions_query)[0][0]
-    result_raw = json.loads(result)
-    if not result_raw:
+    result = db.select_query(answered_questions_query, (user_id, CURRENT_DISCIPLINE_CODE))
+    if not result:
         return "Ото лінива срака! На жодне питання ще не відповіли ("
-    result = [int(i) for i in result_raw]
-    result.sort()
     answer = ["Ви вже відповіли на наступні питання:\n"]
     for question_id in result:
-        answer.append(f"{question_id},")
+        answer.append(f"{question_id[0]},")
     answer_string = "".join(answer)
     return answer_string
 
 
 def get_quiz_leaders(db):
-    select_answered_questions_query = """
-    SELECT name, questionare_done FROM Users;
+    select_leaders_query = """
+    SELECT Users.name, COUNT(*) AS answers_count FROM Answers
+    JOIN Users ON Users.telegram_id = Answers.telegram_id
+    WHERE Answers.discipline = ? AND Answers.is_correct = 1
+    GROUP BY Answers.telegram_id
+    ORDER BY answers_count DESC
+    LIMIT 3
     """
-    result = db.select_query(select_answered_questions_query)
-    sorted_results = sorted(result, key=lambda x: -len(json.loads(x[1])))
+    result = db.select_query(select_leaders_query, (CURRENT_DISCIPLINE_CODE,))
     strings_to_print = [f"Лідери у дисципліні {CURRENT_DISCIPLINE}vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv\n"]
-    for i in sorted_results[:3]:
-        answers_count = len(json.loads(i[1]))
-        if answers_count:
-            string_to_print = f"{i[0]}: {answers_count} вірних відповідей\n==============================\n"
-            strings_to_print.append(string_to_print)
+    for name, answers_count in result:
+        string_to_print = f"{name}: {answers_count} вірних відповідей\n==============================\n"
+        strings_to_print.append(string_to_print)
 
     return "".join(strings_to_print)

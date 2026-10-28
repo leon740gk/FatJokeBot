@@ -34,10 +34,13 @@ from telegram_bots.bots.fat_joke.iq_level_tools import (
     get_user_iq_and_name,
     calculate_id,
     change_iq,
-    did_user_answer_this_question,
     get_anti_cheat_message,
     get_already_answered_questions,
     get_quiz_leaders,
+    init_answers_table,
+    parse_answer_callback,
+    register_user,
+    save_answer,
 )
 
 logger = telebot.logger
@@ -51,6 +54,7 @@ activity_handler = ActivityHandler(logger)
 @bot.message_handler(commands=["help"])
 def help(message):
     user_id = message.from_user.id
+    register_user(message.from_user, db)
     activity_handler.update_user_activity_data(user_id, db)
     command_handler = CommandHandler(bot, message)
     command_handler.text_to_command(commands_responses.get("help"))
@@ -60,6 +64,7 @@ def help(message):
 def already_answered_questions(message):
     user_id = message.from_user.id
     answer = get_already_answered_questions(user_id, db)
+    register_user(message.from_user, db)
     activity_handler.update_user_activity_data(user_id, db)
     command_handler = CommandHandler(bot, message)
     command_handler.text_to_command(answer)
@@ -69,6 +74,7 @@ def already_answered_questions(message):
 def show_leaders(message):
     user_id = message.from_user.id
     answer = get_quiz_leaders(db)
+    register_user(message.from_user, db)
     activity_handler.update_user_activity_data(user_id, db)
     command_handler = CommandHandler(bot, message)
     command_handler.text_to_command(answer)
@@ -77,6 +83,7 @@ def show_leaders(message):
 @bot.message_handler(commands=["show_iq"])
 def show_iq(message):
     user_id = message.from_user.id
+    register_user(message.from_user, db)
     activity_handler.update_user_activity_data(user_id, db)
     user_data_query = """
     SELECT name, IQ_level FROM Users
@@ -90,6 +97,7 @@ def show_iq(message):
 @bot.message_handler(commands=["stream"])
 def stream(message):
     user_id = message.from_user.id
+    register_user(message.from_user, db)
     activity_handler.update_user_activity_data(user_id, db)
     command_handler = CommandHandler(bot, message)
     command_handler.text_to_command(commands_responses.get("stream"))
@@ -98,27 +106,29 @@ def stream(message):
 @bot.callback_query_handler(func=lambda call: True)
 def callback(call):
     if call.message:
+        parsed_answer = parse_answer_callback(call.data)
+        if not parsed_answer:
+            bot.answer_callback_query(call.id, text="Це питання вже застаріло")
+            return
+        discipline, question_number, is_correct = parsed_answer
         user_id = call.from_user.id
+        register_user(call.from_user, db)
         activity_handler.update_user_activity_data(user_id, db)
         user_iq_old, user_name = get_user_iq_and_name(user_id, db)
-        split_answer = call.data.split(" ")
-        if len(split_answer) == 2:
-            question_number = split_answer[1]
-            logger.debug(
-                f"answer from user_id --->>> {user_id} name --->>> {user_name}; question_number: {question_number}"
-            )
-            they_did = did_user_answer_this_question(user_id, question_number, db)
-            if they_did:
-                cheat_message = get_anti_cheat_message(user_name)
-                bot.send_animation(call.message.chat.id, red_blink)
-                bot.edit_message_text(chat_id=call.message.chat.id, message_id=call.message.id, text=cheat_message)
-                return
-            else:
-                user_iq_new, success_message = calculate_id(user_iq_old, user_name, increase=True)
-                bot.edit_message_text(chat_id=call.message.chat.id, message_id=call.message.id, text=success_message)
-                bot.send_sticker(call.message.chat.id, smart_nigga)
+        logger.debug(
+            f"answer from user_id --->>> {user_id} name --->>> {user_name}; "
+            f"question: {discipline} {question_number}; correct: {is_correct}"
+        )
+        if not save_answer(user_id, discipline, question_number, is_correct, db):
+            cheat_message = get_anti_cheat_message(user_name)
+            bot.send_animation(call.message.chat.id, red_blink)
+            bot.edit_message_text(chat_id=call.message.chat.id, message_id=call.message.id, text=cheat_message)
+            return
+        if is_correct:
+            user_iq_new, success_message = calculate_id(user_iq_old, user_name, increase=True)
+            bot.edit_message_text(chat_id=call.message.chat.id, message_id=call.message.id, text=success_message)
+            bot.send_sticker(call.message.chat.id, smart_nigga)
         else:
-            logger.debug(f"answer from user_id --->>> {user_id} name --->>> {user_name}")
             user_iq_new, fail_message = calculate_id(user_iq_old, user_name, increase=False)
             bot.edit_message_text(chat_id=call.message.chat.id, message_id=call.message.id, text=fail_message)
             bot.send_sticker(call.message.chat.id, genuis_sticker)
@@ -129,6 +139,7 @@ def callback(call):
 def text_reply(message):
     user_id = message.from_user.id
     logger.debug(f"message from user_id --->>> {user_id} username --->>> {message.from_user.username}")
+    register_user(message.from_user, db)
     activity_handler.update_user_activity_data(user_id, db)
     to_text_reaction = ToTextReactions(bot, message)
     to_text_reaction._text_to_text_reply(text_to_text_reactions)
@@ -144,6 +155,7 @@ def sticker_reply(message):
     logger.debug(f"Sticker From user_id --->>> {user_id} - {message.from_user.username}")
     logger.debug(f"Sticker file_unique_id --->>> {message.sticker.file_unique_id}")
     logger.debug(f"Sticker file_id --->>> {message.sticker.file_id}")
+    register_user(message.from_user, db)
     activity_handler.update_user_activity_data(user_id, db)
 
     to_sticker_reaction = ToStickerReactions(bot, message)
@@ -155,6 +167,7 @@ def photo_reply(message):
     user_id = message.from_user.id
     logger.debug(f"Photo From user_id --->>> {user_id} - {message.from_user.username}")
     logger.debug(f"file_id --->>> {message.json.get('photo')[0]['file_id']}")
+    register_user(message.from_user, db)
     activity_handler.update_user_activity_data(user_id, db)
 
     # to_photo_reaction = ToPhotoReactions(bot, message)
@@ -170,6 +183,7 @@ def animation_reply(message):
 
 if __name__ == "__main__":
     db = DBConnection()
+    init_answers_table(db)
     schedule.every(1).hour.at(":00").do(message_timer, bot=bot, chat_id=billi_chat_id)
     schedule.every(20).minutes.do(test_your_brain, bot=bot, chat_id=billi_chat_id)
     schedule.every().day.at("14:55").do(activity_handler.check_daily_activity, db=db)
