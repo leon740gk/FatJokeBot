@@ -5,6 +5,7 @@ import schedule
 import telebot
 
 from telegram_bots.bots.fat_joke.activity_hadling_tools import ActivityHandler
+from telegram_bots.config import get_bot_token
 from telegram_bots.db_sqlite.sqlitre_connection import DBConnection
 from telegram_bots.knowledge_base.fat_joke.chat_data import billi_chat_id, test_004_chat_id
 from telegram_bots.bots.fat_joke.periodic_tasks import message_timer, schedule_checker, test_your_brain, we_miss_you
@@ -28,7 +29,6 @@ from telegram_bots.bots.fat_joke.reaction_tools import (
     ToStickerReactions,
     CommandHandler,
 )
-from telegram_bots.bots.fat_joke.token_for_fat_joke import fat_joke_token
 from telegram_bots.bots.fat_joke.iq_level_tools import (
     define_iq_levels,
     get_user_iq_and_name,
@@ -46,7 +46,7 @@ from telegram_bots.bots.fat_joke.iq_level_tools import (
 logger = telebot.logger
 telebot.logger.setLevel(logging.DEBUG)
 
-BOT_TOKEN = fat_joke_token
+BOT_TOKEN = get_bot_token()
 bot = telebot.TeleBot(BOT_TOKEN, skip_pending=True)
 activity_handler = ActivityHandler(logger)
 

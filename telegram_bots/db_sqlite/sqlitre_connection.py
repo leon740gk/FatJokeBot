@@ -1,9 +1,11 @@
 import sqlite3
 
+from telegram_bots.config import DB_PATH
+
 
 class DBConnection:
 
-    def __init__(self, db_name="../../db_sqlite/my_database.db"):
+    def __init__(self, db_name=DB_PATH):
         self.db_connection = sqlite3.connect(db_name, check_same_thread=False)
         self.db_cursor = self.db_connection.cursor()
 

@@ -5,3 +5,5 @@ __pycache__
 telegram_bots/bots/fat_joke/token_for_fat_joke.py
 
 .DS_Store
+.env
+*.db
