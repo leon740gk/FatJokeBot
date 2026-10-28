@@ -14,13 +14,8 @@ def _required(name):
     return value
 
 
-def _parse_user_ids(raw):
-    # "me=123,valodya=456" -> {"me": 123, "valodya": 456}
-    user_ids = {}
-    for pair in filter(None, (item.strip() for item in raw.split(","))):
-        name, user_id = pair.split("=")
-        user_ids[name.strip()] = int(user_id)
-    return user_ids
+def _flag(name):
+    return os.getenv(name, "").strip().lower() in ("1", "true", "yes", "on")
 
 
 def get_bot_token():
@@ -28,6 +23,7 @@ def get_bot_token():
 
 
 MAIN_CHAT_ID = os.getenv("FAT_JOKE_MAIN_CHAT_ID", "")
-TEST_CHAT_ID = os.getenv("FAT_JOKE_TEST_CHAT_ID", "")
-USER_IDS = _parse_user_ids(os.getenv("FAT_JOKE_USER_IDS", ""))
 DB_PATH = os.getenv("FAT_JOKE_DB_PATH") or str(PROJECT_ROOT / "telegram_bots" / "db_sqlite" / "my_database.db")
+LOG_LEVEL = os.getenv("FAT_JOKE_LOG_LEVEL", "INFO").upper()
+# "we miss you" roll call of inactive members, was switched off in the old version
+MISS_YOU_ENABLED = _flag("FAT_JOKE_MISS_YOU_ENABLED")

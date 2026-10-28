@@ -1,0 +1,20 @@
+[tool.ruff]
+line-length = 120
+target-version = "py311"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "B", "UP"]
+
+[tool.ruff.lint.isort]
+known-first-party = ["telegram_bots"]
+
+[tool.ruff.format]
+exclude = ["telegram_bots/knowledge_base/**"]
+
+[tool.pytest.ini_options]
+testpaths = ["telegram_bots/tests"]
+pythonpath = ["."]
+
+[tool.ruff.lint.per-file-ignores]
+# jokes, poems and quiz questions: long lines are content, not code
+"telegram_bots/knowledge_base/**" = ["E501"]

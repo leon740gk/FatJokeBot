@@ -1,7 +1,3 @@
-import re
-
-from telegram_bots.knowledge_base.fat_joke.chat_members import VALODYA
-
 # misc stickers
 froggy_sticker = "CAACAgIAAxkBAAPUZcvrZ2S53zFjRrjUOpAhgR4J4CEAAm0JAAIItxkCBbK_ShFrQjM0BA"
 heyhey = "CAACAgIAAx0CW-jr9QACciZlze6o7pwmCoG3SM2mT-arJ_SqLQACZzwAAiYi8Ettss0cMxi7hDQE"
@@ -153,12 +149,6 @@ special_sticker_responses = {
     dildo_sergio_short: ["Опа! Основной эмитент новой криптовалюты :)", "Listing and halving!!!", "Try my tools :)"],
     dick_short: ["Опапа! Внєзапно!"],
 }
-
-regex_reactions = {re.compile("\d{3}([.,])?(\d{3})?.*"): "Сергійко збирає на тренажер!"}
-
-
-to_person_reactions = {VALODYA: valody_harosh_yalozyt}
-
 
 commands_responses = {
     "help": """
