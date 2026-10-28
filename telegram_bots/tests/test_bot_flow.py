@@ -6,7 +6,17 @@ from datetime import datetime
 import pytest
 from aiogram import Bot, methods
 from aiogram.client.session.base import BaseSession
-from aiogram.types import CallbackQuery, Chat, ChatMemberMember, ChatMemberOwner, Message, Update, User
+from aiogram.exceptions import TelegramBadRequest
+from aiogram.types import (
+    CallbackQuery,
+    Chat,
+    ChatMemberLeft,
+    ChatMemberMember,
+    ChatMemberOwner,
+    Message,
+    Update,
+    User,
+)
 
 from telegram_bots.bots.fat_joke import main
 from telegram_bots.bots.fat_joke import scheduler as scheduler_module
@@ -16,8 +26,10 @@ from telegram_bots.bots.fat_joke.handlers import commands, reactions
 from telegram_bots.bots.fat_joke.handlers import quiz as quiz_handlers
 from telegram_bots.bots.fat_joke.scheduler import (
     ask_question,
+    check_chat,
     close_expired_questions,
     create_scheduler,
+    hourly_bam,
     scheduled_question,
 )
 from telegram_bots.bots.fat_joke.services import quiz
@@ -33,9 +45,15 @@ class FakeSession(BaseSession):
         self.requests = []
         self.next_message_id = 1000
         self.admins = set()
+        self.missing_chats = set()
+        self.left_chats = set()
 
     async def make_request(self, bot, method, timeout=None):
         self.requests.append(method)
+        if getattr(method, "chat_id", None) in self.missing_chats:
+            raise TelegramBadRequest(method=method, message="Bad Request: chat not found")
+        if isinstance(method, methods.GetChatMember) and method.chat_id in self.left_chats:
+            return ChatMemberLeft(user=BOT_USER)
         if isinstance(method, methods.GetMe):
             return BOT_USER
         if isinstance(method, methods.GetChatMember):
@@ -242,3 +260,25 @@ def test_scheduler_backup_job(db, bot, tmp_path):
         return next(job for job in scheduler.get_jobs() if job.func.__name__ == "backup")
 
     assert asyncio.run(backup_job()).misfire_grace_time >= 12 * 60 * 60
+
+
+def test_chat_id_command(db, bot, dispatcher):
+    feed(dispatcher, bot, **text_update(user(7, "Alex"), "/chat_id"))
+    assert bot.session.of_type(methods.SendMessage)[-1].text == f"ID цього чату: {CHAT.id}"
+
+
+def test_missing_chat_is_logged_not_raised(db, bot, caplog):
+    bot.session.missing_chats.add(CHAT.id)
+    asyncio.run(hourly_bam(bot, chat_id=CHAT.id))
+    asyncio.run(scheduled_question(bot, db, chat_id=CHAT.id))
+    assert caplog.text.count("chat not found") == 2 and "FAT_JOKE_MAIN_CHAT_ID" in caplog.text
+    assert quiz_db.get_open_question(db, CHAT.id) is None
+
+
+def test_check_chat(db, bot, caplog):
+    assert asyncio.run(check_chat(bot, CHAT.id))
+    bot.session.left_chats.add(CHAT.id)
+    assert not asyncio.run(check_chat(bot, CHAT.id))
+    bot.session.missing_chats.add(-1)
+    assert not asyncio.run(check_chat(bot, -1))
+    assert "has left it" in caplog.text and "chat not found" in caplog.text

@@ -22,6 +22,12 @@ async def stream_command(message: Message):
     await message.answer(commands_responses["stream"])
 
 
+@router.message(Command("chat_id"))
+async def chat_id_command(message: Message):
+    # handy for FAT_JOKE_MAIN_CHAT_ID in .env
+    await message.answer(f"ID цього чату: {message.chat.id}")
+
+
 @router.message(Command("show_iq"))
 async def show_iq_command(message: Message, db):
     await message.answer(iq.format_iq_table(users_db.get_all_iq(db)))

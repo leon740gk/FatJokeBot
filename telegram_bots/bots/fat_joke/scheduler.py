@@ -1,8 +1,10 @@
+import functools
 import logging
 import random
 from datetime import datetime
 from zoneinfo import ZoneInfo
 
+from aiogram.enums import ChatMemberStatus
 from aiogram.exceptions import TelegramAPIError
 from aiogram.utils.keyboard import InlineKeyboardBuilder
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
@@ -16,8 +18,43 @@ from telegram_bots.knowledge_base.fat_joke.reaction_data import wanted
 
 logger = logging.getLogger(__name__)
 KYIV = ZoneInfo("Europe/Kyiv")
+NOT_IN_CHAT_HINT = "is the bot a member of this chat? Check FAT_JOKE_MAIN_CHAT_ID, /chat_id shows the id of any chat"
 
 
+def chat_job(job):
+    """Turns Telegram errors of a scheduled chat message into one readable log line instead of a traceback."""
+
+    @functools.wraps(job)
+    async def wrapper(*args, **kwargs):
+        try:
+            return await job(*args, **kwargs)
+        except TelegramAPIError as error:
+            logger.error(
+                "%s: can't send to chat %s: %s (%s)",
+                job.__name__,
+                kwargs.get("chat_id"),
+                error.message,
+                NOT_IN_CHAT_HINT,
+            )
+
+    return wrapper
+
+
+async def check_chat(bot, chat_id):
+    """Logs an error at start if the bot can't write to the main chat."""
+    try:
+        member = await bot.get_chat_member(chat_id, bot.id)
+    except TelegramAPIError as error:
+        logger.error("main chat %s: %s (%s)", chat_id, error.message, NOT_IN_CHAT_HINT)
+        return False
+    if member.status in (ChatMemberStatus.LEFT, ChatMemberStatus.KICKED):
+        status = "been kicked from" if member.status == ChatMemberStatus.KICKED else "left"
+        logger.error("main chat %s: the bot has %s it (%s)", chat_id, status, NOT_IN_CHAT_HINT)
+        return False
+    return True
+
+
+@chat_job
 async def hourly_bam(bot, chat_id):
     await bot.send_message(chat_id, texts.hour_message(datetime.now(KYIV).strftime("%H")))
 
@@ -41,6 +78,7 @@ async def ask_question(bot, db, chat_id, rng=random):
     )
 
 
+@chat_job
 async def scheduled_question(bot, db, chat_id, quiet_hours=None):
     if is_quiet(datetime.now(KYIV).hour, quiet_hours):
         return
@@ -65,6 +103,7 @@ async def update_activity(db):
     users_db.update_activity_deltas(db)
 
 
+@chat_job
 async def we_miss_you(bot, db, chat_id):
     message = texts.miss_you_message(users_db.get_inactive(db))
     if message:

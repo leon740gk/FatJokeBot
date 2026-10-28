@@ -9,7 +9,7 @@ from telegram_bots.bots.fat_joke.db.connection import Database
 from telegram_bots.bots.fat_joke.db.schema import init_schema
 from telegram_bots.bots.fat_joke.handlers import commands, quiz, reactions
 from telegram_bots.bots.fat_joke.middlewares import UserActivityMiddleware
-from telegram_bots.bots.fat_joke.scheduler import create_scheduler
+from telegram_bots.bots.fat_joke.scheduler import check_chat, create_scheduler
 from telegram_bots.bots.fat_joke.services.quiet_hours import parse_quiet_hours
 from telegram_bots.config import (
     BACKUP_DIR,
@@ -56,6 +56,8 @@ async def main():
     try:
         # same as skip_pending in the old bot: ignore messages sent while it was offline
         await bot.delete_webhook(drop_pending_updates=True)
+        if MAIN_CHAT_ID:
+            await check_chat(bot, MAIN_CHAT_ID)
         await dispatcher.start_polling(bot)
     finally:
         scheduler.shutdown(wait=False)
