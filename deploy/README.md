@@ -1,7 +1,9 @@
 # Деплой на VPS (IONOS VPS S+, Ubuntu 24.04)
 
 Бот работает через long polling, входящие порты ему не нужны. Хватает самого маленького тарифа (VPS S+: 1 vCore / 2 ГБ RAM).
-Ниже `SERVER_IP` — адрес сервера из панели IONOS.
+Ниже `SERVER_IP` — адрес сервера из панели IONOS, его нужно подставить вместо этих слов.
+Блоки «на ноутбуке» запускаются в обычном терминале, блоки «на сервере» — уже после входа по `ssh`,
+когда в приглашении видно `root@...` или `bot@...`. Если вставить блок сервера на ноутбуке, команды не найдутся.
 
 ## 1. Заказать сервер
 
@@ -12,8 +14,15 @@
 
 ## 2. Подготовить сервер (под root)
 
+На ноутбуке:
+
 ```bash
 ssh root@SERVER_IP
+```
+
+На сервере:
+
+```bash
 apt update && apt upgrade -y
 apt install -y git sqlite3 unattended-upgrades
 timedatectl set-timezone Europe/Berlin   # только для логов, расписание бота всегда по Киеву
@@ -28,17 +37,26 @@ echo 'bot ALL=(root) NOPASSWD: /usr/bin/systemctl restart fat-joke' > /etc/sudoe
 chmod 440 /etc/sudoers.d/fat-joke
 ```
 
-Закрыть вход по паролю (сначала проверь, что `ssh bot@SERVER_IP` пускает по ключу из другого окна):
+Закрыть вход по паролю. Сначала проверь в другом окне терминала, что `ssh bot@SERVER_IP` пускает по ключу.
+Потом на сервере под root (файл в `sshd_config.d` с `00-` в начале имени главнее настроек cloud-init):
 
 ```bash
-sed -i 's/^#\?PasswordAuthentication .*/PasswordAuthentication no/' /etc/ssh/sshd_config
+echo 'PasswordAuthentication no' > /etc/ssh/sshd_config.d/00-no-password.conf
 systemctl restart ssh
+sshd -T | grep -i passwordauthentication   # должно быть: passwordauthentication no
 ```
 
 ## 3. Поставить бота (под bot)
 
+На ноутбуке:
+
 ```bash
 ssh bot@SERVER_IP
+```
+
+На сервере:
+
+```bash
 curl -LsSf https://astral.sh/uv/install.sh | sh && source ~/.local/bin/env
 git clone https://github.com/leon740gk/FatJokeBot.git && cd FatJokeBot
 uv venv --python 3.14 .venv
@@ -58,6 +76,8 @@ scp telegram_bots/db_sqlite/my_database.db bot@SERVER_IP:FatJokeBot/telegram_bot
 ```
 
 ## 5. Запустить как сервис (под root)
+
+На ноутбуке `ssh root@SERVER_IP`, затем на сервере:
 
 ```bash
 cp /home/bot/FatJokeBot/deploy/fat-joke.service /etc/systemd/system/
