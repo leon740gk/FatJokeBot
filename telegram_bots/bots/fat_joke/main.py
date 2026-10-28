@@ -10,7 +10,17 @@ from telegram_bots.bots.fat_joke.db.schema import init_schema
 from telegram_bots.bots.fat_joke.handlers import commands, quiz, reactions
 from telegram_bots.bots.fat_joke.middlewares import UserActivityMiddleware
 from telegram_bots.bots.fat_joke.scheduler import create_scheduler
-from telegram_bots.config import BACKUP_DIR, DB_PATH, LOG_LEVEL, MAIN_CHAT_ID, MISS_YOU_ENABLED, get_bot_token
+from telegram_bots.bots.fat_joke.services.quiet_hours import parse_quiet_hours
+from telegram_bots.config import (
+    BACKUP_DIR,
+    DB_PATH,
+    LOG_LEVEL,
+    MAIN_CHAT_ID,
+    MISS_YOU_ENABLED,
+    QUIZ_ANSWER_MINUTES,
+    QUIZ_QUIET_HOURS,
+    get_bot_token,
+)
 
 
 def build_dispatcher(db):
@@ -32,7 +42,16 @@ async def main():
     bot = Bot(get_bot_token())
     dispatcher = build_dispatcher(db)
 
-    scheduler = create_scheduler(bot, db, MAIN_CHAT_ID, MISS_YOU_ENABLED, db_path=DB_PATH, backup_dir=BACKUP_DIR)
+    scheduler = create_scheduler(
+        bot,
+        db,
+        MAIN_CHAT_ID,
+        MISS_YOU_ENABLED,
+        db_path=DB_PATH,
+        backup_dir=BACKUP_DIR,
+        answer_minutes=QUIZ_ANSWER_MINUTES,
+        quiet_hours=parse_quiet_hours(QUIZ_QUIET_HOURS),
+    )
     scheduler.start()
     try:
         # same as skip_pending in the old bot: ignore messages sent while it was offline

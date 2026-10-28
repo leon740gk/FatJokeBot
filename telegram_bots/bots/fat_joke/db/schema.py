@@ -23,8 +23,9 @@ CREATE TABLE IF NOT EXISTS Answers (
     discipline TEXT NOT NULL,
     question_number INTEGER NOT NULL,
     is_correct INTEGER NOT NULL,
+    season INTEGER NOT NULL DEFAULT 1,
     answered_at TEXT DEFAULT CURRENT_TIMESTAMP,
-    UNIQUE (telegram_id, discipline, question_number)
+    UNIQUE (telegram_id, discipline, season, question_number)
 )
 """
 
@@ -37,15 +38,61 @@ CREATE TABLE IF NOT EXISTS QuizMessages (
     question_number INTEGER NOT NULL,
     answered_by INTEGER,
     created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+    season INTEGER NOT NULL DEFAULT 1,
+    closed_at TEXT,
     UNIQUE (chat_id, message_id)
+)
+"""
+
+SEASONS_TABLE = """
+CREATE TABLE IF NOT EXISTS Seasons (
+    discipline TEXT NOT NULL,
+    number INTEGER NOT NULL,
+    started_at TEXT DEFAULT CURRENT_TIMESTAMP,
+    finished_at TEXT,
+    PRIMARY KEY (discipline, number)
+)
+"""
+
+SETTINGS_TABLE = """
+CREATE TABLE IF NOT EXISTS Settings (
+    key TEXT PRIMARY KEY,
+    value TEXT
 )
 """
 
 
 def init_schema(db):
-    for table in (USERS_TABLE, ANSWERS_TABLE, QUIZ_MESSAGES_TABLE):
+    for table in (USERS_TABLE, ANSWERS_TABLE, QUIZ_MESSAGES_TABLE, SEASONS_TABLE, SETTINGS_TABLE):
         db.execute(table)
+    _add_seasons_to_old_tables(db)
     _migrate_legacy_answers(db)
+
+
+def _columns(db, table):
+    return {row[1] for row in db.fetch_all(f"PRAGMA table_info({table})")}
+
+
+def _add_seasons_to_old_tables(db):
+    # tables created before seasons existed (2026-10-28); everything in them belongs to season 1
+    if "season" not in _columns(db, "Answers"):
+        # the unique key changes too, and SQLite can only do that by rebuilding the table
+        db.execute(ANSWERS_TABLE.replace("Answers", "Answers_new"))
+        db.execute(
+            """
+            INSERT INTO Answers_new (id, telegram_id, discipline, question_number, is_correct, answered_at)
+            SELECT id, telegram_id, discipline, question_number, is_correct, answered_at FROM Answers
+            """
+        )
+        db.execute("DROP TABLE Answers")
+        db.execute("ALTER TABLE Answers_new RENAME TO Answers")
+    quiz_message_columns = _columns(db, "QuizMessages")
+    if "season" not in quiz_message_columns:
+        db.execute("ALTER TABLE QuizMessages ADD COLUMN season INTEGER NOT NULL DEFAULT 1")
+    if "closed_at" not in quiz_message_columns:
+        db.execute("ALTER TABLE QuizMessages ADD COLUMN closed_at TEXT")
+        # old answered questions are closed already
+        db.execute("UPDATE QuizMessages SET closed_at = created_at WHERE answered_by IS NOT NULL")
 
 
 def _migrate_legacy_answers(db):

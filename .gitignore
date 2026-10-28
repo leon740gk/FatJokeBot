@@ -1,4 +1,5 @@
 *.json
+!telegram_bots/knowledge_base/fat_joke/quiz/*.json
 __pycache__
 
 .idea

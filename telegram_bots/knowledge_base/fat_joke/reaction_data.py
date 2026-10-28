@@ -154,8 +154,10 @@ commands_responses = {
     "help": """
 /stream - дізнатися коли наступний стрім.
 /show_iq - дізнатися рівень IQ групи.
-/already_answered_questions - питання, на які вже дана вірна відповідь
-/show_leaders - показати лідерів в опитуванні
+/quiz - нове питання вікторини прямо зараз
+/show_leaders - показати лідерів поточного сезону вікторини
+/already_answered_questions - питання, на які ви вже відповіли в цьому сезоні
+/discipline - список дисциплін вікторини, адміни можуть змінити поточну
     """,
     "stream": """
     Наступний стрім:
@@ -167,5 +169,7 @@ commands_responses = {
 # help - Help
 # stream - When is the next stream
 # show_iq - Show IQ level of the group
-# already_answered_questions - know all questions you answered already
-# show_leaders - show quiz leaders
+# quiz - Ask a quiz question now
+# show_leaders - Show quiz leaders of the current season
+# already_answered_questions - Questions you answered this season
+# discipline - Quiz disciplines, admins can switch

@@ -1,0 +1,666 @@
+{
+  "code": "mlbb2",
+  "title": "MLBB 2",
+  "shuffle_options": true,
+  "questions": [
+    {
+      "number": 1,
+      "text": "Какая компания разработала Mobile Legends: Bang Bang?",
+      "options": [
+        "Riot Games",
+        "Moonton",
+        "Tencent",
+        "Сережа из соседнего подъезда"
+      ],
+      "correct": [
+        1
+      ]
+    },
+    {
+      "number": 2,
+      "text": "В каком году вышла MLBB?",
+      "options": [
+        "2014",
+        "2018",
+        "2016",
+        "2020"
+      ],
+      "correct": [
+        2
+      ]
+    },
+    {
+      "number": 3,
+      "text": "Как называется мир, в котором происходят события MLBB?",
+      "options": [
+        "Land of Dawn",
+        "Азерот",
+        "Рунтерра",
+        "Тамриэль"
+      ],
+      "correct": [
+        0
+      ]
+    },
+    {
+      "number": 4,
+      "text": "Сколько героев в одной команде в классическом матче?",
+      "options": [
+        "3",
+        "4",
+        "6",
+        "5"
+      ],
+      "correct": [
+        3
+      ]
+    },
+    {
+      "number": 5,
+      "text": "Сколько линий на карте в классическом режиме?",
+      "options": [
+        "2",
+        "3",
+        "4",
+        "Сколько успеешь зафармить"
+      ],
+      "correct": [
+        1
+      ]
+    },
+    {
+      "number": 6,
+      "text": "Какой нейтральный монстр появляется у реки в начале матча, раньше Лорда?",
+      "options": [
+        "Черепаха",
+        "Дракон",
+        "Барон",
+        "Краб-Серёга"
+      ],
+      "correct": [
+        0
+      ]
+    },
+    {
+      "number": 7,
+      "text": "Что делает Лорд после того, как его убили?",
+      "options": [
+        "Даёт каждому по 1000 золота",
+        "Идёт толкать линию за команду, которая его убила",
+        "Выдаёт скин",
+        "Ничего, просто обидно"
+      ],
+      "correct": [
+        1
+      ]
+    },
+    {
+      "number": 8,
+      "text": "Какое заклинание снимает с героя контроль: оглушение, замедление и прочее?",
+      "options": [
+        "Вспышка (Flicker)",
+        "Кара (Retribution)",
+        "Очищение (Purify)",
+        "Возрождение (Revitalize)"
+      ],
+      "correct": [
+        2
+      ]
+    },
+    {
+      "number": 9,
+      "text": "Какое заклинание почти всегда берёт лесник?",
+      "options": [
+        "Кара (Retribution)",
+        "Очищение (Purify)",
+        "Вспышка (Flicker)",
+        "Молитва за тиммейтов"
+      ],
+      "correct": [
+        0
+      ]
+    },
+    {
+      "number": 10,
+      "text": "Какой предмет воскрешает героя после смерти?",
+      "options": [
+        "Blade of Despair",
+        "Immortality",
+        "Wind of Nature",
+        "Свечка за упокой"
+      ],
+      "correct": [
+        1
+      ]
+    },
+    {
+      "number": 11,
+      "text": "Какой магический предмет режет врагам лечение?",
+      "options": [
+        "Necklace of Durance",
+        "Immortality",
+        "Blade of Despair",
+        "Wind of Nature"
+      ],
+      "correct": [
+        0
+      ]
+    },
+    {
+      "number": 12,
+      "text": "Какой предмет на 2 секунды даёт иммунитет к физическому урону?",
+      "options": [
+        "Athena's Shield",
+        "Wind of Nature",
+        "Immortality",
+        "Necklace of Durance"
+      ],
+      "correct": [
+        1
+      ]
+    },
+    {
+      "number": 13,
+      "text": "Кто из героев летает по карте на стальных тросах?",
+      "options": [
+        "Ling",
+        "Lancelot",
+        "Fanny",
+        "Hayabusa"
+      ],
+      "correct": [
+        2
+      ]
+    },
+    {
+      "number": 14,
+      "text": "Что Fanny тратит на умения вместо маны?",
+      "options": [
+        "Энергию",
+        "Ярость",
+        "Ману, как все",
+        "Нервы тиммейтов"
+      ],
+      "correct": [
+        0
+      ]
+    },
+    {
+      "number": 15,
+      "text": "Кто из героев бегает по стенам?",
+      "options": [
+        "Fanny",
+        "Ling",
+        "Natalia",
+        "Saber"
+      ],
+      "correct": [
+        1
+      ]
+    },
+    {
+      "number": 16,
+      "text": "Кто расставляет свои тени и телепортируется к ним?",
+      "options": [
+        "Hayabusa",
+        "Gusion",
+        "Saber",
+        "Karina"
+      ],
+      "correct": [
+        0
+      ]
+    },
+    {
+      "number": 17,
+      "text": "Кто из героев сражается зонтиком?",
+      "options": [
+        "Kagura",
+        "Kimmy",
+        "Nana",
+        "Odette"
+      ],
+      "correct": [
+        0
+      ]
+    },
+    {
+      "number": 18,
+      "text": "Кто из ассасинов становится невидимым в кустах?",
+      "options": [
+        "Saber",
+        "Alucard",
+        "Karina",
+        "Natalia"
+      ],
+      "correct": [
+        3
+      ]
+    },
+    {
+      "number": 19,
+      "text": "Кто ультой погружает врагов во тьму и лишает их обзора?",
+      "options": [
+        "Selena",
+        "Helcurt",
+        "Vexana",
+        "Lunox"
+      ],
+      "correct": [
+        1
+      ]
+    },
+    {
+      "number": 20,
+      "text": "Кто из героев превращается в чёрного дракона?",
+      "options": [
+        "Martis",
+        "Thamuz",
+        "Yu Zhong",
+        "Alpha"
+      ],
+      "correct": [
+        2
+      ]
+    },
+    {
+      "number": 21,
+      "text": "Кто ставит на пути врагов каменную стену?",
+      "options": [
+        "Grock",
+        "Tigreal",
+        "Minotaur",
+        "Hylos"
+      ],
+      "correct": [
+        0
+      ]
+    },
+    {
+      "number": 22,
+      "text": "Какой герой после смерти превращается в яйцо и продолжает бегать?",
+      "options": [
+        "Harith",
+        "Nana",
+        "Diggie",
+        "Aurora"
+      ],
+      "correct": [
+        2
+      ]
+    },
+    {
+      "number": 23,
+      "text": "Кто цепляет врагов крюком и притягивает к себе?",
+      "options": [
+        "Tigreal",
+        "Franco",
+        "Eudora",
+        "Layla"
+      ],
+      "correct": [
+        1
+      ]
+    },
+    {
+      "number": 24,
+      "text": "Кто ультой вселяется в союзника и защищает его?",
+      "options": [
+        "Angela",
+        "Floryn",
+        "Diggie",
+        "Carmilla"
+      ],
+      "correct": [
+        0
+      ]
+    },
+    {
+      "number": 25,
+      "text": "Кто отдаёт союзнику фонарь, который работает как лишний предмет?",
+      "options": [
+        "Estes",
+        "Rafaela",
+        "Floryn",
+        "Angela"
+      ],
+      "correct": [
+        2
+      ],
+      "explanation": "Dew's Lantern отдают союзнику в фонтане, слот под предмет он не занимает."
+    },
+    {
+      "number": 26,
+      "text": "Как зовут волка, который ходит с Popol?",
+      "options": [
+        "Шарик",
+        "Kupa",
+        "Акира",
+        "Купидон"
+      ],
+      "correct": [
+        1
+      ]
+    },
+    {
+      "number": 27,
+      "text": "У кого из героев две формы: эльфийская и бездны?",
+      "options": [
+        "Selena",
+        "Lunox",
+        "Karina",
+        "Esmeralda"
+      ],
+      "correct": [
+        0
+      ]
+    },
+    {
+      "number": 28,
+      "text": "Что Esmeralda отбирает у врагов?",
+      "options": [
+        "Золото",
+        "Ману",
+        "Щиты",
+        "Скины"
+      ],
+      "correct": [
+        2
+      ]
+    },
+    {
+      "number": 29,
+      "text": "Кто хватает врага или союзника и закидывает его в толпу?",
+      "options": [
+        "Johnson",
+        "Jawhead",
+        "Franco",
+        "Grock"
+      ],
+      "correct": [
+        1
+      ]
+    },
+    {
+      "number": 30,
+      "text": "Кто из героев превращается в прыгающий мяч?",
+      "options": [
+        "Khufra",
+        "Gloo",
+        "Hylos",
+        "Minotaur"
+      ],
+      "correct": [
+        0
+      ]
+    },
+    {
+      "number": 31,
+      "text": "Кто разваливается на маленьких слизней?",
+      "options": [
+        "Baxia",
+        "Khufra",
+        "Gloo",
+        "Barats"
+      ],
+      "correct": [
+        2
+      ]
+    },
+    {
+      "number": 32,
+      "text": "Кто из героев катается в панцире, как черепаха?",
+      "options": [
+        "Akai",
+        "Hylos",
+        "Uranus",
+        "Baxia"
+      ],
+      "correct": [
+        3
+      ]
+    },
+    {
+      "number": 33,
+      "text": "Какое животное Akai?",
+      "options": [
+        "Медведь",
+        "Панда",
+        "Бегемот",
+        "Сережа после праздников"
+      ],
+      "correct": [
+        1
+      ]
+    },
+    {
+      "number": 34,
+      "text": "Кто из героев создаёт клонов-обезьян?",
+      "options": [
+        "Zilong",
+        "Sun",
+        "Akai",
+        "Wukong"
+      ],
+      "correct": [
+        1
+      ],
+      "explanation": "Wukong в MLBB нет, хотя Sun на него очень похож."
+    },
+    {
+      "number": 35,
+      "text": "Кто копьём подбрасывает врага и перекидывает себе за спину?",
+      "options": [
+        "Lancelot",
+        "Sun",
+        "Zilong",
+        "Alpha"
+      ],
+      "correct": [
+        2
+      ]
+    },
+    {
+      "number": 36,
+      "text": "Кто из героев бьёт молниями?",
+      "options": [
+        "Eudora",
+        "Layla",
+        "Miya",
+        "Zilong"
+      ],
+      "correct": [
+        0
+      ]
+    },
+    {
+      "number": 37,
+      "text": "Кто из этих стрелков — лунная эльфийка?",
+      "options": [
+        "Miya",
+        "Granger",
+        "Brody",
+        "Clint"
+      ],
+      "correct": [
+        0
+      ]
+    },
+    {
+      "number": 38,
+      "text": "Кто ведёт имперских рыцарей Мониян и прикрывает всех щитом?",
+      "options": [
+        "Lolita",
+        "Franco",
+        "Tigreal",
+        "Minotaur"
+      ],
+      "correct": [
+        2
+      ]
+    },
+    {
+      "number": 39,
+      "text": "Каким боевым искусством владеет Chou?",
+      "options": [
+        "Бокс",
+        "Кунг-фу",
+        "Сумо",
+        "Борьба за последний пирожок"
+      ],
+      "correct": [
+        1
+      ]
+    },
+    {
+      "number": 40,
+      "text": "Из какой мифологии пришёл Gatotkaca?",
+      "options": [
+        "Греческой",
+        "Скандинавской",
+        "Индонезийской (яванской)",
+        "Китайской"
+      ],
+      "correct": [
+        2
+      ]
+    },
+    {
+      "number": 41,
+      "text": "Lapu-Lapu — национальный герой какой страны?",
+      "options": [
+        "Индонезии",
+        "Филиппин",
+        "Малайзии",
+        "Вьетнама"
+      ],
+      "correct": [
+        1
+      ]
+    },
+    {
+      "number": 42,
+      "text": "Прототип Minsitthar — король какой страны?",
+      "options": [
+        "Таиланда",
+        "Камбоджи",
+        "Лаоса",
+        "Мьянмы"
+      ],
+      "correct": [
+        3
+      ],
+      "explanation": "Прототип — Кьянзитта, король Пагана в 1084–1112 годах."
+    },
+    {
+      "number": 43,
+      "text": "Кто выиграл первый чемпионат мира M1 в 2019 году?",
+      "options": [
+        "RRQ Hoshi",
+        "EVOS Legends",
+        "Bren Esports",
+        "Onic"
+      ],
+      "correct": [
+        1
+      ],
+      "explanation": "В финале EVOS Legends обыграли RRQ Hoshi."
+    },
+    {
+      "number": 44,
+      "text": "Кто выиграл чемпионат мира M2?",
+      "options": [
+        "Burmese Ghouls",
+        "Blacklist International",
+        "Bren Esports",
+        "RRQ Hoshi"
+      ],
+      "correct": [
+        2
+      ],
+      "explanation": "В финале Bren Esports обыграли Burmese Ghouls."
+    },
+    {
+      "number": 45,
+      "text": "Какой ранг идёт сразу после Легенды?",
+      "options": [
+        "Эпический",
+        "Мифический",
+        "Грандмастер",
+        "Бог"
+      ],
+      "correct": [
+        1
+      ]
+    },
+    {
+      "number": 46,
+      "text": "С какого ранга начинают все новички?",
+      "options": [
+        "Воин",
+        "Элита",
+        "Мастер",
+        "Нуб"
+      ],
+      "correct": [
+        0
+      ]
+    },
+    {
+      "number": 47,
+      "text": "Сколько предметов помещается в инвентарь героя?",
+      "options": [
+        "5",
+        "6",
+        "7",
+        "8"
+      ],
+      "correct": [
+        1
+      ]
+    },
+    {
+      "number": 48,
+      "text": "Что значит «KS» в чате?",
+      "options": [
+        "Krutoy Skill",
+        "Kill Steal, украл убийство",
+        "Keep Safe",
+        "Kill Sergey"
+      ],
+      "correct": [
+        1
+      ]
+    },
+    {
+      "number": 49,
+      "text": "Что значит MVP в конце матча?",
+      "options": [
+        "Мега Великий Подпивас",
+        "Most Violent Player",
+        "Most Valuable Player",
+        "Минус Вечер Потерян"
+      ],
+      "correct": [
+        2
+      ]
+    },
+    {
+      "number": 50,
+      "text": "Тиммейт пишет «report» на третьей минуте. Ваши действия?",
+      "options": [
+        "Ответить «сам такой»",
+        "Замьютить и тащить",
+        "Сдаться на десятой минуте",
+        "Поставить лайк его маме"
+      ],
+      "correct": [
+        0,
+        1,
+        2,
+        3
+      ],
+      "explanation": "Тут правильно всё."
+    }
+  ]
+}

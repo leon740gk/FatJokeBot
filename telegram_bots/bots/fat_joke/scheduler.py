@@ -1,7 +1,9 @@
 import logging
+import random
 from datetime import datetime
 from zoneinfo import ZoneInfo
 
+from aiogram.exceptions import TelegramAPIError
 from aiogram.utils.keyboard import InlineKeyboardBuilder
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 
@@ -9,6 +11,7 @@ from telegram_bots.bots.fat_joke.db import quiz as quiz_db
 from telegram_bots.bots.fat_joke.db import users as users_db
 from telegram_bots.bots.fat_joke.db.backup import backup_database
 from telegram_bots.bots.fat_joke.services import quiz, texts
+from telegram_bots.bots.fat_joke.services.quiet_hours import is_quiet
 from telegram_bots.knowledge_base.fat_joke.reaction_data import wanted
 
 logger = logging.getLogger(__name__)
@@ -19,14 +22,43 @@ async def hourly_bam(bot, chat_id):
     await bot.send_message(chat_id, texts.hour_message(datetime.now(KYIV).strftime("%H")))
 
 
-async def send_quiz_question(bot, db, chat_id):
-    question = quiz.pick_question()
+async def ask_question(bot, db, chat_id, rng=random):
+    """Sends a quiz question of the current discipline; announces the winners first when a season ends."""
+    discipline = quiz.current_discipline(db)
+    picked = quiz.pick_question(db, discipline, rng)
+    if picked.finished_season:
+        await bot.send_message(chat_id, quiz.format_season_end(discipline, picked.finished_season, picked.winners))
+
+    rendered = quiz.render_question(picked.question, rng)
     keyboard = InlineKeyboardBuilder()
-    for option_index, (label, _) in enumerate(question.options):
-        keyboard.button(text=label, callback_data=quiz.option_callback_data(question, option_index))
-    keyboard.adjust(2)
-    message = await bot.send_message(chat_id, quiz.question_message_text(question), reply_markup=keyboard.as_markup())
-    quiz_db.save_quiz_message(db, message.chat.id, message.message_id, question.discipline, question.number)
+    for row in rendered.rows:
+        for label, data in row:
+            keyboard.button(text=label, callback_data=data)
+    keyboard.adjust(*(len(row) for row in rendered.rows))
+    message = await bot.send_message(chat_id, rendered.text, reply_markup=keyboard.as_markup())
+    quiz_db.save_quiz_message(
+        db, message.chat.id, message.message_id, discipline, picked.season, picked.question.number
+    )
+
+
+async def scheduled_question(bot, db, chat_id, quiet_hours=None):
+    if is_quiet(datetime.now(KYIV).hour, quiet_hours):
+        return
+    if quiz_db.get_open_question(db, chat_id):
+        # the previous question is still open, don't pile them up
+        return
+    await ask_question(bot, db, chat_id)
+
+
+async def close_expired_questions(bot, db, minutes):
+    for chat_id, message_id, discipline, number in quiz_db.close_expired(db, minutes):
+        question = quiz.get_question(discipline, number)
+        if not question:
+            continue
+        try:
+            await bot.edit_message_text(quiz.expired_text(question), chat_id=chat_id, message_id=message_id)
+        except TelegramAPIError as error:
+            logger.warning("can't close expired question %s in chat %s: %s", message_id, chat_id, error)
 
 
 async def update_activity(db):
@@ -44,9 +76,21 @@ async def backup(db_path, backup_dir):
     backup_database(db_path, backup_dir)
 
 
-def create_scheduler(bot, db, chat_id, miss_you_enabled=False, db_path=None, backup_dir=None):
+def create_scheduler(
+    bot,
+    db,
+    chat_id,
+    miss_you_enabled=False,
+    db_path=None,
+    backup_dir=None,
+    answer_minutes=15,
+    quiet_hours=None,
+):
     scheduler = AsyncIOScheduler(timezone=KYIV)
     scheduler.add_job(update_activity, "cron", hour=14, minute=55, kwargs={"db": db})
+    scheduler.add_job(
+        close_expired_questions, "interval", minutes=1, kwargs={"bot": bot, "db": db, "minutes": answer_minutes}
+    )
     if db_path and backup_dir:
         # the laptop may sleep at 04:00, so a missed backup still runs when it wakes up the same day
         scheduler.add_job(
@@ -63,7 +107,12 @@ def create_scheduler(bot, db, chat_id, miss_you_enabled=False, db_path=None, bac
         return scheduler
 
     scheduler.add_job(hourly_bam, "cron", minute=0, kwargs={"bot": bot, "chat_id": chat_id})
-    scheduler.add_job(send_quiz_question, "interval", minutes=20, kwargs={"bot": bot, "db": db, "chat_id": chat_id})
+    scheduler.add_job(
+        scheduled_question,
+        "interval",
+        minutes=20,
+        kwargs={"bot": bot, "db": db, "chat_id": chat_id, "quiet_hours": quiet_hours},
+    )
     if miss_you_enabled:
         scheduler.add_job(we_miss_you, "cron", hour=15, minute=0, kwargs={"bot": bot, "db": db, "chat_id": chat_id})
     return scheduler

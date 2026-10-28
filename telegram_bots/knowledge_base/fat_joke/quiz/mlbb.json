@@ -1,0 +1,1310 @@
+{
+  "code": "mlbb",
+  "title": "MLBB",
+  "questions": [
+    {
+      "number": 1,
+      "text": "Как зовут коня Леоморда?",
+      "options": [
+        "Серега",
+        "Буцефал",
+        "Антон",
+        "Барбиэль"
+      ],
+      "correct": [
+        3
+      ]
+    },
+    {
+      "number": 2,
+      "text": "Каким по счету вам дают персонажа Лайла?",
+      "options": [
+        "3",
+        "1",
+        "2",
+        "ее не дают, она сама приходит"
+      ],
+      "correct": [
+        1
+      ]
+    },
+    {
+      "number": 3,
+      "text": "Кто Дариус по сюжету?",
+      "options": [
+        "Король нежити",
+        "Посол тьмы",
+        "Принц Бездны",
+        "Дитя тьмы"
+      ],
+      "correct": [
+        2
+      ]
+    },
+    {
+      "number": 4,
+      "text": "На какого персонажа есть облик \"Копье инквизиции\"?",
+      "options": [
+        "Минситтар",
+        "Москов",
+        "Зилонг",
+        "Сильвана"
+      ],
+      "correct": [
+        3
+      ]
+    },
+    {
+      "number": 5,
+      "text": "Кто хорошо стилит баффы?",
+      "options": [
+        "Танк роум",
+        "Любой маг",
+        "Баданг",
+        "Ханзо"
+      ],
+      "correct": [
+        3
+      ]
+    },
+    {
+      "number": 6,
+      "text": "Выберите несуществующих персонажей.",
+      "options": [
+        "Гатот",
+        "Гвиневра",
+        "Министар",
+        "Ханзо"
+      ],
+      "correct": [
+        2
+      ]
+    },
+    {
+      "number": 7,
+      "text": "Кто из персонажей лейтовый персонаж?",
+      "options": [
+        "Баданг",
+        "Чичи",
+        "Натан",
+        "Аврора"
+      ],
+      "correct": [
+        2
+      ]
+    },
+    {
+      "number": 8,
+      "text": "Если в команде противника Эстес, то вам нужно собрать...",
+      "options": [
+        "Бесконечную битву",
+        "Меч охотника на демонов",
+        "Антихил",
+        "Ничего не надо собирать. Его просто надо банить!"
+      ],
+      "correct": [
+        2,
+        3
+      ]
+    },
+    {
+      "number": 9,
+      "text": "В кого нежелательно лететь на Алдосе?",
+      "options": [
+        "В Сесилиона",
+        "В Лесли",
+        "В Баданга",
+        "В Джулика"
+      ],
+      "correct": [
+        3
+      ]
+    },
+    {
+      "number": 10,
+      "text": "Смоделируем ситуацию: все противники живы, но внезапно куда-то исчезли. Что это означает в большинстве случаев?",
+      "options": [
+        "Они забирают лорда",
+        "Они фармят в лесу",
+        "Все противники лечатся на фонтане",
+        "Они готовят засаду"
+      ],
+      "correct": [
+        0,
+        3
+      ]
+    },
+    {
+      "number": 11,
+      "text": "Вы - мидер. Вы видите как лес и роум противника пошли на голду. Ваши действия:",
+      "options": [
+        "Просигналить Експовику отступать отступить",
+        "Продолжить фарм молча (ибо нахрен этих раков на голде)",
+        "Написать в чат на обе команды про их мамок",
+        "Прекдупредить АДК и пойти ему на помощь"
+      ],
+      "correct": [
+        3
+      ]
+    },
+    {
+      "number": 12,
+      "text": "Если ваша команда отстаёт по фарму, то вам нужно...",
+      "options": [
+        "Держаться вместе",
+        "Очистить линии",
+        "Забрать черепаху",
+        "С криками на танке: \"В размен нахуй!\" ринуться в бой 1 в 5"
+      ],
+      "correct": [
+        0
+      ]
+    },
+    {
+      "number": 13,
+      "text": "Назовите персонажей без эскейпа.",
+      "options": [
+        "Клинт",
+        "Броуди",
+        "Эйдора",
+        "Руби"
+      ],
+      "correct": [
+        2
+      ]
+    },
+    {
+      "number": 14,
+      "text": "Про какого персонажа идёт речь: \"Заебал сука, нихера не видно!\"?",
+      "options": [
+        "Хелкарт",
+        "Маша",
+        "Клауд",
+        "Мой тиммейт на Эстасе"
+      ],
+      "correct": [
+        0
+      ]
+    },
+    {
+      "number": 15,
+      "text": "Про какого персонажа идёт речь: \"Снова эта однокнопочная хуйня (\".",
+      "options": [
+        "Ейдора",
+        "Чу",
+        "Ли Сун-Син",
+        "Линг"
+      ],
+      "correct": [
+        0
+      ]
+    },
+    {
+      "number": 16,
+      "text": "У какого персонажа 4 умения (без пасивки)?",
+      "options": [
+        "Атлас",
+        "Уранус",
+        "Заск",
+        "Алукард"
+      ],
+      "correct": [
+        2
+      ]
+    },
+    {
+      "number": 17,
+      "text": "Выберите персонажа, который может превращаться.",
+      "options": [
+        "Роджер",
+        "Чу",
+        "Кайя",
+        "Пополь и Купа"
+      ],
+      "correct": [
+        0
+      ]
+    },
+    {
+      "number": 18,
+      "text": "Вы - лесник. Ваша тима бьет Лорда при раскладе 2 в 4 (2 - ваша тима, дибилы). Ваши действия:",
+      "options": [
+        "Лететь к ним на помощь ибо у вас смайт йоба",
+        "Пропушить лайн (вааще насрать какой)",
+        "Активно начать писать в чате",
+        "Пойти покурить"
+      ],
+      "correct": [
+        0
+      ]
+    },
+    {
+      "number": 19,
+      "text": "Кто из этих персонажей является танком-поддержкой?",
+      "options": [
+        "Грок",
+        "Бальмонд",
+        "Атлас",
+        "Лолита"
+      ],
+      "correct": [
+        3
+      ]
+    },
+    {
+      "number": 20,
+      "text": "Кто враг Ив?",
+      "options": [
+        "Аврора",
+        "Валир",
+        "Заск",
+        "Теризла"
+      ],
+      "correct": [
+        2
+      ]
+    },
+    {
+      "number": 21,
+      "text": "Кем является Фанни Тигрилу?",
+      "options": [
+        "Дочерью",
+        "Племяницой",
+        "Сестрой",
+        "Подругой"
+      ],
+      "correct": [
+        2
+      ]
+    },
+    {
+      "number": 22,
+      "text": "Предмет который атакует чистым уроном",
+      "options": [
+        "Бескончная битва",
+        "Меч охотника на демонов",
+        "Топор кровожадности",
+        "Клинок сими морей"
+      ],
+      "correct": [
+        0
+      ]
+    },
+    {
+      "number": 23,
+      "text": "Кто из перечисленных не имеет скин на venom?",
+      "options": [
+        "Ханаби",
+        "Грок",
+        "Горд",
+        "Харли"
+      ],
+      "correct": [
+        2
+      ]
+    },
+    {
+      "number": 24,
+      "text": "Кто относится к воинам востока?",
+      "options": [
+        "Хаябуса , линг ,ханаби, акай",
+        "Линг, баксий ,ван ван , ханзо",
+        "Хаябуса, зилонг, ван ван, лой",
+        "Зилонг, линг, баксий, ван ван"
+      ],
+      "correct": [
+        3
+      ]
+    },
+    {
+      "number": 25,
+      "text": "Кто относится к бездне?",
+      "options": [
+        "Тигрил",
+        "Грок",
+        "Валир",
+        "Бэйн"
+      ],
+      "correct": [
+        1
+      ]
+    },
+    {
+      "number": 26,
+      "text": "Как зовут снайперскую винтовку беатрис?",
+      "options": [
+        "Нибиру",
+        "Вескер",
+        "Беннетт",
+        "Реннер"
+      ],
+      "correct": [
+        3
+      ]
+    },
+    {
+      "number": 27,
+      "text": "У кого есть скин коф?",
+      "options": [
+        "Сабер",
+        "Мия",
+        "Госен",
+        "Фанни"
+      ],
+      "correct": [
+        2
+      ]
+    },
+    {
+      "number": 28,
+      "text": "У кого нет скина saber?",
+      "options": [
+        "Сабер",
+        "Рафаэль",
+        "Альфа",
+        "Циклоп"
+      ],
+      "correct": [
+        2
+      ]
+    },
+    {
+      "number": 29,
+      "text": "Как зовут клинок ханзо?",
+      "options": [
+        "Гудзикири",
+        "Алая Тень",
+        "АншелихаМоторе",
+        "АмонохаМакини"
+      ],
+      "correct": [
+        3
+      ]
+    },
+    {
+      "number": 30,
+      "text": "Сколько скинов есть на лейлу (с самой лейлой)?",
+      "options": [
+        "11",
+        "9",
+        "8",
+        "10"
+      ],
+      "correct": [
+        3
+      ]
+    },
+    {
+      "number": 31,
+      "text": "Сколько нужно опыта для эксперта в MLBB?",
+      "options": [
+        "4000",
+        "5000",
+        "6000",
+        "2500"
+      ],
+      "correct": [
+        1
+      ]
+    },
+    {
+      "number": 32,
+      "text": "Кого жестко пофиксили в S26 19.09.22?",
+      "options": [
+        "Бейн",
+        "Одетта",
+        "Джулиан",
+        "Маша"
+      ],
+      "correct": [
+        2
+      ]
+    },
+    {
+      "number": 33,
+      "text": "На кого скин КУЛАКИ СВЕТА?",
+      "options": [
+        "Баданг",
+        "Пакито",
+        "Чу",
+        "Лапу-Лапу"
+      ],
+      "correct": [
+        1
+      ]
+    },
+    {
+      "number": 34,
+      "text": "Кого в игре больше всего?",
+      "options": [
+        "Магов",
+        "Стрелков",
+        "Убийц",
+        "Бойцов"
+      ],
+      "correct": [
+        3
+      ]
+    },
+    {
+      "number": 35,
+      "text": "Как получить достижение \"Звезда шоу\" за 1 матч?",
+      "options": [
+        "Убить 20 без смертей",
+        "достигнуть 20кда",
+        "Разрушить 500 строений",
+        "Получить мут за то, что мамку вертел в чате"
+      ],
+      "correct": [
+        1
+      ]
+    },
+    {
+      "number": 36,
+      "text": "Какте герои млбб віглядят как мелкие пездюки?",
+      "options": [
+        "Diggie, Nana, Harley, Harith, Angela, Chang’e",
+        "Diggie, Nana, Harley, Harith, Angela, Chang’e, Lylia",
+        "Diggie, Irithel, Harley, Harith, Angela, Chang’e, Lylia",
+        "Diggie, Nana, Harley, Harith, Balmond, Chang’e, Lylia"
+      ],
+      "correct": [
+        1
+      ]
+    },
+    {
+      "number": 37,
+      "text": "Раньше считалось, что они друзья детства, но позже было подтверждено, что вместо этого они были «возлюбленными детства».",
+      "options": [
+        "Gusion and Lesley",
+        "Hayabusa and Kagura",
+        "Esmeralda and Khufra",
+        "Layla and Clint"
+      ],
+      "correct": [
+        1
+      ]
+    },
+    {
+      "number": 38,
+      "text": "Говорили, что Нана испытывала чувства к ____, хотя последний отвергал это и настаивал на том, чтобы она держалась от него подальше, опасаясь за свою безопасность.",
+      "options": [
+        "Harley",
+        "Helcurt",
+        "Zilong",
+        "Harith"
+      ],
+      "correct": [
+        3
+      ]
+    },
+    {
+      "number": 39,
+      "text": "Она инопланетянка, она единственный герой расы Яссон.",
+      "options": [
+        "Masha",
+        "Irithel",
+        "Karrie",
+        "Zhask"
+      ],
+      "correct": [
+        2
+      ]
+    },
+    {
+      "number": 40,
+      "text": "Его ульта быстрее чем ульта Джонсона",
+      "options": [
+        "Grock",
+        "Aldous",
+        "Tigreal",
+        "Zhask"
+      ],
+      "correct": [
+        1
+      ]
+    },
+    {
+      "number": 41,
+      "text": "У этого героя наименьшее количество фраз",
+      "options": [
+        "Diggie",
+        "Bane",
+        "Zhask",
+        "Franco"
+      ],
+      "correct": [
+        1
+      ]
+    },
+    {
+      "number": 42,
+      "text": "Кто Мартис по знаку зодиака?",
+      "options": [
+        "Рыбы",
+        "Козерог",
+        "Водолей",
+        "Козлина ебучая"
+      ],
+      "correct": [
+        1,
+        3
+      ]
+    },
+    {
+      "number": 43,
+      "text": "Ее имя происходит от греческого женского имени «ЛУНА».",
+      "options": [
+        "Chang'e",
+        "Irithel",
+        "Selena",
+        "Joy"
+      ],
+      "correct": [
+        2
+      ]
+    },
+    {
+      "number": 44,
+      "text": "Он - старший брат Чанэ",
+      "options": [
+        "Ling",
+        "Uranus",
+        "Zilong",
+        "Chou"
+      ],
+      "correct": [
+        2
+      ]
+    },
+    {
+      "number": 45,
+      "text": "\"Будущая звезда\" - скин героя",
+      "options": [
+        "Chang'e",
+        "Lylia",
+        "Guinevere",
+        "Fanny"
+      ],
+      "correct": [
+        1
+      ]
+    },
+    {
+      "number": 46,
+      "text": "«Метеоритный дождь» — умение героя",
+      "options": [
+        "Nana",
+        "Selena.",
+        "Layla",
+        "Chang'e"
+      ],
+      "correct": [
+        3
+      ]
+    },
+    {
+      "number": 47,
+      "text": "«Буря клинков» — умение героя",
+      "options": [
+        "Gusion",
+        "Ling",
+        "Zilong",
+        "Argus"
+      ],
+      "correct": [
+        1
+      ]
+    },
+    {
+      "number": 48,
+      "text": "«Фиолетовый реквим» — это навык",
+      "options": [
+        "Natalia",
+        "Guinevere",
+        "Chou",
+        "Lylia"
+      ],
+      "correct": [
+        1
+      ]
+    },
+    {
+      "number": 49,
+      "text": "«Путь Дракона» — это навык",
+      "options": [
+        "Chou",
+        "Yu zhong",
+        "Luo yi",
+        "Harith"
+      ],
+      "correct": [
+        0
+      ]
+    },
+    {
+      "number": 50,
+      "text": "«Прибыл сильнейший ниндзя» — слова героя",
+      "options": [
+        "Hanzo",
+        "Hanabi",
+        "Kagura",
+        "Hayabusa"
+      ],
+      "correct": [
+        0
+      ]
+    },
+    {
+      "number": 51,
+      "text": "\"Hahaha. Let's see who make the last laugh.\" — слова героя",
+      "options": [
+        "Eudora",
+        "Hayabusa",
+        "Kagura",
+        "Balmond"
+      ],
+      "correct": [
+        0
+      ]
+    },
+    {
+      "number": 52,
+      "text": "\"Me, a thief? No, no, no. I'm only borrowing this.\" — слова героя",
+      "options": [
+        "Hanzo",
+        "Hanabi",
+        "Claude",
+        "Hayabusa"
+      ],
+      "correct": [
+        2
+      ]
+    },
+    {
+      "number": 53,
+      "text": "\"Have you seen any other ninjas?\" — слова героя",
+      "options": [
+        "Hanzo",
+        "Hanabi",
+        "Kagura",
+        "Hayabusa"
+      ],
+      "correct": [
+        3
+      ]
+    },
+    {
+      "number": 54,
+      "text": "\"Your whole body is a weak spot.\" — слова героя",
+      "options": [
+        "Hanzo",
+        "Zilong",
+        "Kagura",
+        "Hayabusa"
+      ],
+      "correct": [
+        1
+      ]
+    },
+    {
+      "number": 55,
+      "text": "\"Night has fallen, let the killing begin!\" — слова героя",
+      "options": [
+        "Diggie",
+        "Hanabi",
+        "Helcurt",
+        "Hilda"
+      ],
+      "correct": [
+        2
+      ]
+    },
+    {
+      "number": 56,
+      "text": "\"My swordsmanship is almost as goodlooking as I am.\" — слова героя",
+      "options": [
+        "Hanzo",
+        "Argus",
+        "Kimmy",
+        "Gusion"
+      ],
+      "correct": [
+        3
+      ]
+    },
+    {
+      "number": 57,
+      "text": "\"Love and hope are two greatest inventions.\" — слова героя",
+      "options": [
+        "Angela",
+        "Kimmy",
+        "Moskov",
+        "Hayabusa"
+      ],
+      "correct": [
+        0
+      ]
+    },
+    {
+      "number": 58,
+      "text": "\"Sometings, I think about girls.\" — слова героя",
+      "options": [
+        "Moskov",
+        "Hanabi",
+        "Gusion",
+        "Alpha"
+      ],
+      "correct": [
+        3
+      ]
+    },
+    {
+      "number": 59,
+      "text": "\"I have a clumsy new apprentice named Einstein.\" — слова героя",
+      "options": [
+        "Diggie",
+        "Chou",
+        "Claude",
+        "Grock"
+      ],
+      "correct": [
+        0
+      ]
+    },
+    {
+      "number": 60,
+      "text": "\"Not knowing oneself, that's the worst.\" — слова героя",
+      "options": [
+        "Argus",
+        "Chou",
+        "Claude",
+        "Hayabusa"
+      ],
+      "correct": [
+        1
+      ]
+    },
+    {
+      "number": 61,
+      "text": "\"Papa. Hahaha. Look at these fools.\" — слова героя",
+      "options": [
+        "Kimmy",
+        "Argus",
+        "Zilong",
+        "Eudora"
+      ],
+      "correct": [
+        0
+      ]
+    },
+    {
+      "number": 62,
+      "text": "\"Justice is the last refuge of my weakness.\" — слова героя",
+      "options": [
+        "Alpha",
+        "Hilda",
+        "Argus",
+        "Gusion"
+      ],
+      "correct": [
+        2
+      ]
+    },
+    {
+      "number": 63,
+      "text": "\"Want to know my age?\" — слова героя",
+      "options": [
+        "Hanzo",
+        "Helcurt",
+        "Argus",
+        "Grock"
+      ],
+      "correct": [
+        3
+      ]
+    },
+    {
+      "number": 64,
+      "text": "\"Charge, don't be a jelly.\" — слова героя",
+      "options": [
+        "Hilda",
+        "Hanabi",
+        "Kagura",
+        "Hayabusa"
+      ],
+      "correct": [
+        0
+      ]
+    },
+    {
+      "number": 65,
+      "text": "Кто из персонажей MLBB по знаку зодиака - Овен?",
+      "options": [
+        "Aurora",
+        "Hilda",
+        "Martis",
+        "Selena"
+      ],
+      "correct": [
+        1
+      ]
+    },
+    {
+      "number": 66,
+      "text": "Кто из персонажей MLBB по знаку зодиака - Телец?",
+      "options": [
+        "Minotaur",
+        "Lancelot",
+        "Zhask",
+        "Hayabusa"
+      ],
+      "correct": [
+        0
+      ]
+    },
+    {
+      "number": 67,
+      "text": "Кто из персонажей MLBB по знаку зодиака - Близнецы?",
+      "options": [
+        "Lunox",
+        "Badang",
+        "Selena",
+        "Karina"
+      ],
+      "correct": [
+        2,
+        3
+      ]
+    },
+    {
+      "number": 68,
+      "text": "Кто из персонажей MLBB по знаку зодиака - Водолей?",
+      "options": [
+        "Odette",
+        "Karina",
+        "Hilda",
+        "Aurora"
+      ],
+      "correct": [
+        3
+      ]
+    },
+    {
+      "number": 69,
+      "text": "Кто из персонажей MLBB по знаку зодиака - Рак?",
+      "options": [
+        "Zhask",
+        "Badang",
+        "Kagura",
+        "Lancelot"
+      ],
+      "correct": [
+        0
+      ]
+    },
+    {
+      "number": 70,
+      "text": "Кто из персонажей MLBB по знаку зодиака - Козерог?",
+      "options": [
+        "Hilda",
+        "Martis",
+        "Lunox",
+        "Lancelot"
+      ],
+      "correct": [
+        1
+      ]
+    },
+    {
+      "number": 71,
+      "text": "Кто из персонажей MLBB по знаку зодиака - Лев?",
+      "options": [
+        "Irithel",
+        "Minotaur",
+        "Badang",
+        "Zhask"
+      ],
+      "correct": [
+        2
+      ]
+    },
+    {
+      "number": 72,
+      "text": "Кто из персонажей MLBB по знаку зодиака - Весы?",
+      "options": [
+        "Lunox",
+        "Lancelot",
+        "Helcurt",
+        "Odette"
+      ],
+      "correct": [
+        0
+      ]
+    },
+    {
+      "number": 73,
+      "text": "Кто из персонажей MLBB по знаку зодиака - Рыбы?",
+      "options": [
+        "Selena",
+        "Hilda",
+        "Lunox",
+        "Lancelot"
+      ],
+      "correct": [
+        3
+      ]
+    },
+    {
+      "number": 74,
+      "text": "Кто из персонажей MLBB по знаку зодиака - Стрелец?",
+      "options": [
+        "Irithel",
+        "Helcurt",
+        "Minotaur",
+        "Zhask"
+      ],
+      "correct": [
+        0
+      ]
+    },
+    {
+      "number": 75,
+      "text": "Кто из персонажей MLBB по знаку зодиака - Скорпион?",
+      "options": [
+        "Zhask",
+        "Helcurt",
+        "Martis",
+        "Lancelot"
+      ],
+      "correct": [
+        1
+      ]
+    },
+    {
+      "number": 76,
+      "text": "Кто из персонажей MLBB по знаку зодиака - Дева?",
+      "options": [
+        "Lunox",
+        "Odette",
+        "Irithel",
+        "Aurora"
+      ],
+      "correct": [
+        1
+      ]
+    },
+    {
+      "number": 77,
+      "text": "Как называется эпик скин на Akai?",
+      "options": [
+        "Child of the Fall",
+        "Imperial Assassin",
+        "Wizardry Teacher",
+        "Hawkwatch"
+      ],
+      "correct": [
+        1
+      ]
+    },
+    {
+      "number": 78,
+      "text": "Как называется эпик скин на Alpha?",
+      "options": [
+        "Count Dracula",
+        "Skylark",
+        "Onimusha Commander",
+        "Astral Wanderer"
+      ],
+      "correct": [
+        2
+      ]
+    },
+    {
+      "number": 79,
+      "text": "Как называется эпик скин на Alice?",
+      "options": [
+        "Rakshesha",
+        "Wizardry Teacher",
+        "War Angel",
+        "Automata"
+      ],
+      "correct": [
+        1
+      ]
+    },
+    {
+      "number": 80,
+      "text": "Как называется эпик скин на Alucard?",
+      "options": [
+        "Flower Fairy",
+        "God of War",
+        "Christmas Cheer",
+        "Child of the Fall"
+      ],
+      "correct": [
+        3
+      ]
+    },
+    {
+      "number": 81,
+      "text": "Как называется эпик скин на Angela?",
+      "options": [
+        "V.E.N.O.M. Monitor Lizard",
+        "V.E.N.O.M. Vespid",
+        "V.E.N.O.M. Nephila",
+        "V.E.N.O.M. Octopus"
+      ],
+      "correct": [
+        1
+      ]
+    },
+    {
+      "number": 82,
+      "text": "Как называется эпик скин на Argus?",
+      "options": [
+        "Skylark",
+        "Cataclysm",
+        "Hellfire",
+        "Bone Flamen"
+      ],
+      "correct": [
+        1
+      ]
+    },
+    {
+      "number": 83,
+      "text": "Как называется эпик скин на Bane?",
+      "options": [
+        "Count Dracula",
+        "Dragon Boy",
+        "Bone Flamen",
+        "Phantom Pirate"
+      ],
+      "correct": [
+        0
+      ]
+    },
+    {
+      "number": 84,
+      "text": "Как называется эпик скин на Chou?",
+      "options": [
+        "Christmas Cheer",
+        "Dragon Boy",
+        "Flower Fairy",
+        "Stellaris Ghost"
+      ],
+      "correct": [
+        1
+      ]
+    },
+    {
+      "number": 85,
+      "text": "Как называется эпик скин на Claude?",
+      "options": [
+        "Emerald Enchantress",
+        "Mecha Dragon",
+        "Sentinel",
+        "Shadow of Obscurity"
+      ],
+      "correct": [
+        1
+      ]
+    },
+    {
+      "number": 86,
+      "text": "Как называется эпик скин на Cyclops?",
+      "options": [
+        "S.A.B.E.R. Savior",
+        "S.A.B.E.R. Regulator",
+        "S.A.B.E.R. Breacher",
+        "S.A.B.E.R. Exploder"
+      ],
+      "correct": [
+        3
+      ]
+    },
+    {
+      "number": 87,
+      "text": "Как называется эпик скин на Estes?",
+      "options": [
+        "Valhalla Ruler",
+        "Sentinel",
+        "Galaxy Dominator",
+        "Hawkwatch"
+      ],
+      "correct": [
+        2
+      ]
+    },
+    {
+      "number": 88,
+      "text": "Как называется эпик скин на Eudora?",
+      "options": [
+        "Emerald Enchantress",
+        "Skylark",
+        "Stellaris Ghost",
+        "Gill-Girl"
+      ],
+      "correct": [
+        0
+      ]
+    },
+    {
+      "number": 89,
+      "text": "Как называется эпик скин на Fanny?",
+      "options": [
+        "Child of the Fall",
+        "Skylark",
+        "War Angel",
+        "Lady Zombie"
+      ],
+      "correct": [
+        1
+      ]
+    },
+    {
+      "number": 90,
+      "text": "Как называется эпик скин на Franco?",
+      "options": [
+        "Dr Beast",
+        "Valhalla Ruler",
+        "Onimaru",
+        "Sanguine Rose"
+      ],
+      "correct": [
+        1
+      ]
+    },
+    {
+      "number": 91,
+      "text": "Как называется эпик скин на Freya?",
+      "options": [
+        "Twilight Dragon",
+        "Astral Wanderer",
+        "Sentinel",
+        "War Angel"
+      ],
+      "correct": [
+        3
+      ]
+    },
+    {
+      "number": 92,
+      "text": "Как называется эпик скин на Gatotkaca?",
+      "options": [
+        "Rakshesha",
+        "Sentinel",
+        "Astral Wanderer",
+        "Phantom Pirate"
+      ],
+      "correct": [
+        1
+      ]
+    },
+    {
+      "number": 93,
+      "text": "Как называется эпик скин на Grock?",
+      "options": [
+        "V.E.N.O.M. Monitor Lizard",
+        "V.E.N.O.M. Emperor Scorpion",
+        "V.E.N.O.M. Vespid",
+        "V.E.N.O.M. Nephila"
+      ],
+      "correct": [
+        0
+      ]
+    },
+    {
+      "number": 94,
+      "text": "Как называется эпик скин на Gusion?",
+      "options": [
+        "V.E.N.O.M. Monitor Lizard",
+        "V.E.N.O.M. Emperor Scorpion",
+        "V.E.N.O.M. Nephila",
+        "V.E.N.O.M. Octopus"
+      ],
+      "correct": [
+        1
+      ]
+    },
+    {
+      "number": 95,
+      "text": "Как называется эпик скин на Hanabi?",
+      "options": [
+        "V.E.N.O.M. Emperor Scorpion",
+        "V.E.N.O.M. Nephila",
+        "V.E.N.O.M. Octopus",
+        "V.E.N.O.M. Vespid"
+      ],
+      "correct": [
+        1
+      ]
+    },
+    {
+      "number": 96,
+      "text": "Как называется эпик скин на Harley?",
+      "options": [
+        "Hellfire",
+        "Great Inventor",
+        "Onimaru",
+        "Virus"
+      ],
+      "correct": [
+        1
+      ]
+    },
+    {
+      "number": 97,
+      "text": "Как называется эпик скин на Johnson?",
+      "options": [
+        "Grim Strangler",
+        "Skyblocker",
+        "Hellfire",
+        "Automata"
+      ],
+      "correct": [
+        3
+      ]
+    },
+    {
+      "number": 98,
+      "text": "Как называется эпик скин на Kagura?",
+      "options": [
+        "Royal Matador",
+        "Soryu Maiden",
+        "Doom Duelist",
+        "Flower Fairy"
+      ],
+      "correct": [
+        1
+      ]
+    },
+    {
+      "number": 99,
+      "text": "Как называется эпик скин на Karrie?",
+      "options": [
+        "Doom Duelist",
+        "Gill-Girl",
+        "Grim Strangler",
+        "Lady Zombie"
+      ],
+      "correct": [
+        1
+      ]
+    },
+    {
+      "number": 100,
+      "text": "Как называется эпик скин на Leomord?",
+      "options": [
+        "Video-Game Dominator",
+        "Stellaris Ghost",
+        "Mecha Dragon",
+        "Inferno Soul"
+      ],
+      "correct": [
+        3
+      ]
+    }
+  ]
+}
