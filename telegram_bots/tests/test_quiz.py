@@ -137,7 +137,7 @@ def test_correct_answer_raises_iq_and_shows_explanation(db, player):
     ask(db, 1, number=42)
     result = answer(db, player, 1, "mlbb2", 42, correct)
     assert result.outcome is Outcome.CORRECT and "101" in result.text
-    assert "Правильна відповідь: Мьянмы" in result.text and "Кьянзитта" in result.text
+    assert "Правильный ответ: Мьянмы" in result.text and "Кьянзитта" in result.text
     assert iq_of(db, player) == 101
 
 
@@ -208,16 +208,16 @@ def test_questions_do_not_repeat_until_the_season_ends(db, player):
 
 def test_expired_text_reveals_the_answer():
     text = quiz.expired_text(quiz.get_question("mlbb2", 1))
-    assert "Час вийшов" in text and "Правильна відповідь: Moonton" in text
+    assert "Время вышло" in text and "Правильный ответ: Moonton" in text
 
 
 def test_formatting():
-    assert quiz.format_answered([]).startswith("Ото лінива срака")
+    assert quiz.format_answered([]).startswith("Вот ленивая срака")
     assert quiz.format_answered([3, 7]).endswith("3,7,")
     leaders = quiz.format_leaders([("B", 2), ("A", 1)], "mlbb2", 3)
-    assert leaders.startswith("Лідери у дисципліні MLBB 2, сезон 3") and "B: 2 вірних" in leaders
+    assert leaders.startswith("Лидеры в дисциплине MLBB 2, сезон 3") and "B: 2 верных" in leaders
     listing = quiz.format_disciplines("mlbb2")
-    assert "👉 mlbb2: MLBB 2 (50 питань)" in listing and "geo: Географія" in listing
+    assert "👉 mlbb2: MLBB 2 (50 вопросов)" in listing and "geo: География" in listing
 
 
 @pytest.mark.parametrize(

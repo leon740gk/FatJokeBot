@@ -25,7 +25,7 @@ async def stream_command(message: Message):
 @router.message(Command("chat_id"))
 async def chat_id_command(message: Message):
     # handy for FAT_JOKE_MAIN_CHAT_ID in .env
-    await message.answer(f"ID цього чату: {message.chat.id}")
+    await message.answer(f"ID этого чата: {message.chat.id}")
 
 
 @router.message(Command("show_iq"))
@@ -40,7 +40,7 @@ def discipline_from_args(command: CommandObject, db):
     return quiz.find_discipline(command.args)
 
 
-UNKNOWN_TOPIC = "Не знаю такої теми 🤔\n\n"
+UNKNOWN_TOPIC = "Не знаю такой темы 🤔\n\n"
 
 
 @router.message(Command("show_leaders"))
@@ -84,7 +84,7 @@ async def quiz_command(message: Message, command: CommandObject, db):
         await message.answer(UNKNOWN_TOPIC + picker.text, reply_markup=build_keyboard(picker))
         return
     if not await ask_if_free(message, db, discipline):
-        await message.answer(f"Спочатку відповідайте на попереднє питання з теми {quiz.title(discipline)}! ☝️")
+        await message.answer(f"Сначала ответьте на предыдущий вопрос по теме {quiz.title(discipline)}! ☝️")
 
 
 async def is_chat_admin(message: Message):
@@ -104,7 +104,7 @@ async def discipline_command(message: Message, command: CommandObject, db):
         await message.answer(UNKNOWN_TOPIC + quiz.format_disciplines(quiz.current_discipline(db)))
         return
     if not await is_chat_admin(message):
-        await message.answer("Змінювати дисципліну можуть тільки адміни чату 😈")
+        await message.answer("Менять дисциплину могут только админы чата 😈")
         return
     quiz.set_discipline(db, code)
-    await message.answer(f"Тепер питання за розкладом з теми {quiz.title(code)}! Наступне питання: /quiz")
+    await message.answer(f"Теперь вопросы по расписанию на тему {quiz.title(code)}! Следующий вопрос: /quiz")

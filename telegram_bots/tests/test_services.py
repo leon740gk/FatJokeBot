@@ -21,7 +21,7 @@ def test_one_reply_per_keyword_group():
 
 def test_text_triggers_several_kinds_of_replies():
     replies = text_reactions("який жах", rng=FakeRandom())
-    assert Reply("text", "Я ж кажу, який жах...") in replies
+    assert Reply("text", "Я ж говорю, какой ужас...") in replies
     assert Reply("photo", sternenko) in replies
 
 
@@ -32,7 +32,7 @@ def test_philosophy_appears_by_chance():
 
 def test_special_sticker_always_answered():
     replier = StickerReplier(chance=0, rng=FakeRandom())
-    assert replier.reply_for(1, dick_short) == Reply("text", "Опапа! Внєзапно!")
+    assert replier.reply_for(1, dick_short) == Reply("text", "Опапа! Внезапно!")
 
 
 def test_ordinary_sticker_respects_chance_and_cooldown():
@@ -47,7 +47,7 @@ def test_ordinary_sticker_respects_chance_and_cooldown():
 
 @pytest.mark.parametrize(
     "iq_level, title",
-    [(-5, "Пускає слину..."), (70, "Пускає слину..."), (71, "Мавпа з гранатою"), (171, "Кодзіма нервово курить...")],
+    [(-5, "Пускает слюни..."), (70, "Пускает слюни..."), (71, "Обезьяна с гранатой"), (171, "Кодзима нервно курит...")],
 )
 def test_iq_levels(iq_level, title):
     assert iq.level_for(iq_level)[0] == title
@@ -65,7 +65,7 @@ def test_change_message():
 
 @pytest.mark.parametrize(
     "days, word",
-    [(1, "день"), (2, "дні"), (4, "дні"), (5, "днів"), (11, "днів"), (14, "днів"), (21, "день"), (111, "днів")],
+    [(1, "день"), (2, "дня"), (4, "дня"), (5, "дней"), (11, "дней"), (14, "дней"), (21, "день"), (111, "дней")],
 )
 def test_days_word(days, word):
     assert texts.days_word(days) == word
@@ -73,13 +73,13 @@ def test_days_word(days, word):
 
 def test_miss_you_message():
     assert texts.miss_you_message([]) is None
-    assert "Alex @alex, про тебе ми не чули вже 3 дні" in texts.miss_you_message([("Alex", "alex", 3)])
+    assert "Alex @alex, о тебе мы не слышали уже 3 дня" in texts.miss_you_message([("Alex", "alex", 3)])
 
 
 def test_hour_message():
     assert texts.hour_message("19", "18", rng=FakeRandom()) == (
         f"Бам!!! Говорит Омниссия!\n🇺🇦 19:00 - час {hour_phrases['ua']['evening'][0]}!\n"
-        f"🇩🇪 18:00 - час {hour_phrases['de']['evening'][0]}!"
+        f"🇩🇪 18:00 - время {hour_phrases['de']['evening'][0]}!"
     )
 
 

@@ -24,15 +24,15 @@ async def topic_callback(callback: CallbackQuery, db):
     message = callback.message
     discipline = quiz.parse_topic_callback(callback.data)
     if not isinstance(message, Message) or not discipline:
-        await callback.answer("Ця кнопка вже не працює, напишіть /quiz")
+        await callback.answer("Эта кнопка уже не работает, напишите /quiz")
         return
     if quiz_db.is_quiz_message(db, message.chat.id, message.message_id):
         # someone else picked a topic on this message a moment earlier
-        await callback.answer("Тему вже вибрали")
+        await callback.answer("Тему уже выбрали")
         return
     if quiz_db.get_open_question(db, message.chat.id, discipline):
         await callback.answer(
-            f"Спочатку відповідайте на попереднє питання з теми {quiz.title(discipline)}!", show_alert=True
+            f"Сначала ответьте на предыдущий вопрос по теме {quiz.title(discipline)}!", show_alert=True
         )
         return
     await callback.answer()
@@ -44,13 +44,13 @@ async def answer_callback(callback: CallbackQuery, db):
     message = callback.message
     if not isinstance(message, Message):
         # too old for the bot to edit
-        await callback.answer("Це питання вже закрите")
+        await callback.answer("Этот вопрос уже закрыт")
         return
 
     result = quiz.process_answer(db, callback.from_user.id, message.chat.id, message.message_id, callback.data)
     logger.info("answer from %s: %s -> %s", callback.from_user.id, callback.data, result.outcome.value)
     if result.outcome is Outcome.CLOSED:
-        await callback.answer("Це питання вже закрите")
+        await callback.answer("Этот вопрос уже закрыт")
         return
 
     await callback.answer()

@@ -82,7 +82,7 @@ def parse_topic_callback(data):
 def render_topic_picker():
     """Buttons with all disciplines for "/quiz" without a topic, two per row."""
     buttons = [(discipline.title, topic_callback_data(code)) for code, discipline in DISCIPLINES.items()]
-    return RenderedQuestion("Яку тему хочете? 👇", [buttons[i : i + 2] for i in range(0, len(buttons), 2)])
+    return RenderedQuestion("Какую тему хотите? 👇", [buttons[i : i + 2] for i in range(0, len(buttons), 2)])
 
 
 def get_question(discipline, number):
@@ -142,7 +142,7 @@ def parse_callback(data):
 
 def answer_details(question):
     correct = ", ".join(question.correct_options())
-    details = f"Правильна відповідь: {correct}"
+    details = f"Правильный ответ: {correct}"
     if question.explanation:
         details += f"\n{question.explanation}"
     return details
@@ -171,38 +171,38 @@ def process_answer(db, user_id, chat_id, message_id, callback_data):
 
 def expired_text(question):
     header = f"{title(question.discipline)}.\n{question.text}"
-    return f"{header}\n\n⏰ Час вийшов, ніхто не відповів!\n{answer_details(question)}"
+    return f"{header}\n\n⏰ Время вышло, никто не ответил!\n{answer_details(question)}"
 
 
 def format_answered(numbers):
     if not numbers:
-        return "Ото лінива срака! На жодне питання ще не відповіли ("
-    return "Ви вже відповіли на наступні питання:\n" + "".join(f"{number}," for number in numbers)
+        return "Вот ленивая срака! Ещё ни на один вопрос не ответили ("
+    return "Вы уже ответили на следующие вопросы:\n" + "".join(f"{number}," for number in numbers)
 
 
 def format_leaders(rows, discipline, season):
-    lines = [f"Лідери у дисципліні {title(discipline)}, сезон {season}\nvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv\n"]
+    lines = [f"Лидеры в дисциплине {title(discipline)}, сезон {season}\nvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv\n"]
     for name, answers_count in rows:
-        lines.append(f"{name}: {answers_count} вірних відповідей\n==============================\n")
+        lines.append(f"{name}: {answers_count} верных ответов\n==============================\n")
     return "".join(lines)
 
 
 def format_season_end(discipline, season, winners):
-    lines = [f"🏁 Сезон {season} у дисципліні {title(discipline)} завершено! Питання закінчились.\n"]
+    lines = [f"🏁 Сезон {season} в дисциплине {title(discipline)} завершён! Вопросы закончились.\n"]
     if winners:
-        lines.append("Переможці:\n")
+        lines.append("Победители:\n")
         lines.extend(f"{iq.PRIZES.get(place, '')}{name}: {count}\n" for place, (name, count) in enumerate(winners, 1))
     else:
-        lines.append("Переможців немає, ніхто не відповів правильно (\n")
-    lines.append(f"\nПочинаємо сезон {season + 1}!")
+        lines.append("Победителей нет, никто не ответил правильно (\n")
+    lines.append(f"\nНачинаем сезон {season + 1}!")
     return "".join(lines)
 
 
 def format_disciplines(current):
-    lines = ["Дисципліни вікторини:\n"]
+    lines = ["Дисциплины викторины:\n"]
     for code, discipline in DISCIPLINES.items():
         marker = "👉 " if code == current else ""
-        lines.append(f"{marker}{code}: {discipline.title} ({len(discipline.questions)} питань)\n")
-    lines.append("\nПитання з будь-якої теми: /quiz <тема>, наприклад /quiz мобла")
-    lines.append("\nЗмінити тему питань за розкладом (тільки адміни чату): /discipline <тема>")
+        lines.append(f"{marker}{code}: {discipline.title} ({len(discipline.questions)} вопросов)\n")
+    lines.append("\nВопрос на любую тему: /quiz <тема>, например /quiz мобла")
+    lines.append("\nСменить тему вопросов по расписанию (только админы чата): /discipline <тема>")
     return "".join(lines)

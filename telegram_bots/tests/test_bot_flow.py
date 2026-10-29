@@ -115,9 +115,9 @@ def test_help_command_replies_and_registers_user(db, bot, dispatcher):
 
 def test_text_keywords_reply_once_per_group(db, bot, dispatcher, monkeypatch):
     monkeypatch.setattr("telegram_bots.bots.fat_joke.services.reactions.PHILOSOPHY_CHANCE", 0)
-    feed(dispatcher, bot, **text_update(user(7, "Newbie"), "Сергій, серега, слава україні"))
+    feed(dispatcher, bot, **text_update(user(7, "Newbie"), "Сергій, серега, хайль"))
     texts = [request.text for request in bot.session.of_type(methods.SendMessage)]
-    assert len(texts) == 2 and "Героям Слава!!!" in texts
+    assert len(texts) == 1 and texts[0].startswith("10 правил Серджио")
     assert len(bot.session.of_type(methods.SendSticker)) == 1
 
 
@@ -140,19 +140,19 @@ def test_quiz_round(db, bot, dispatcher):
 
     feed(dispatcher, bot, **press(user(7, "Alex"), message_id, buttons[0].callback_data))
     edited = bot.session.of_type(methods.EditMessageText)[-1].text
-    assert "Правильна відповідь:" in edited
+    assert "Правильный ответ:" in edited
     assert users_db.get_iq_and_name(db, 7)[0] == (101 if is_correct else 99)
 
     # Bob presses a button on the same message a moment later: nothing is counted
     feed(dispatcher, bot, **press(user(8, "Bob"), message_id, buttons[1].callback_data))
-    assert bot.session.of_type(methods.AnswerCallbackQuery)[-1].text == "Це питання вже закрите"
+    assert bot.session.of_type(methods.AnswerCallbackQuery)[-1].text == "Этот вопрос уже закрыт"
     assert users_db.get_iq_and_name(db, 8)[0] == 100
 
     # the same question asked again in the same season: Alex is caught cheating
     quiz_db.save_quiz_message(db, CHAT.id, 5000, parsed.discipline, 1, parsed.number)
     feed(dispatcher, bot, **press(user(7, "Alex"), 5000, buttons[1].callback_data))
     assert bot.session.of_type(methods.SendAnimation)[-1].animation == red_blink
-    assert "Чітер в чаті" in bot.session.of_type(methods.EditMessageText)[-1].text
+    assert "Читер в чате" in bot.session.of_type(methods.EditMessageText)[-1].text
 
 
 def test_quiz_command_with_topic_asks_once_per_topic(db, bot, dispatcher):
@@ -161,7 +161,7 @@ def test_quiz_command_with_topic_asks_once_per_topic(db, bot, dispatcher):
     feed(dispatcher, bot, **text_update(user(8, "Bob"), "/quiz по бухгалтерии"))
     texts = [request.text for request in bot.session.of_type(methods.SendMessage)]
     assert texts[0].startswith("MLBB 2.")
-    assert texts[1].startswith("Спочатку відповідайте на попереднє питання з теми MLBB 2")
+    assert texts[1].startswith("Сначала ответьте на предыдущий вопрос по теме MLBB 2")
     assert texts[2].startswith("Бухгалтерия.")
     assert {row[0] for row in db.fetch_all("SELECT discipline FROM QuizMessages")} == {"mlbb2", "accounting"}
 
@@ -170,7 +170,7 @@ def test_quiz_command_without_topic_shows_picker(db, bot, dispatcher):
     feed(dispatcher, bot, **text_update(user(7, "Alex"), "/quiz"))
     picker = bot.session.of_type(methods.SendMessage)[-1]
     buttons = {button.text: button.callback_data for row in picker.reply_markup.inline_keyboard for button in row}
-    assert picker.text.startswith("Яку тему") and buttons["Бухгалтерия"] == "t accounting"
+    assert picker.text.startswith("Какую тему") and buttons["Бухгалтерия"] == "t accounting"
     picker_id = bot.session.next_message_id
 
     feed(dispatcher, bot, **press(user(8, "Bob"), picker_id, "t accounting"))
@@ -180,7 +180,7 @@ def test_quiz_command_without_topic_shows_picker(db, bot, dispatcher):
 
     # a second press on the same picker doesn't overwrite the question
     feed(dispatcher, bot, **press(user(7, "Alex"), picker_id, "t geo"))
-    assert bot.session.of_type(methods.AnswerCallbackQuery)[-1].text == "Тему вже вибрали"
+    assert bot.session.of_type(methods.AnswerCallbackQuery)[-1].text == "Тему уже выбрали"
     assert quiz_db.get_open_question(db, CHAT.id, "geo") is None
 
 
@@ -195,14 +195,14 @@ def test_picker_refuses_topic_with_open_question(db, bot, dispatcher):
 def test_quiz_command_with_unknown_topic_shows_picker(db, bot, dispatcher):
     feed(dispatcher, bot, **text_update(user(7, "Alex"), "/quiz ерунда"))
     message = bot.session.of_type(methods.SendMessage)[-1]
-    assert message.text.startswith("Не знаю такої теми") and message.reply_markup
+    assert message.text.startswith("Не знаю такой темы") and message.reply_markup
 
 
 def test_leaders_for_a_named_topic(db, bot, dispatcher):
     feed(dispatcher, bot, **text_update(user(7, "Alex"), "/show_leaders бух"))
-    assert bot.session.of_type(methods.SendMessage)[-1].text.startswith("Лідери у дисципліні Бухгалтерия, сезон 1")
+    assert bot.session.of_type(methods.SendMessage)[-1].text.startswith("Лидеры в дисциплине Бухгалтерия, сезон 1")
     feed(dispatcher, bot, **text_update(user(7, "Alex"), "/already_answered_questions гео"))
-    assert bot.session.of_type(methods.SendMessage)[-1].text.startswith("Ото лінива срака")
+    assert bot.session.of_type(methods.SendMessage)[-1].text.startswith("Вот ленивая срака")
 
 
 def test_discipline_command(db, bot, dispatcher):
@@ -210,16 +210,16 @@ def test_discipline_command(db, bot, dispatcher):
     assert "👉 mlbb2" in bot.session.of_type(methods.SendMessage)[-1].text
 
     feed(dispatcher, bot, **text_update(user(7, "Alex"), "/discipline гео"))
-    assert "тільки адміни" in bot.session.of_type(methods.SendMessage)[-1].text
+    assert "только админы" in bot.session.of_type(methods.SendMessage)[-1].text
     assert quiz.current_discipline(db) == "mlbb2"
 
     bot.session.admins.add(7)
     feed(dispatcher, bot, **text_update(user(7, "Alex"), "/discipline nope"))
-    assert "Не знаю такої теми" in bot.session.of_type(methods.SendMessage)[-1].text
-    feed(dispatcher, bot, **text_update(user(7, "Alex"), "/discipline географія"))
+    assert "Не знаю такой темы" in bot.session.of_type(methods.SendMessage)[-1].text
+    feed(dispatcher, bot, **text_update(user(7, "Alex"), "/discipline география"))
     assert quiz.current_discipline(db) == "geo"
     asyncio.run(scheduled_question(bot, db, chat_id=CHAT.id))
-    assert bot.session.of_type(methods.SendMessage)[-1].text.startswith("Географія.")
+    assert bot.session.of_type(methods.SendMessage)[-1].text.startswith("География.")
 
 
 def test_expired_question_is_closed_with_the_answer(db, bot):
@@ -227,7 +227,7 @@ def test_expired_question_is_closed_with_the_answer(db, bot):
     db.execute("UPDATE QuizMessages SET created_at = datetime('now', '-20 minutes')")
     asyncio.run(close_expired_questions(bot, db, minutes=15))
     edit = bot.session.of_type(methods.EditMessageText)[-1]
-    assert edit.message_id == bot.session.next_message_id and "Час вийшов" in edit.text
+    assert edit.message_id == bot.session.next_message_id and "Время вышло" in edit.text
     assert quiz_db.get_open_question(db, CHAT.id) is None
 
 
@@ -254,7 +254,7 @@ def test_season_end_is_announced(db, bot, monkeypatch):
 
 def test_old_buttons_are_closed(db, bot, dispatcher):
     feed(dispatcher, bot, **press(user(7, "Alex"), 1, "correct 5"))
-    assert bot.session.of_type(methods.AnswerCallbackQuery)[-1].text == "Це питання вже закрите"
+    assert bot.session.of_type(methods.AnswerCallbackQuery)[-1].text == "Этот вопрос уже закрыт"
     assert not bot.session.of_type(methods.EditMessageText)
 
 
@@ -307,7 +307,7 @@ def test_scheduler_backup_job(db, bot, tmp_path):
 
 def test_chat_id_command(db, bot, dispatcher):
     feed(dispatcher, bot, **text_update(user(7, "Alex"), "/chat_id"))
-    assert bot.session.of_type(methods.SendMessage)[-1].text == f"ID цього чату: {CHAT.id}"
+    assert bot.session.of_type(methods.SendMessage)[-1].text == f"ID этого чата: {CHAT.id}"
 
 
 def test_missing_chat_is_logged_not_raised(db, bot, caplog):
