@@ -10,6 +10,7 @@ from telegram_bots.knowledge_base.fat_joke.reaction_data import (
     sternenko,
     sticker_responses,
 )
+from telegram_bots.knowledge_base.fat_joke.timer_data import hour_phrases
 from telegram_bots.tests.conftest import FakeRandom
 
 
@@ -76,4 +77,20 @@ def test_miss_you_message():
 
 
 def test_hour_message():
-    assert texts.hour_message("13") == "Бам!!!\nЧас дня блеать! Можна на годинник не дивицця!"
+    assert texts.hour_message("19", "18", rng=FakeRandom()) == (
+        f"Бам!!! Говорит Омниссия!\n🇺🇦 19:00 - час {hour_phrases['ua']['evening'][0]}!\n"
+        f"🇩🇪 18:00 - час {hour_phrases['de']['evening'][0]}!"
+    )
+
+
+def test_day_part_for_hours_around_midnight():
+    assert [texts.day_part(hour) for hour in (0, 5, 6, 11, 12, 17, 18, 23)] == [
+        "night",
+        "night",
+        "morning",
+        "morning",
+        "day",
+        "day",
+        "evening",
+        "evening",
+    ]

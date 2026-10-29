@@ -1,8 +1,25 @@
-from telegram_bots.knowledge_base.fat_joke.timer_data import time_mapper
+import random
+
+from telegram_bots.knowledge_base.fat_joke.timer_data import hour_phrases
 
 
-def hour_message(hour):
-    return f"Бам!!!\n{time_mapper.get(hour)} блеать! Можна на годинник не дивицця!"
+def day_part(hour):
+    if hour < 6:
+        return "night"
+    if hour < 12:
+        return "morning"
+    if hour < 18:
+        return "day"
+    return "evening"
+
+
+def hour_message(hour, germany_hour, rng=random):
+    """Hours are "HH" strings, each country gets a "time to ..." phrase for its own part of the day."""
+    lines = ["Бам!!! Говорит Омниссия!"]
+    for flag, country, country_hour in (("🇺🇦", "ua", hour), ("🇩🇪", "de", germany_hour)):
+        phrase = rng.choice(hour_phrases[country][day_part(int(country_hour))])
+        lines.append(f"{flag} {country_hour}:00 - час {phrase}!")
+    return "\n".join(lines)
 
 
 def days_word(days):

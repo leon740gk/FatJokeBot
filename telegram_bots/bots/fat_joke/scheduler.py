@@ -18,6 +18,7 @@ from telegram_bots.knowledge_base.fat_joke.reaction_data import wanted
 
 logger = logging.getLogger(__name__)
 KYIV = ZoneInfo("Europe/Kyiv")
+GERMANY = ZoneInfo("Europe/Berlin")
 NOT_IN_CHAT_HINT = "is the bot a member of this chat? Check FAT_JOKE_MAIN_CHAT_ID, /chat_id shows the id of any chat"
 
 
@@ -56,7 +57,8 @@ async def check_chat(bot, chat_id):
 
 @chat_job
 async def hourly_bam(bot, chat_id):
-    await bot.send_message(chat_id, texts.hour_message(datetime.now(KYIV).strftime("%H")))
+    now = datetime.now(KYIV)
+    await bot.send_message(chat_id, texts.hour_message(now.strftime("%H"), now.astimezone(GERMANY).strftime("%H")))
 
 
 def build_keyboard(rendered):
