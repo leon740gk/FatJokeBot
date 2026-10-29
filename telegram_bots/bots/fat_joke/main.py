@@ -19,6 +19,7 @@ from telegram_bots.config import (
     MISS_YOU_ENABLED,
     QUIZ_ANSWER_MINUTES,
     QUIZ_QUIET_HOURS,
+    QUIZ_SCHEDULE_ENABLED,
     get_bot_token,
 )
 
@@ -53,6 +54,7 @@ async def main():
         db_path=DB_PATH,
         backup_dir=BACKUP_DIR,
         answer_minutes=QUIZ_ANSWER_MINUTES,
+        quiz_schedule_enabled=QUIZ_SCHEDULE_ENABLED,
         quiet_hours=parse_quiet_hours(QUIZ_QUIET_HOURS),
     )
     scheduler.start()

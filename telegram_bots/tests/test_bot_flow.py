@@ -284,16 +284,14 @@ def test_ordinary_stickers_do_not_spam(db, bot, dispatcher, monkeypatch):
 
 
 def test_scheduler_jobs(db, bot):
-    async def job_ids(chat_id, miss_you):
-        return sorted(job.func.__name__ for job in create_scheduler(bot, db, chat_id, miss_you).get_jobs())
+    async def job_ids(chat_id, miss_you, quiz_schedule=False):
+        scheduler = create_scheduler(bot, db, chat_id, miss_you, quiz_schedule_enabled=quiz_schedule)
+        return sorted(job.func.__name__ for job in scheduler.get_jobs())
 
     assert asyncio.run(job_ids("", False)) == ["close_expired_questions", "update_activity"]
-    assert asyncio.run(job_ids(CHAT.id, False)) == [
-        "close_expired_questions",
-        "hourly_bam",
-        "scheduled_question",
-        "update_activity",
-    ]
+    # questions only on /quiz unless the schedule is switched on
+    assert asyncio.run(job_ids(CHAT.id, False)) == ["close_expired_questions", "hourly_bam", "update_activity"]
+    assert "scheduled_question" in asyncio.run(job_ids(CHAT.id, False, quiz_schedule=True))
     assert "we_miss_you" in asyncio.run(job_ids(CHAT.id, True))
 
 

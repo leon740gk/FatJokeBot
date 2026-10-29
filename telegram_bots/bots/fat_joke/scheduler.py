@@ -138,6 +138,7 @@ def create_scheduler(
     db_path=None,
     backup_dir=None,
     answer_minutes=15,
+    quiz_schedule_enabled=False,
     quiet_hours=None,
 ):
     scheduler = AsyncIOScheduler(timezone=KYIV)
@@ -161,12 +162,13 @@ def create_scheduler(
         return scheduler
 
     scheduler.add_job(hourly_bam, "cron", minute=0, kwargs={"bot": bot, "chat_id": chat_id})
-    scheduler.add_job(
-        scheduled_question,
-        "interval",
-        minutes=20,
-        kwargs={"bot": bot, "db": db, "chat_id": chat_id, "quiet_hours": quiet_hours},
-    )
+    if quiz_schedule_enabled:
+        scheduler.add_job(
+            scheduled_question,
+            "interval",
+            minutes=20,
+            kwargs={"bot": bot, "db": db, "chat_id": chat_id, "quiet_hours": quiet_hours},
+        )
     if miss_you_enabled:
         scheduler.add_job(we_miss_you, "cron", hour=15, minute=0, kwargs={"bot": bot, "db": db, "chat_id": chat_id})
     return scheduler
