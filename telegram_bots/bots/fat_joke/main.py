@@ -3,6 +3,8 @@ import logging
 from pathlib import Path
 
 from aiogram import Bot, Dispatcher
+from aiogram.exceptions import TelegramAPIError
+from aiogram.types import BotCommand
 
 from telegram_bots.bots.fat_joke.db.backup import backup_if_stale
 from telegram_bots.bots.fat_joke.db.connection import Database
@@ -22,6 +24,15 @@ from telegram_bots.config import (
     QUIZ_SCHEDULE_ENABLED,
     get_bot_token,
 )
+from telegram_bots.knowledge_base.fat_joke.reaction_data import bot_commands
+
+
+async def set_commands(bot):
+    """Sends the "/" command menu to Telegram, so it always matches the code."""
+    try:
+        await bot.set_my_commands([BotCommand(command=name, description=text) for name, text in bot_commands.items()])
+    except TelegramAPIError as error:
+        logging.getLogger(__name__).warning("can't set the command menu: %s", error.message)
 
 
 def build_dispatcher(db):
@@ -61,6 +72,7 @@ async def main():
     try:
         # same as skip_pending in the old bot: ignore messages sent while it was offline
         await bot.delete_webhook(drop_pending_updates=True)
+        await set_commands(bot)
         if MAIN_CHAT_ID:
             await check_chat(bot, MAIN_CHAT_ID)
         await dispatcher.start_polling(bot)

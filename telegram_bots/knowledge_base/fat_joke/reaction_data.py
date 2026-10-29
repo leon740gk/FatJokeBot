@@ -162,10 +162,13 @@ commands_responses = {
 }
 
 
-# help - Help
-# stream - When is the next stream
-# show_iq - Show IQ level of the group
-# quiz - Quiz question, pick a topic
-# show_leaders - Show quiz leaders of the current season
-# already_answered_questions - Questions you answered this season
-# discipline - Quiz disciplines, admins can switch
+# the command menu Telegram shows when typing "/", the bot sends it on every start
+bot_commands = {
+    "quiz": "Вопрос викторины",
+    "show_leaders": "Лидеры сезона викторины",
+    "show_iq": "Уровень IQ группы",
+    "already_answered_questions": "На какие вопросы вы уже ответили",
+    "discipline": "Темы викторины",
+    "stream": "Когда следующий стрим",
+    "help": "Что умеет бот",
+}

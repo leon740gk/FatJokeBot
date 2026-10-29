@@ -33,7 +33,7 @@ from telegram_bots.bots.fat_joke.scheduler import (
     scheduled_question,
 )
 from telegram_bots.bots.fat_joke.services import quiz
-from telegram_bots.knowledge_base.fat_joke.reaction_data import red_blink
+from telegram_bots.knowledge_base.fat_joke.reaction_data import bot_commands, red_blink
 
 CHAT = Chat(id=-100500, type="supergroup", title="Test chat")
 BOT_USER = User(id=42, is_bot=True, first_name="FatJoke", username="fat_joke_bot")
@@ -323,3 +323,16 @@ def test_check_chat(db, bot, caplog):
     bot.session.missing_chats.add(-1)
     assert not asyncio.run(check_chat(bot, -1))
     assert "has left it" in caplog.text and "chat not found" in caplog.text
+
+
+def test_command_menu_has_a_handler_for_every_command(bot):
+    handled = {
+        name
+        for handler in commands.router.message.handlers
+        for command_filter in handler.filters
+        for name in getattr(command_filter.callback, "commands", ())
+    }
+    assert set(bot_commands) <= handled
+    asyncio.run(main.set_commands(bot))
+    sent = bot.session.of_type(methods.SetMyCommands)[-1]
+    assert [command.command for command in sent.commands] == list(bot_commands)
