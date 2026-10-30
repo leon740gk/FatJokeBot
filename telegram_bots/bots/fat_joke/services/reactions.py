@@ -2,7 +2,7 @@ import random
 from dataclasses import dataclass
 from datetime import datetime, timedelta
 
-from telegram_bots.knowledge_base.fat_joke.l_podreviansjkyi.philosophy import bot_philosophy
+from telegram_bots.knowledge_base.fat_joke.random_phrases import random_phrase_groups
 from telegram_bots.knowledge_base.fat_joke.reaction_data import (
     animation_to_text_reactions,
     photo_to_text_reactions,
@@ -45,7 +45,7 @@ def text_reactions(text, rng=random):
         + _matches(text, animation_to_text_reactions, "animation", rng)
     )
     if rng.random() < PHILOSOPHY_CHANCE:
-        replies.append(Reply("text", rng.choice(bot_philosophy)))
+        replies.append(Reply("text", rng.choice(rng.choice(random_phrase_groups))))
     return replies
 
 

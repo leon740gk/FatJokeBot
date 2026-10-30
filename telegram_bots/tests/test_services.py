@@ -1,9 +1,11 @@
 from datetime import datetime, timedelta
+from random import Random
 
 import pytest
 
 from telegram_bots.bots.fat_joke.services import iq, texts
 from telegram_bots.bots.fat_joke.services.reactions import Reply, StickerReplier, text_reactions
+from telegram_bots.knowledge_base.fat_joke.random_phrases import random_phrase_groups
 from telegram_bots.knowledge_base.fat_joke.reaction_data import (
     dick_short,
     sergios_rules,
@@ -28,6 +30,14 @@ def test_text_triggers_several_kinds_of_replies():
 def test_philosophy_appears_by_chance():
     assert text_reactions("нічого цікавого", rng=FakeRandom(0.99)) == []
     assert len(text_reactions("нічого цікавого", rng=FakeRandom(0.0))) == 1
+
+
+def test_random_phrase_groups_are_picked_evenly(monkeypatch):
+    # a group first, then a phrase in it, so 132 Podervianskyi quotes don't drown the facts
+    monkeypatch.setattr("telegram_bots.bots.fat_joke.services.reactions.PHILOSOPHY_CHANCE", 1)
+    assert all(random_phrase_groups) and len(random_phrase_groups) == 4
+    picked = {text_reactions("тишина", rng=Random(seed))[-1].value for seed in range(200)}
+    assert all(picked & set(group) for group in random_phrase_groups)
 
 
 def test_special_sticker_always_answered():
