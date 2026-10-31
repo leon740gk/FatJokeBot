@@ -1,4 +1,5 @@
 from aiogram import BaseMiddleware
+from aiogram.enums import ChatType
 
 from telegram_bots.bots.fat_joke.db import users as users_db
 
@@ -11,4 +12,8 @@ class UserActivityMiddleware(BaseMiddleware):
         if user and not user.is_bot:
             users_db.register(data["db"], user)
             users_db.touch_activity(data["db"], user.id)
+            chat = data.get("event_chat")
+            if chat and chat.type != ChatType.PRIVATE:
+                # writing in the group means they are in it, e.g. came back after leaving
+                users_db.set_in_chat(data["db"], user.id, True)
         return await handler(event, data)

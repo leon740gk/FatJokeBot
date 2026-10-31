@@ -14,8 +14,11 @@ def _required(name):
     return value
 
 
-def _flag(name):
-    return os.getenv(name, "").strip().lower() in ("1", "true", "yes", "on")
+def _flag(name, default=False):
+    value = os.getenv(name, "").strip().lower()
+    if not value:
+        return default
+    return value in ("1", "true", "yes", "on")
 
 
 def get_bot_token():
@@ -34,3 +37,5 @@ QUIZ_SCHEDULE_ENABLED = _flag("FAT_JOKE_QUIZ_SCHEDULE_ENABLED")
 QUIZ_QUIET_HOURS = os.getenv("FAT_JOKE_QUIZ_QUIET_HOURS", "0-8")
 # "we miss you" roll call of inactive members, was switched off in the old version
 MISS_YOU_ENABLED = _flag("FAT_JOKE_MISS_YOU_ENABLED")
+# a quote from the /save quote book in the main chat at 19:00 Kyiv time, skipped while the book is empty
+QUOTE_OF_THE_DAY_ENABLED = _flag("FAT_JOKE_QUOTE_OF_THE_DAY_ENABLED", default=True)

@@ -10,9 +10,10 @@ from aiogram.utils.keyboard import InlineKeyboardBuilder
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 
 from telegram_bots.bots.fat_joke.db import quiz as quiz_db
+from telegram_bots.bots.fat_joke.db import quotes as quotes_db
 from telegram_bots.bots.fat_joke.db import users as users_db
 from telegram_bots.bots.fat_joke.db.backup import backup_database
-from telegram_bots.bots.fat_joke.services import quiz, texts
+from telegram_bots.bots.fat_joke.services import quiz, quotes, texts
 from telegram_bots.bots.fat_joke.services.quiet_hours import is_quiet
 from telegram_bots.knowledge_base.fat_joke.reaction_data import wanted
 
@@ -126,6 +127,13 @@ async def we_miss_you(bot, db, chat_id):
         await bot.send_sticker(chat_id, wanted)
 
 
+@chat_job
+async def quote_of_the_day(bot, db, chat_id):
+    quote = quotes_db.take_least_shown(db, int(chat_id))
+    if quote:
+        await bot.send_message(chat_id, quotes.format_quote(quote, title="📜 Цитата дня"))
+
+
 async def backup(db_path, backup_dir):
     backup_database(db_path, backup_dir)
 
@@ -140,6 +148,7 @@ def create_scheduler(
     answer_minutes=15,
     quiz_schedule_enabled=False,
     quiet_hours=None,
+    quote_of_the_day_enabled=False,
 ):
     scheduler = AsyncIOScheduler(timezone=KYIV)
     scheduler.add_job(update_activity, "cron", hour=14, minute=55, kwargs={"db": db})
@@ -168,6 +177,10 @@ def create_scheduler(
             "interval",
             minutes=20,
             kwargs={"bot": bot, "db": db, "chat_id": chat_id, "quiet_hours": quiet_hours},
+        )
+    if quote_of_the_day_enabled:
+        scheduler.add_job(
+            quote_of_the_day, "cron", hour=19, minute=0, kwargs={"bot": bot, "db": db, "chat_id": chat_id}
         )
     if miss_you_enabled:
         scheduler.add_job(we_miss_you, "cron", hour=15, minute=0, kwargs={"bot": bot, "db": db, "chat_id": chat_id})

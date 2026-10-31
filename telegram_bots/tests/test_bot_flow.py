@@ -13,6 +13,8 @@ from aiogram.types import (
     ChatMemberLeft,
     ChatMemberMember,
     ChatMemberOwner,
+    ChatMemberRestricted,
+    ChatMemberUpdated,
     Message,
     Update,
     User,
@@ -22,17 +24,18 @@ from telegram_bots.bots.fat_joke import main
 from telegram_bots.bots.fat_joke import scheduler as scheduler_module
 from telegram_bots.bots.fat_joke.db import quiz as quiz_db
 from telegram_bots.bots.fat_joke.db import users as users_db
-from telegram_bots.bots.fat_joke.handlers import commands, reactions
-from telegram_bots.bots.fat_joke.handlers import quiz as quiz_handlers
+from telegram_bots.bots.fat_joke.handlers import fat_day as fat_day_handlers
+from telegram_bots.bots.fat_joke.handlers import reactions
 from telegram_bots.bots.fat_joke.scheduler import (
     ask_question,
     check_chat,
     close_expired_questions,
     create_scheduler,
     hourly_bam,
+    quote_of_the_day,
     scheduled_question,
 )
-from telegram_bots.bots.fat_joke.services import quiz
+from telegram_bots.bots.fat_joke.services import party, quiz
 from telegram_bots.knowledge_base.fat_joke.reaction_data import bot_commands, red_blink
 
 CHAT = Chat(id=-100500, type="supergroup", title="Test chat")
@@ -47,6 +50,9 @@ class FakeSession(BaseSession):
         self.admins = set()
         self.missing_chats = set()
         self.left_chats = set()
+        self.left_users = set()
+        self.muted_users = set()
+        self.unknown_users = set()
 
     async def make_request(self, bot, method, timeout=None):
         self.requests.append(method)
@@ -56,8 +62,14 @@ class FakeSession(BaseSession):
             return ChatMemberLeft(user=BOT_USER)
         if isinstance(method, methods.GetMe):
             return BOT_USER
+        if isinstance(method, methods.GetChatMember) and method.user_id in self.unknown_users:
+            raise TelegramBadRequest(method=method, message="Bad Request: PARTICIPANT_ID_INVALID")
         if isinstance(method, methods.GetChatMember):
-            member_user = User(id=method.user_id, is_bot=False, first_name="Someone")
+            member_user = User(id=method.user_id, is_bot=False, first_name=f"Name{method.user_id}")
+            if method.user_id in self.left_users:
+                return ChatMemberLeft(user=member_user)
+            if method.user_id in self.muted_users:
+                return muted(member_user)
             if method.user_id in self.admins:
                 return ChatMemberOwner(user=member_user, is_anonymous=False)
             return ChatMemberMember(user=member_user)
@@ -76,6 +88,12 @@ class FakeSession(BaseSession):
         return [request for request in self.requests if isinstance(request, method_type)]
 
 
+def muted(member_user):
+    # every can_* right off, taken from the model so new Bot API rights don't break the test
+    rights = {name: False for name in ChatMemberRestricted.model_fields if name.startswith("can_")}
+    return ChatMemberRestricted(user=member_user, is_member=True, until_date=datetime.now(), **rights)
+
+
 @pytest.fixture
 def bot():
     return Bot("42:TEST", session=FakeSession())
@@ -85,7 +103,7 @@ def bot():
 def dispatcher(db):
     yield main.build_dispatcher(db)
     # module level routers can belong to one dispatcher only, detach them for the next test
-    for router in (commands.router, quiz_handlers.router, reactions.router):
+    for router in main.ROUTERS:
         router._parent_router = None
 
 
@@ -99,6 +117,16 @@ def feed(dispatcher, bot, **update):
 
 def text_update(from_user, text, message_id=1):
     return {"message": Message(message_id=message_id, date=datetime.now(), chat=CHAT, from_user=from_user, text=text)}
+
+
+def reply_update(from_user, text, original_author, original_text, message_id=2, original_id=1):
+    original = Message(
+        message_id=original_id, date=datetime.now(), chat=CHAT, from_user=original_author, text=original_text
+    )
+    message = Message(
+        message_id=message_id, date=datetime.now(), chat=CHAT, from_user=from_user, text=text, reply_to_message=original
+    )
+    return {"message": message}
 
 
 def press(from_user, message_id, data):
@@ -291,6 +319,8 @@ def test_scheduler_jobs(db, bot):
     assert asyncio.run(job_ids("", False)) == ["close_expired_questions", "update_activity"]
     # questions only on /quiz unless the schedule is switched on
     assert asyncio.run(job_ids(CHAT.id, False)) == ["close_expired_questions", "hourly_bam", "update_activity"]
+    scheduler = create_scheduler(bot, db, CHAT.id, quote_of_the_day_enabled=True)
+    assert "quote_of_the_day" in [job.func.__name__ for job in scheduler.get_jobs()]
     assert "scheduled_question" in asyncio.run(job_ids(CHAT.id, False, quiz_schedule=True))
     assert "we_miss_you" in asyncio.run(job_ids(CHAT.id, True))
 
@@ -328,7 +358,8 @@ def test_check_chat(db, bot, caplog):
 def test_command_menu_has_a_handler_for_every_command(bot):
     handled = {
         name
-        for handler in commands.router.message.handlers
+        for router in main.ROUTERS
+        for handler in router.message.handlers
         for command_filter in handler.filters
         for name in getattr(command_filter.callback, "commands", ())
     }
@@ -336,3 +367,157 @@ def test_command_menu_has_a_handler_for_every_command(bot):
     asyncio.run(main.set_commands(bot))
     sent = bot.session.of_type(methods.SetMyCommands)[-1]
     assert [command.command for command in sent.commands] == list(bot_commands)
+
+
+def sent_texts(bot):
+    return [request.text for request in bot.session.of_type(methods.SendMessage)]
+
+
+def answers(bot):
+    return [request.text for request in bot.session.of_type(methods.AnswerCallbackQuery)]
+
+
+def test_quote_book(db, bot, dispatcher):
+    alex, sergio = user(7, "Alex"), user(8, "Sergio")
+    feed(dispatcher, bot, **text_update(alex, "/quote"))
+    feed(dispatcher, bot, **text_update(alex, "/save"))
+    feed(dispatcher, bot, **reply_update(alex, "/save", sergio, "Я на диете с понедельника"))
+    feed(dispatcher, bot, **reply_update(alex, "/save", sergio, "Я на диете с понедельника"))
+    feed(dispatcher, bot, **text_update(alex, "/quote SERG"))
+    feed(dispatcher, bot, **text_update(alex, "/quote Вася"))
+    texts = sent_texts(bot)
+    assert texts[0].startswith("Цитатник пока пуст")
+    assert texts[1].startswith("Ответь командой /save")
+    assert texts[2].endswith("Всего цитат: 1")
+    assert texts[3] == "Эта цитата уже в цитатнике 📜"
+    today = datetime.now().strftime("%d.%m.%Y")
+    assert texts[4] == f"«Я на диете с понедельника»\n— Sergio (@sergio), {today}"
+    assert texts[5] == "У «Вася» цитат пока нет 🤔"
+
+
+def test_quote_of_the_day_goes_through_every_quote(db, bot, dispatcher):
+    asyncio.run(quote_of_the_day(bot, db, chat_id=CHAT.id))
+    assert sent_texts(bot) == []
+    for number, phrase in enumerate(("Раз", "Два")):
+        save = reply_update(
+            user(7, "Alex"), "/save", user(8, "Sergio"), phrase, message_id=10 + number, original_id=number
+        )
+        feed(dispatcher, bot, **save)
+    for _ in range(2):
+        asyncio.run(quote_of_the_day(bot, db, chat_id=CHAT.id))
+    shown = [text for text in sent_texts(bot) if text.startswith("📜 Цитата дня")]
+    assert len(shown) == 2 and {text.split("\n")[2] for text in shown} == {"«Раз»", "«Два»"}
+
+
+def test_fat_of_the_day_once_a_day(db, bot, dispatcher, monkeypatch):
+    monkeypatch.setattr(fat_day_handlers, "SCAN_PAUSE_SECONDS", 0)
+    feed(dispatcher, bot, **text_update(user(8, "Sergio"), "привет"))
+    feed(dispatcher, bot, **text_update(user(7, "Alex"), "/fat"))
+    texts = sent_texts(bot)
+    assert len(texts) == 4
+    winner = "Alex" if "Alex" in texts[-1] else "Sergio"
+    assert f"{winner} (@{winner.lower()})" in texts[-1]
+
+    feed(dispatcher, bot, **text_update(user(8, "Sergio"), "/fat"))
+    assert len(sent_texts(bot)) == 5 and winner in sent_texts(bot)[-1]
+    feed(dispatcher, bot, **text_update(user(8, "Sergio"), "/fatstats"))
+    assert f"🥇 {winner} — 1 раз" in sent_texts(bot)[-1]
+
+
+def test_party_gathers_five_and_pings_them(db, bot, dispatcher):
+    feed(dispatcher, bot, **text_update(user(1, "P1"), "/party ранкед в 21:00"))
+    party_message = bot.session.next_message_id
+    first = bot.session.of_type(methods.SendMessage)[-1]
+    assert "ранкед в 21:00" in first.text and "1. P1 (@p1)" in first.text and first.reply_markup
+
+    feed(dispatcher, bot, **text_update(user(2, "P2"), "/party"))
+    again = bot.session.of_type(methods.SendMessage)[-1]
+    assert again.text.startswith("Пати уже собирается") and again.reply_parameters.message_id == party_message
+
+    feed(dispatcher, bot, **press(user(1, "P1"), party_message, party.JOIN))
+    feed(dispatcher, bot, **press(user(2, "P2"), party_message, party.LEAVE))
+    for number in (2, 3, 4):
+        feed(dispatcher, bot, **press(user(number, f"P{number}"), party_message, party.JOIN))
+    feed(dispatcher, bot, **press(user(4, "P4"), party_message, party.LEAVE))
+    assert answers(bot)[:2] == ["Ты уже в пати 😉", "Тебя и так нет в пати 🤷"]
+    assert "В деле 3/5" in bot.session.of_type(methods.EditMessageText)[-1].text
+    assert not bot.session.of_type(methods.SendMessage)[-1].entities
+
+    for number in (4, 5):
+        feed(dispatcher, bot, **press(user(number, f"P{number}"), party_message, party.JOIN))
+    edit = bot.session.of_type(methods.EditMessageText)[-1]
+    assert "В деле 5/5" in edit.text and "Пати собрана" in edit.text and edit.reply_markup is None
+    call = bot.session.of_type(methods.SendMessage)[-1]
+    assert "пати собрана, заходим" in call.text
+    assert sorted(entity.user.id for entity in call.entities) == [1, 2, 3, 4, 5]
+
+    feed(dispatcher, bot, **press(user(6, "P6"), party_message, party.JOIN))
+    assert answers(bot)[-1] == "Пати уже собрана 🎮"
+    # the gathered party doesn't block a new one
+    feed(dispatcher, bot, **text_update(user(6, "P6"), "/party"))
+    assert "1. P6" in bot.session.of_type(methods.SendMessage)[-1].text
+
+
+def test_old_party_falls_apart(db, bot, dispatcher):
+    feed(dispatcher, bot, **text_update(user(1, "P1"), "/party"))
+    party_message = bot.session.next_message_id
+    db.execute("UPDATE Parties SET created_at = datetime('now', '-4 hours')")
+    feed(dispatcher, bot, **press(user(2, "P2"), party_message, party.JOIN))
+    assert answers(bot)[-1].startswith("Эта пати уже не работает")
+    assert "Не собрались" in bot.session.of_type(methods.EditMessageText)[-1].text
+    feed(dispatcher, bot, **press(user(2, "P2"), 12345, party.JOIN))
+    assert answers(bot)[-1].startswith("Эта пати уже не работает")
+
+
+def in_chat(db):
+    return dict(db.fetch_all("SELECT telegram_id, in_chat FROM Users"))
+
+
+def member_update(member_user, old, new):
+    event = ChatMemberUpdated(
+        chat=CHAT, from_user=member_user, date=datetime.now(), old_chat_member=old, new_chat_member=new
+    )
+    return {"chat_member": event}
+
+
+def test_joins_and_leaves_are_tracked(db, bot, dispatcher):
+    alex, newbie = user(7, "Alex"), user(8, "Newbie")
+    added = Message(message_id=5, date=datetime.now(), chat=CHAT, from_user=alex, new_chat_members=[newbie, BOT_USER])
+    feed(dispatcher, bot, message=added)
+    assert in_chat(db) == {7: 1, 8: 1}
+
+    gone = Message(message_id=6, date=datetime.now(), chat=CHAT, from_user=newbie, left_chat_member=newbie)
+    feed(dispatcher, bot, message=gone)
+    assert in_chat(db)[8] == 0
+    # a left member drops out of the IQ table and the fatty of the day
+    assert users_db.get_all_iq(db) == [("Alex", 100)]
+    assert [row[0] for row in users_db.get_active_since(db, datetime(2000, 1, 1))] == [7]
+
+    # the same through chat_member updates, which come even when join messages are hidden
+    feed(dispatcher, bot, **member_update(newbie, ChatMemberLeft(user=newbie), ChatMemberMember(user=newbie)))
+    assert in_chat(db)[8] == 1
+    feed(dispatcher, bot, **member_update(newbie, ChatMemberMember(user=newbie), ChatMemberLeft(user=newbie)))
+    assert in_chat(db)[8] == 0
+    # writing in the group again brings them back
+    feed(dispatcher, bot, **text_update(newbie, "я вернулся"))
+    assert in_chat(db)[8] == 1
+
+
+def test_members_command(db, bot, dispatcher):
+    for user_id in (7, 8, 9, 10):
+        feed(dispatcher, bot, **text_update(user(user_id, f"Old{user_id}"), "привет"))
+    bot.session.left_users.add(8)
+    bot.session.unknown_users.add(9)
+    bot.session.muted_users.add(10)
+
+    feed(dispatcher, bot, **text_update(user(7, "Old7"), "/members"))
+    assert sent_texts(bot)[-1] == "Проверять участников могут только админы чата 😈"
+    assert in_chat(db) == {7: 1, 8: 1, 9: 1, 10: 1}
+
+    bot.session.admins.add(7)
+    feed(dispatcher, bot, **text_update(user(7, "Old7"), "/members"))
+    report = sent_texts(bot)[-1]
+    # names and usernames come fresh from Telegram, the unknown user keeps the old ones
+    assert "В чате (2):\n• Name7 — 7\n• Name10 — 10" in report
+    assert "Ушли (2):\n• Name8 — 8\n• Old9 (@old9) — 9" in report
+    assert in_chat(db) == {7: 1, 8: 0, 9: 0, 10: 1}

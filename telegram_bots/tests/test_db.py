@@ -129,3 +129,14 @@ def test_settings(db):
     settings.set_value(db, "x", "1")
     settings.set_value(db, "x", "2")
     assert settings.get(db, "x") == "2"
+
+
+def test_old_users_get_in_chat_column(tmp_path):
+    from telegram_bots.bots.fat_joke.db.connection import Database
+
+    db = Database(tmp_path / "old.db")
+    db.execute("CREATE TABLE Users (id INTEGER PRIMARY KEY, telegram_id INTEGER, name TEXT, questionare_done TEXT)")
+    db.execute("INSERT INTO Users (telegram_id, name, questionare_done) VALUES (1, 'Old', '[]')")
+    init_schema(db)
+    init_schema(db)
+    assert db.fetch_all("SELECT telegram_id, in_chat FROM Users") == [(1, 1)]

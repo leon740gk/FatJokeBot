@@ -3,7 +3,7 @@ from random import Random
 
 import pytest
 
-from telegram_bots.bots.fat_joke.services import iq, texts
+from telegram_bots.bots.fat_joke.services import fat_day, iq, quotes, texts
 from telegram_bots.bots.fat_joke.services.reactions import Reply, StickerReplier, text_reactions
 from telegram_bots.knowledge_base.fat_joke.random_phrases import random_phrase_groups
 from telegram_bots.knowledge_base.fat_joke.reaction_data import (
@@ -104,3 +104,19 @@ def test_day_part_for_hours_around_midnight():
         "evening",
         "evening",
     ]
+
+
+def test_quote_picked_by_author_name_or_username():
+    book = [("раз", "Сергій", None, "2026-10-31"), ("два", "Alex", "alex_l", "2026-03-14")]
+    assert quotes.pick(book, "СЕРГ", rng=FakeRandom())[0] == "раз"
+    assert quotes.pick(book, "@alex_l", rng=FakeRandom())[0] == "два"
+    assert quotes.pick(book, "Вася", rng=FakeRandom()) is None
+    assert quotes.format_quote(book[1], title="📜 Цитата дня") == "📜 Цитата дня\n\n«два»\n— Alex (@alex_l), 14.03.2026"
+
+
+def test_fat_day_texts():
+    messages = fat_day.scan_messages(("Alex", None), rng=Random(1))
+    assert len(messages) == fat_day.SCAN_STEPS + 1 and "Alex" in messages[-1] and "@" not in messages[-1]
+    assert fat_day.format_stats([]).startswith("Жиртрестов ещё не было")
+    stats = fat_day.format_stats([("A", 3), ("B", 1), ("C", 1), ("D", 12)])
+    assert stats.splitlines()[2:] == ["🥇 A — 3 раза", "🥈 B — 1 раз", "🥉 C — 1 раз", "4. D — 12 раз"]

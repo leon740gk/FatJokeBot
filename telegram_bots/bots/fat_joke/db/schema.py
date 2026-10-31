@@ -12,7 +12,8 @@ CREATE TABLE IF NOT EXISTS Users (
     last_message_date TEXT,
     activity_delta INTEGER,
     questionare_done TEXT,
-    DOB TEXT
+    DOB TEXT,
+    in_chat INTEGER NOT NULL DEFAULT 1
 )
 """
 
@@ -62,11 +63,77 @@ CREATE TABLE IF NOT EXISTS Settings (
 """
 
 
+QUOTES_TABLE = """
+CREATE TABLE IF NOT EXISTS Quotes (
+    id INTEGER PRIMARY KEY,
+    chat_id INTEGER NOT NULL,
+    message_id INTEGER NOT NULL,
+    author_id INTEGER,
+    author_name TEXT NOT NULL,
+    author_username TEXT,
+    text TEXT NOT NULL,
+    said_on TEXT NOT NULL,
+    saved_by INTEGER NOT NULL,
+    saved_at TEXT DEFAULT CURRENT_TIMESTAMP,
+    shown_at TEXT,
+    UNIQUE (chat_id, message_id)
+)
+"""
+
+FAT_DAYS_TABLE = """
+CREATE TABLE IF NOT EXISTS FatDays (
+    chat_id INTEGER NOT NULL,
+    day TEXT NOT NULL,
+    telegram_id INTEGER NOT NULL,
+    PRIMARY KEY (chat_id, day)
+)
+"""
+
+PARTIES_TABLE = """
+CREATE TABLE IF NOT EXISTS Parties (
+    id INTEGER PRIMARY KEY,
+    chat_id INTEGER NOT NULL,
+    message_id INTEGER NOT NULL,
+    created_by INTEGER NOT NULL,
+    comment TEXT,
+    created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+    gathered_at TEXT,
+    UNIQUE (chat_id, message_id)
+)
+"""
+
+PARTY_MEMBERS_TABLE = """
+CREATE TABLE IF NOT EXISTS PartyMembers (
+    party_id INTEGER NOT NULL,
+    telegram_id INTEGER NOT NULL,
+    name TEXT NOT NULL,
+    username TEXT,
+    joined_at TEXT DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (party_id, telegram_id)
+)
+"""
+
+TABLES = (
+    USERS_TABLE,
+    ANSWERS_TABLE,
+    QUIZ_MESSAGES_TABLE,
+    SEASONS_TABLE,
+    SETTINGS_TABLE,
+    QUOTES_TABLE,
+    FAT_DAYS_TABLE,
+    PARTIES_TABLE,
+    PARTY_MEMBERS_TABLE,
+)
+
+
 def init_schema(db):
-    for table in (USERS_TABLE, ANSWERS_TABLE, QUIZ_MESSAGES_TABLE, SEASONS_TABLE, SETTINGS_TABLE):
+    for table in TABLES:
         db.execute(table)
     _add_seasons_to_old_tables(db)
     _migrate_legacy_answers(db)
+    if "in_chat" not in _columns(db, "Users"):
+        # added 2026-10-31; everyone counts as a member until /members or a leave says otherwise
+        db.execute("ALTER TABLE Users ADD COLUMN in_chat INTEGER NOT NULL DEFAULT 1")
 
 
 def _columns(db, table):

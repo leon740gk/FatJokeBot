@@ -9,7 +9,7 @@ from aiogram.types import BotCommand
 from telegram_bots.bots.fat_joke.db.backup import backup_if_stale
 from telegram_bots.bots.fat_joke.db.connection import Database
 from telegram_bots.bots.fat_joke.db.schema import init_schema
-from telegram_bots.bots.fat_joke.handlers import commands, quiz, reactions
+from telegram_bots.bots.fat_joke.handlers import commands, fat_day, members, party, quiz, quotes, reactions
 from telegram_bots.bots.fat_joke.middlewares import UserActivityMiddleware
 from telegram_bots.bots.fat_joke.scheduler import check_chat, create_scheduler
 from telegram_bots.bots.fat_joke.services.quiet_hours import parse_quiet_hours
@@ -22,6 +22,7 @@ from telegram_bots.config import (
     QUIZ_ANSWER_MINUTES,
     QUIZ_QUIET_HOURS,
     QUIZ_SCHEDULE_ENABLED,
+    QUOTE_OF_THE_DAY_ENABLED,
     get_bot_token,
 )
 from telegram_bots.knowledge_base.fat_joke.reaction_data import bot_commands
@@ -35,12 +36,16 @@ async def set_commands(bot):
         logging.getLogger(__name__).warning("can't set the command menu: %s", error.message)
 
 
+# commands go first, so "/help" never reaches the keyword reactions;
+# party buttons go before quiz, which takes every other button press
+ROUTERS = (commands.router, members.router, quotes.router, fat_day.router, party.router, quiz.router, reactions.router)
+
+
 def build_dispatcher(db):
     dispatcher = Dispatcher(db=db)
     dispatcher.message.outer_middleware(UserActivityMiddleware())
     dispatcher.callback_query.outer_middleware(UserActivityMiddleware())
-    # commands go first, so "/help" never reaches the keyword reactions
-    dispatcher.include_routers(commands.router, quiz.router, reactions.router)
+    dispatcher.include_routers(*ROUTERS)
     return dispatcher
 
 
@@ -62,11 +67,13 @@ async def main():
         db,
         MAIN_CHAT_ID,
         MISS_YOU_ENABLED,
+        QUOTE_OF_THE_DAY_ENABLED,
         db_path=DB_PATH,
         backup_dir=BACKUP_DIR,
         answer_minutes=QUIZ_ANSWER_MINUTES,
         quiz_schedule_enabled=QUIZ_SCHEDULE_ENABLED,
         quiet_hours=parse_quiet_hours(QUIZ_QUIET_HOURS),
+        quote_of_the_day_enabled=QUOTE_OF_THE_DAY_ENABLED,
     )
     scheduler.start()
     try:
@@ -75,7 +82,8 @@ async def main():
         await set_commands(bot)
         if MAIN_CHAT_ID:
             await check_chat(bot, MAIN_CHAT_ID)
-        await dispatcher.start_polling(bot)
+        # chat_member updates (joins and leaves) only come when asked for explicitly
+        await dispatcher.start_polling(bot, allowed_updates=dispatcher.resolve_used_update_types())
     finally:
         scheduler.shutdown(wait=False)
         db.close()
