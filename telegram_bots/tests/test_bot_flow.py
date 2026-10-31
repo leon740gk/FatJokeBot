@@ -94,6 +94,12 @@ def muted(member_user):
     return ChatMemberRestricted(user=member_user, is_member=True, until_date=datetime.now(), **rights)
 
 
+@pytest.fixture(autouse=True)
+def no_philosophy(monkeypatch):
+    # a random philosopher quote on any text message would add an unexpected reply now and then
+    monkeypatch.setattr("telegram_bots.bots.fat_joke.services.reactions.PHILOSOPHY_CHANCE", 0)
+
+
 @pytest.fixture
 def bot():
     return Bot("42:TEST", session=FakeSession())
@@ -141,8 +147,7 @@ def test_help_command_replies_and_registers_user(db, bot, dispatcher):
     assert users_db.get_iq_and_name(db, 7) == (100, "Newbie")
 
 
-def test_text_keywords_reply_once_per_group(db, bot, dispatcher, monkeypatch):
-    monkeypatch.setattr("telegram_bots.bots.fat_joke.services.reactions.PHILOSOPHY_CHANCE", 0)
+def test_text_keywords_reply_once_per_group(db, bot, dispatcher):
     feed(dispatcher, bot, **text_update(user(7, "Newbie"), "Сергій, серега, хайль"))
     texts = [request.text for request in bot.session.of_type(methods.SendMessage)]
     assert len(texts) == 1 and texts[0].startswith("10 правил Серджио")
@@ -535,6 +540,8 @@ def test_main_starts_up_to_polling(tmp_path, monkeypatch):
 
     session = StopAtPolling()
     monkeypatch.setattr(main, "Bot", lambda token: Bot("42:TEST", session=session))
+    # CI has no .env, the token is never used by the fake session anyway
+    monkeypatch.setattr(main, "get_bot_token", lambda: "42:TEST")
     monkeypatch.setattr(main, "DB_PATH", str(tmp_path / "bot.db"))
     monkeypatch.setattr(main, "BACKUP_DIR", str(tmp_path / "backups"))
     monkeypatch.setattr(main, "MAIN_CHAT_ID", str(CHAT.id))
