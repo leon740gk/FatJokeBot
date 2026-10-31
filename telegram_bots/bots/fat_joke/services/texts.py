@@ -39,5 +39,5 @@ def miss_you_message(inactive_users):
     lines = ["Внимание! Внимание!\nНаш бот разыскивает пропавших без вести!\n"]
     for name, username, days in inactive_users:
         lines.append(f"{name} @{username}, о тебе мы не слышали уже {days} {days_word(days)} :(\n")
-    lines.append("Бот и Сирожка скучают по вам...\nНапишите, как у вас дела.\nЖдём вас :)")
+    lines.append("Бот и весь чат скучают по вам...\nНапишите, как у вас дела.\nЖдём вас :)")
     return "".join(lines)
