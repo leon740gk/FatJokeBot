@@ -521,3 +521,28 @@ def test_members_command(db, bot, dispatcher):
     assert "В чате (2):\n• Name7 — 7\n• Name10 — 10" in report
     assert "Ушли (2):\n• Name8 — 8\n• Old9 (@old9) — 9" in report
     assert in_chat(db) == {7: 1, 8: 0, 9: 0, 10: 1}
+
+
+def test_main_starts_up_to_polling(tmp_path, monkeypatch):
+    """Runs the real main() until it asks Telegram for updates, catching startup errors the other tests skip."""
+
+    class StopAtPolling(FakeSession):
+        async def make_request(self, bot, method, timeout=None):
+            if isinstance(method, methods.GetUpdates):
+                self.allowed_updates = method.allowed_updates
+                raise asyncio.CancelledError
+            return await super().make_request(bot, method, timeout)
+
+    session = StopAtPolling()
+    monkeypatch.setattr(main, "Bot", lambda token: Bot("42:TEST", session=session))
+    monkeypatch.setattr(main, "DB_PATH", str(tmp_path / "bot.db"))
+    monkeypatch.setattr(main, "BACKUP_DIR", str(tmp_path / "backups"))
+    monkeypatch.setattr(main, "MAIN_CHAT_ID", str(CHAT.id))
+    monkeypatch.setattr(main, "QUOTE_OF_THE_DAY_ENABLED", True)
+    try:
+        with pytest.raises(asyncio.CancelledError):
+            asyncio.run(main.main())
+    finally:
+        for router in main.ROUTERS:
+            router._parent_router = None
+    assert "chat_member" in session.allowed_updates

@@ -67,7 +67,6 @@ async def main():
         db,
         MAIN_CHAT_ID,
         MISS_YOU_ENABLED,
-        QUOTE_OF_THE_DAY_ENABLED,
         db_path=DB_PATH,
         backup_dir=BACKUP_DIR,
         answer_minutes=QUIZ_ANSWER_MINUTES,
