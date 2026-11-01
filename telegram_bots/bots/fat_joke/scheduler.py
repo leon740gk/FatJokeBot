@@ -170,7 +170,8 @@ def create_scheduler(
         logger.warning("FAT_JOKE_MAIN_CHAT_ID is not set, chat messages on a schedule are off")
         return scheduler
 
-    scheduler.add_job(hourly_bam, "cron", minute=0, kwargs={"bot": bot, "chat_id": chat_id})
+    # every 3 hours Kyiv time: 00:00, 03:00, ..., 21:00
+    scheduler.add_job(hourly_bam, "cron", hour="*/3", minute=0, kwargs={"bot": bot, "chat_id": chat_id})
     if quiz_schedule_enabled:
         scheduler.add_job(
             scheduled_question,
