@@ -3,7 +3,8 @@ from random import Random
 
 import pytest
 
-from telegram_bots.bots.fat_joke.services import fat_day, iq, quotes, texts
+from telegram_bots.bots.fat_joke.db import users
+from telegram_bots.bots.fat_joke.services import achievements, fat_day, iq, quotes, texts
 from telegram_bots.bots.fat_joke.services.reactions import Reply, StickerReplier, text_reactions
 from telegram_bots.knowledge_base.fat_joke.random_phrases import random_phrase_groups
 from telegram_bots.knowledge_base.fat_joke.reaction_data import (
@@ -13,7 +14,7 @@ from telegram_bots.knowledge_base.fat_joke.reaction_data import (
     sticker_responses,
 )
 from telegram_bots.knowledge_base.fat_joke.timer_data import hour_phrases
-from telegram_bots.tests.conftest import FakeRandom
+from telegram_bots.tests.conftest import FakeRandom, make_user
 
 
 def test_one_reply_per_keyword_group():
@@ -120,3 +121,32 @@ def test_fat_day_texts():
     assert fat_day.format_stats([]).startswith("Жиртрестов ещё не было")
     stats = fat_day.format_stats([("A", 3), ("B", 1), ("C", 1), ("D", 12)])
     assert stats.splitlines()[2:] == ["🥇 A — 3 раза", "🥈 B — 1 раз", "🥉 C — 1 раз", "4. D — 12 раз"]
+
+
+def test_best_streak():
+    assert achievements.best_streak([]) == 0
+    assert achievements.best_streak([1, 1, 0, 1, 1, 1, 0]) == 3
+
+
+def test_ranks():
+    assert achievements.rank_for(0) == "🪖 Warrior"
+    assert achievements.rank_for(50) == "🛡 Elite"
+    assert achievements.rank_for(5000) == "👑 Mythical Glory"
+    assert achievements.next_rank(45) == (5, "🛡 Elite")
+    assert achievements.next_rank(1000) is None
+    assert achievements.rank_up_line("A", 40, 49) is None
+    assert achievements.rank_up_line("A", 40, 60) == "⬆️ A поднимается до ранга 🛡 Elite!"
+
+
+def test_streak_and_night_achievements(db):
+    users.register(db, make_user(7))
+    for number, is_correct in enumerate((1, 1, 0, 1)):
+        db.execute(
+            "INSERT INTO Answers (telegram_id, discipline, question_number, is_correct) VALUES (7, 'geo', ?, ?)",
+            (number, is_correct),
+        )
+    day, night = datetime(2026, 11, 1, 15), datetime(2026, 11, 1, 3)
+    assert achievements.unlock_new(db, 7, day) == ["first_blood", "double_kill"]
+    assert achievements.unlock_new(db, 7, day) == []
+    assert achievements.unlock_new(db, 7, night) == ["night_farm"]
+    assert achievements.battle_points(db, 7) == 3 * achievements.ACHIEVEMENT_BP

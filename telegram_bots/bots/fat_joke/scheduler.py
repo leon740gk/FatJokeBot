@@ -9,12 +9,14 @@ from aiogram.exceptions import TelegramAPIError
 from aiogram.utils.keyboard import InlineKeyboardBuilder
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 
+from telegram_bots.bots.fat_joke.db import loot as loot_db
 from telegram_bots.bots.fat_joke.db import quiz as quiz_db
 from telegram_bots.bots.fat_joke.db import quotes as quotes_db
 from telegram_bots.bots.fat_joke.db import users as users_db
 from telegram_bots.bots.fat_joke.db.backup import backup_database
-from telegram_bots.bots.fat_joke.services import quiz, quotes, texts
+from telegram_bots.bots.fat_joke.services import loot, quiz, quotes, texts
 from telegram_bots.bots.fat_joke.services.quiet_hours import is_quiet
+from telegram_bots.knowledge_base.fat_joke.mlbb_data import loot_button
 from telegram_bots.knowledge_base.fat_joke.reaction_data import wanted
 
 logger = logging.getLogger(__name__)
@@ -57,9 +59,18 @@ async def check_chat(bot, chat_id):
 
 
 @chat_job
-async def hourly_bam(bot, chat_id):
+async def hourly_bam(bot, db, chat_id, quiet_hours=None, rng=random):
+    """The time message; in the daytime now and then with an MLBB objective for the fastest to take."""
     now = datetime.now(KYIV)
-    await bot.send_message(chat_id, texts.hour_message(now.strftime("%H"), now.astimezone(GERMANY).strftime("%H")))
+    text = texts.hour_message(now.strftime("%H"), now.astimezone(GERMANY).strftime("%H"))
+    kind = None if is_quiet(now.hour, quiet_hours) else loot.roll(rng)
+    if not kind:
+        await bot.send_message(chat_id, text)
+        return
+    keyboard = InlineKeyboardBuilder()
+    keyboard.button(text=loot_button, callback_data=loot.CALLBACK)
+    sent = await bot.send_message(chat_id, loot.spawn_text(text, kind), reply_markup=keyboard.as_markup())
+    loot_db.create(db, int(chat_id), sent.message_id, kind.code, kind.points)
 
 
 def build_keyboard(rendered):
@@ -171,7 +182,14 @@ def create_scheduler(
         return scheduler
 
     # every 3 hours Kyiv time: 00:00, 03:00, ..., 21:00
-    scheduler.add_job(hourly_bam, "cron", hour="*/3", minute=0, kwargs={"bot": bot, "chat_id": chat_id})
+    scheduler.add_job(
+        hourly_bam,
+        "cron",
+        hour="*/3",
+        minute=0,
+        # nobody is awake to take the loot in quiet hours, the same ones as for the quiz
+        kwargs={"bot": bot, "db": db, "chat_id": chat_id, "quiet_hours": quiet_hours},
+    )
     if quiz_schedule_enabled:
         scheduler.add_job(
             scheduled_question,

@@ -35,7 +35,8 @@ from telegram_bots.bots.fat_joke.scheduler import (
     quote_of_the_day,
     scheduled_question,
 )
-from telegram_bots.bots.fat_joke.services import party, quiz
+from telegram_bots.bots.fat_joke.services import achievements, loot, party, quiz
+from telegram_bots.knowledge_base.fat_joke.mlbb_data import gone_phrase, late_phrases
 from telegram_bots.knowledge_base.fat_joke.reaction_data import bot_commands, red_blink
 
 CHAT = Chat(id=-100500, type="supergroup", title="Test chat")
@@ -98,6 +99,8 @@ def muted(member_user):
 def no_philosophy(monkeypatch):
     # a random philosopher quote on any text message would add an unexpected reply now and then
     monkeypatch.setattr("telegram_bots.bots.fat_joke.services.reactions.PHILOSOPHY_CHANCE", 0)
+    # tests run at night too, the night achievement would add a message
+    monkeypatch.setattr(achievements, "NIGHT_HOURS", range(0))
 
 
 @pytest.fixture
@@ -345,7 +348,7 @@ def test_chat_id_command(db, bot, dispatcher):
 
 def test_missing_chat_is_logged_not_raised(db, bot, caplog):
     bot.session.missing_chats.add(CHAT.id)
-    asyncio.run(hourly_bam(bot, chat_id=CHAT.id))
+    asyncio.run(hourly_bam(bot, db, chat_id=CHAT.id))
     asyncio.run(scheduled_question(bot, db, chat_id=CHAT.id))
     assert caplog.text.count("chat not found") == 2 and "FAT_JOKE_MAIN_CHAT_ID" in caplog.text
     assert quiz_db.get_open_question(db, CHAT.id) is None
@@ -553,3 +556,82 @@ def test_main_starts_up_to_polling(tmp_path, monkeypatch):
         for router in main.ROUTERS:
             router._parent_router = None
     assert "chat_member" in session.allowed_updates
+
+
+class LootRandom:
+    """Always spawns the given objective."""
+
+    def __init__(self, code):
+        self.code = code
+
+    def random(self):
+        return 0
+
+    def choices(self, kinds, weights):
+        return [loot.KINDS[self.code]]
+
+    def choice(self, items):
+        return list(items)[0]
+
+
+def bam_with_loot(bot, db, code):
+    asyncio.run(hourly_bam(bot, db, chat_id=CHAT.id, rng=LootRandom(code)))
+    sent = bot.session.of_type(methods.SendMessage)[-1]
+    return sent, bot.session.next_message_id
+
+
+def press_loot(dispatcher, bot, from_user, message_id, text):
+    message = Message(message_id=message_id, date=datetime.now(), chat=CHAT, from_user=BOT_USER, text=text)
+    query = CallbackQuery(id="1", from_user=from_user, chat_instance="c", message=message, data=loot.CALLBACK)
+    feed(dispatcher, bot, callback_query=query)
+
+
+def test_bam_loot_goes_to_the_fastest(db, bot, dispatcher):
+    sent, message_id = bam_with_loot(bot, db, "turtle")
+    assert "🐢 Заспавнилась Черепаха!" in sent.text and "+10 BP" in sent.text
+    assert sent.reply_markup.inline_keyboard[0][0].callback_data == loot.CALLBACK
+
+    press_loot(dispatcher, bot, user(7, "Alex"), message_id, sent.text)
+    press_loot(dispatcher, bot, user(8, "Bob"), message_id, sent.text)
+    assert answers(bot)[0] == "+10 BP! 💰" and answers(bot)[1] in late_phrases
+    edit = bot.session.of_type(methods.EditMessageText)[-1]
+    assert edit.text.startswith("Бам!!!") and "Черепаху добил(а) Alex (@alex): +10 BP" in edit.text
+    assert "Заспавнилась" not in edit.text and edit.reply_markup is None
+    assert achievements.battle_points(db, 7) == 10 and achievements.battle_points(db, 8) == 0
+
+
+def test_old_loot_is_gone(db, bot, dispatcher):
+    sent, message_id = bam_with_loot(bot, db, "red")
+    db.execute("UPDATE Loot SET created_at = datetime('now', '-3 hours')")
+    press_loot(dispatcher, bot, user(7, "Alex"), message_id, sent.text)
+    assert answers(bot)[-1] == gone_phrase
+    assert "туман войны" in bot.session.of_type(methods.EditMessageText)[-1].text
+    assert achievements.battle_points(db, 7) == 0
+
+
+def test_no_loot_in_quiet_hours(db, bot):
+    asyncio.run(hourly_bam(bot, db, chat_id=CHAT.id, quiet_hours=(0, 24), rng=LootRandom("lord")))
+    assert bot.session.of_type(methods.SendMessage)[-1].reply_markup is None
+    assert db.fetch_one("SELECT COUNT(*) FROM Loot")[0] == 0
+
+
+def test_lord_gives_an_achievement_and_shows_in_profile(db, bot, dispatcher):
+    sent, message_id = bam_with_loot(bot, db, "lord")
+    press_loot(dispatcher, bot, user(7, "Alex"), message_id, sent.text)
+    announced = sent_texts(bot)[-1]
+    assert "Alex (@alex)" in announced and "🐉 Убийца Лорда" in announced and "+20 BP" in announced
+    # 25 for the Lord and 20 for the achievement, Elite starts at 50
+    assert achievements.battle_points(db, 7) == 45
+
+    feed(dispatcher, bot, **text_update(user(7, "Alex"), "/me"))
+    profile = sent_texts(bot)[-1]
+    assert profile.startswith("👤 Alex") and "Warrior, 45 BP" in profile and "до 🛡 Elite: ещё 5 BP" in profile
+    assert "Достижения 1/" in profile and "🔒 First Blood" in profile and "Лордов: 1" in profile
+
+    feed(dispatcher, bot, **reply_update(user(8, "Bob"), "/me", user(7, "Alex"), "я забрал лорда"))
+    assert sent_texts(bot)[-1].startswith("👤 Alex")
+    feed(dispatcher, bot, **text_update(user(8, "Bob"), "/ranks"))
+    assert "🥇 Alex — 45 BP" in sent_texts(bot)[-1] and "🥈 Bob — 0 BP" in sent_texts(bot)[-1]
+    # announced once
+    feed(dispatcher, bot, **text_update(user(7, "Alex"), "привет"))
+    assert sum("Убийца Лорда" in text for text in sent_texts(bot) if not text.startswith("👤")) == 1

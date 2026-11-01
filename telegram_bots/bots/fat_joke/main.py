@@ -9,7 +9,17 @@ from aiogram.types import BotCommand
 from telegram_bots.bots.fat_joke.db.backup import backup_if_stale
 from telegram_bots.bots.fat_joke.db.connection import Database
 from telegram_bots.bots.fat_joke.db.schema import init_schema
-from telegram_bots.bots.fat_joke.handlers import commands, fat_day, members, party, quiz, quotes, reactions
+from telegram_bots.bots.fat_joke.handlers import (
+    commands,
+    fat_day,
+    loot,
+    members,
+    party,
+    profile,
+    quiz,
+    quotes,
+    reactions,
+)
 from telegram_bots.bots.fat_joke.middlewares import UserActivityMiddleware
 from telegram_bots.bots.fat_joke.scheduler import check_chat, create_scheduler
 from telegram_bots.bots.fat_joke.services.quiet_hours import parse_quiet_hours
@@ -37,8 +47,18 @@ async def set_commands(bot):
 
 
 # commands go first, so "/help" never reaches the keyword reactions;
-# party buttons go before quiz, which takes every other button press
-ROUTERS = (commands.router, members.router, quotes.router, fat_day.router, party.router, quiz.router, reactions.router)
+# party and loot buttons go before quiz, which takes every other button press
+ROUTERS = (
+    commands.router,
+    members.router,
+    quotes.router,
+    fat_day.router,
+    profile.router,
+    party.router,
+    loot.router,
+    quiz.router,
+    reactions.router,
+)
 
 
 def build_dispatcher(db):

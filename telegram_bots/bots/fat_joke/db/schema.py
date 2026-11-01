@@ -113,6 +113,29 @@ CREATE TABLE IF NOT EXISTS PartyMembers (
 )
 """
 
+LOOT_TABLE = """
+CREATE TABLE IF NOT EXISTS Loot (
+    id INTEGER PRIMARY KEY,
+    chat_id INTEGER NOT NULL,
+    message_id INTEGER NOT NULL,
+    kind TEXT NOT NULL,
+    points INTEGER NOT NULL,
+    created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+    taken_by INTEGER,
+    taken_at TEXT,
+    UNIQUE (chat_id, message_id)
+)
+"""
+
+ACHIEVEMENTS_TABLE = """
+CREATE TABLE IF NOT EXISTS Achievements (
+    telegram_id INTEGER NOT NULL,
+    code TEXT NOT NULL,
+    unlocked_at TEXT DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (telegram_id, code)
+)
+"""
+
 TABLES = (
     USERS_TABLE,
     ANSWERS_TABLE,
@@ -123,6 +146,8 @@ TABLES = (
     FAT_DAYS_TABLE,
     PARTIES_TABLE,
     PARTY_MEMBERS_TABLE,
+    LOOT_TABLE,
+    ACHIEVEMENTS_TABLE,
 )
 
 
