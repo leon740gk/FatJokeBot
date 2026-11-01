@@ -1,10 +1,13 @@
+from datetime import datetime
+
 from aiogram import Router
 from aiogram.filters import Command
 from aiogram.types import Message
 
 from telegram_bots.bots.fat_joke.db import achievements as achievements_db
 from telegram_bots.bots.fat_joke.db import users as users_db
-from telegram_bots.bots.fat_joke.services import achievements
+from telegram_bots.bots.fat_joke.scheduler import KYIV
+from telegram_bots.bots.fat_joke.services import achievements, weekly
 
 router = Router(name="profile")
 
@@ -30,3 +33,9 @@ async def me_command(message: Message, db):
 async def ranks_command(message: Message, db):
     rows = [(name, achievements.battle_points(db, user_id)) for user_id, name in users_db.get_members(db)]
     await message.answer(achievements.format_ranks(rows))
+
+
+@router.message(Command("week"))
+async def week_command(message: Message, db):
+    # the same summary the bot sends on Sundays, for the last 7 days up to now
+    await message.answer(weekly.format_week(weekly.collect(db, message.chat.id, datetime.now(KYIV).date())))

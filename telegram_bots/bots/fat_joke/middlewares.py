@@ -4,8 +4,10 @@ from datetime import datetime
 from aiogram import BaseMiddleware
 from aiogram.enums import ChatType
 from aiogram.exceptions import TelegramAPIError
+from aiogram.types import Message
 
 from telegram_bots.bots.fat_joke.db import users as users_db
+from telegram_bots.bots.fat_joke.db import weekly as weekly_db
 from telegram_bots.bots.fat_joke.scheduler import KYIV
 from telegram_bots.bots.fat_joke.services import achievements
 from telegram_bots.bots.fat_joke.services.people import display_name, mention
@@ -28,6 +30,8 @@ class UserActivityMiddleware(BaseMiddleware):
         if in_group:
             # writing in the group means they are in it, e.g. came back after leaving
             users_db.set_in_chat(db, user.id, True)
+            if isinstance(event, Message):
+                weekly_db.count_message(db, chat.id, user.id, datetime.now(KYIV).date().isoformat())
         result = await handler(event, data)
         if in_group:
             # after the handler, so the answer that earned it comes first

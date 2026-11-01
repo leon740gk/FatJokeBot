@@ -4,7 +4,7 @@ from random import Random
 import pytest
 
 from telegram_bots.bots.fat_joke.db import users
-from telegram_bots.bots.fat_joke.services import achievements, fat_day, iq, quotes, texts
+from telegram_bots.bots.fat_joke.services import achievements, fat_day, iq, quotes, texts, weekly
 from telegram_bots.bots.fat_joke.services.reactions import Reply, StickerReplier, text_reactions
 from telegram_bots.knowledge_base.fat_joke.random_phrases import random_phrase_groups
 from telegram_bots.knowledge_base.fat_joke.reaction_data import (
@@ -150,3 +150,10 @@ def test_streak_and_night_achievements(db):
     assert achievements.unlock_new(db, 7, day) == []
     assert achievements.unlock_new(db, 7, night) == ["night_farm"]
     assert achievements.battle_points(db, 7) == 3 * achievements.ACHIEVEMENT_BP
+
+
+@pytest.mark.parametrize(
+    "count, word", [(1, "сообщение"), (3, "сообщения"), (5, "сообщений"), (12, "сообщений"), (21, "сообщение")]
+)
+def test_plural(count, word):
+    assert weekly.plural(count, "сообщение", "сообщения", "сообщений") == word

@@ -39,3 +39,5 @@ QUIZ_QUIET_HOURS = os.getenv("FAT_JOKE_QUIZ_QUIET_HOURS", "0-8")
 MISS_YOU_ENABLED = _flag("FAT_JOKE_MISS_YOU_ENABLED")
 # a quote from the /save quote book in the main chat at 19:00 Kyiv time, skipped while the book is empty
 QUOTE_OF_THE_DAY_ENABLED = _flag("FAT_JOKE_QUOTE_OF_THE_DAY_ENABLED", default=True)
+# the weekly summary in the main chat on Sundays at 20:00 Kyiv time, on by default
+WEEKLY_SUMMARY_ENABLED = _flag("FAT_JOKE_WEEKLY_SUMMARY_ENABLED", default=True)

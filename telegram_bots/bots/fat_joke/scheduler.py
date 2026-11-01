@@ -14,7 +14,7 @@ from telegram_bots.bots.fat_joke.db import quiz as quiz_db
 from telegram_bots.bots.fat_joke.db import quotes as quotes_db
 from telegram_bots.bots.fat_joke.db import users as users_db
 from telegram_bots.bots.fat_joke.db.backup import backup_database
-from telegram_bots.bots.fat_joke.services import loot, quiz, quotes, texts
+from telegram_bots.bots.fat_joke.services import loot, quiz, quotes, texts, weekly
 from telegram_bots.bots.fat_joke.services.quiet_hours import is_quiet
 from telegram_bots.knowledge_base.fat_joke.mlbb_data import loot_button
 from telegram_bots.knowledge_base.fat_joke.reaction_data import wanted
@@ -145,6 +145,12 @@ async def quote_of_the_day(bot, db, chat_id):
         await bot.send_message(chat_id, quotes.format_quote(quote, title="📜 Цитата дня"))
 
 
+@chat_job
+async def weekly_summary(bot, db, chat_id):
+    week = weekly.collect(db, int(chat_id), datetime.now(KYIV).date())
+    await bot.send_message(chat_id, weekly.format_week(week))
+
+
 async def backup(db_path, backup_dir):
     backup_database(db_path, backup_dir)
 
@@ -160,6 +166,7 @@ def create_scheduler(
     quiz_schedule_enabled=False,
     quiet_hours=None,
     quote_of_the_day_enabled=False,
+    weekly_summary_enabled=False,
 ):
     scheduler = AsyncIOScheduler(timezone=KYIV)
     scheduler.add_job(update_activity, "cron", hour=14, minute=55, kwargs={"db": db})
@@ -200,6 +207,15 @@ def create_scheduler(
     if quote_of_the_day_enabled:
         scheduler.add_job(
             quote_of_the_day, "cron", hour=19, minute=0, kwargs={"bot": bot, "db": db, "chat_id": chat_id}
+        )
+    if weekly_summary_enabled:
+        scheduler.add_job(
+            weekly_summary,
+            "cron",
+            day_of_week="sun",
+            hour=20,
+            minute=0,
+            kwargs={"bot": bot, "db": db, "chat_id": chat_id},
         )
     if miss_you_enabled:
         scheduler.add_job(we_miss_you, "cron", hour=15, minute=0, kwargs={"bot": bot, "db": db, "chat_id": chat_id})

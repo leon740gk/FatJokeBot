@@ -33,6 +33,7 @@ from telegram_bots.config import (
     QUIZ_QUIET_HOURS,
     QUIZ_SCHEDULE_ENABLED,
     QUOTE_OF_THE_DAY_ENABLED,
+    WEEKLY_SUMMARY_ENABLED,
     get_bot_token,
 )
 from telegram_bots.knowledge_base.fat_joke.reaction_data import bot_commands
@@ -93,6 +94,7 @@ async def main():
         quiz_schedule_enabled=QUIZ_SCHEDULE_ENABLED,
         quiet_hours=parse_quiet_hours(QUIZ_QUIET_HOURS),
         quote_of_the_day_enabled=QUOTE_OF_THE_DAY_ENABLED,
+        weekly_summary_enabled=WEEKLY_SUMMARY_ENABLED,
     )
     scheduler.start()
     try:

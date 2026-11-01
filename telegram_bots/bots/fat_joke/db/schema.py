@@ -136,6 +136,16 @@ CREATE TABLE IF NOT EXISTS Achievements (
 )
 """
 
+MESSAGE_COUNTS_TABLE = """
+CREATE TABLE IF NOT EXISTS MessageCounts (
+    chat_id INTEGER NOT NULL,
+    telegram_id INTEGER NOT NULL,
+    day TEXT NOT NULL,
+    count INTEGER NOT NULL DEFAULT 0,
+    PRIMARY KEY (chat_id, telegram_id, day)
+)
+"""
+
 TABLES = (
     USERS_TABLE,
     ANSWERS_TABLE,
@@ -148,6 +158,7 @@ TABLES = (
     PARTY_MEMBERS_TABLE,
     LOOT_TABLE,
     ACHIEVEMENTS_TABLE,
+    MESSAGE_COUNTS_TABLE,
 )
 
 

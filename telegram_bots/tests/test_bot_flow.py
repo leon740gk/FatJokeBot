@@ -34,6 +34,7 @@ from telegram_bots.bots.fat_joke.scheduler import (
     hourly_bam,
     quote_of_the_day,
     scheduled_question,
+    weekly_summary,
 )
 from telegram_bots.bots.fat_joke.services import achievements, loot, party, quiz
 from telegram_bots.knowledge_base.fat_joke.mlbb_data import gone_phrase, late_phrases
@@ -331,6 +332,8 @@ def test_scheduler_jobs(db, bot):
     assert "quote_of_the_day" in [job.func.__name__ for job in scheduler.get_jobs()]
     assert "scheduled_question" in asyncio.run(job_ids(CHAT.id, False, quiz_schedule=True))
     assert "we_miss_you" in asyncio.run(job_ids(CHAT.id, True))
+    scheduler = create_scheduler(bot, db, CHAT.id, weekly_summary_enabled=True)
+    assert "weekly_summary" in [job.func.__name__ for job in scheduler.get_jobs()]
 
 
 def test_scheduler_backup_job(db, bot, tmp_path):
@@ -635,3 +638,32 @@ def test_lord_gives_an_achievement_and_shows_in_profile(db, bot, dispatcher):
     # announced once
     feed(dispatcher, bot, **text_update(user(7, "Alex"), "привет"))
     assert sum("Убийца Лорда" in text for text in sent_texts(bot) if not text.startswith("👤")) == 1
+
+
+def test_quiet_week(db, bot):
+    asyncio.run(weekly_summary(bot, db, chat_id=CHAT.id))
+    assert "Тихая неделя" in sent_texts(bot)[-1]
+
+
+def test_weekly_summary(db, bot, dispatcher, monkeypatch):
+    monkeypatch.setattr(fat_day_handlers, "SCAN_PAUSE_SECONDS", 0)
+    users_db.register(db, user(9, "Ghost"))
+    for number in range(12):
+        feed(dispatcher, bot, **text_update(user(7, "Alex"), f"сообщение {number}", message_id=100 + number))
+    feed(dispatcher, bot, **text_update(user(8, "Bob"), "привет"))
+    sent, message_id = bam_with_loot(bot, db, "lord")
+    press_loot(dispatcher, bot, user(8, "Bob"), message_id, sent.text)
+    feed(dispatcher, bot, **reply_update(user(7, "Alex"), "/save", user(8, "Bob"), "Я на диете", message_id=200))
+    feed(dispatcher, bot, **text_update(user(7, "Alex"), "/fat"))
+
+    feed(dispatcher, bot, **text_update(user(8, "Bob"), "/week"))
+    summary = sent_texts(bot)[-1]
+    assert summary.startswith("📅 Итоги недели")
+    # Alex: 12 messages and /save, /fat; Bob: "привет" and /week
+    assert "🥇 Alex — 14 сообщений" in summary and "🥈 Bob — 2 сообщения" in summary
+    assert "Всего в чате: 16 сообщений" in summary
+    assert "🥇 Bob — 25 BP, Лордов: 1" in summary
+    assert "Bob: 🐉 Убийца Лорда" in summary
+    assert "🍩 Жиртресты недели:" in summary and "«Я на диете»" in summary
+    assert "🦗 Молчуны недели: Ghost (@ghost)" in summary
+    assert "👑 MVP недели: Bob!" in summary
