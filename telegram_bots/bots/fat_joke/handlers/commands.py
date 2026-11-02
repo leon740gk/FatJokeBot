@@ -89,6 +89,9 @@ async def quiz_for(message: Message, db, discipline):
 
 @router.message(Command("quiz"))
 async def quiz_command(message: Message, command: CommandObject, db):
+    if quiz.limit_reached(db, message.from_user.id):
+        await message.answer(quiz.limit_text())
+        return
     discipline = quiz.find_discipline(command.args) if command.args else None
     if not discipline:
         # the topic buttons work only for whoever sent /quiz

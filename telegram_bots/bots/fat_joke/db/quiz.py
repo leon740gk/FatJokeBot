@@ -68,6 +68,11 @@ def get_open_owner(db, chat_id, message_id):
     return row[0] if row else None
 
 
+def count_asked_by(db, user_id, since):
+    """How many questions the user has called since `since`, a UTC "YYYY-MM-DD HH:MM:SS" like created_at."""
+    return db.fetch_one("SELECT COUNT(*) FROM QuizMessages WHERE asked_by = ? AND created_at >= ?", (user_id, since))[0]
+
+
 def is_quiz_message(db, chat_id, message_id):
     return (
         db.fetch_one("SELECT 1 FROM QuizMessages WHERE chat_id = ? AND message_id = ?", (chat_id, message_id))

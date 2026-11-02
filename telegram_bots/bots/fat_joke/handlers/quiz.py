@@ -35,6 +35,10 @@ async def topic_callback(callback: CallbackQuery, db):
         # the topic on this message was picked a moment earlier
         await callback.answer("Тему уже выбрали")
         return
+    if quiz.limit_reached(db, user_id):
+        # the picker was sent before the limit ran out
+        await callback.answer(quiz.limit_text(), show_alert=True)
+        return
     if quiz_db.get_open_question_of(db, message.chat.id, user_id):
         await callback.answer("Сначала ответь на свой вопрос, он выше 👆", show_alert=True)
         return

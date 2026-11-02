@@ -1,6 +1,8 @@
 import random
 from dataclasses import dataclass, field
+from datetime import UTC, datetime
 from enum import Enum
+from zoneinfo import ZoneInfo
 
 from telegram_bots.bots.fat_joke.db import quiz as quiz_db
 from telegram_bots.bots.fat_joke.db import settings
@@ -8,9 +10,13 @@ from telegram_bots.bots.fat_joke.db import users as users_db
 from telegram_bots.bots.fat_joke.services import iq
 from telegram_bots.bots.fat_joke.services.quiz_bank import load_disciplines
 from telegram_bots.bots.fat_joke.services.topics import resolve_discipline
+from telegram_bots.bots.fat_joke.services.weekly import plural
+from telegram_bots.config import QUIZ_DAILY_LIMIT
 
 DISCIPLINES = load_disciplines()
 DEFAULT_DISCIPLINE = "mlbb2"
+DAILY_LIMIT = QUIZ_DAILY_LIMIT
+KYIV = ZoneInfo("Europe/Kyiv")
 DISCIPLINE_SETTING = "quiz_discipline"
 # longest option that still fits on a button: two buttons per row, or one per row
 SHORT_OPTION = 14
@@ -81,6 +87,25 @@ def parse_topic_callback(data):
     if len(parts) == 2:
         return parts[1], None
     return (parts[1], int(parts[2])) if parts[2].isdigit() else None
+
+
+def kyiv_day_start(now=None):
+    """Start of today in Kyiv as UTC "YYYY-MM-DD HH:MM:SS", the way SQLite's CURRENT_TIMESTAMP stores times."""
+    now = (now or datetime.now(UTC)).astimezone(KYIV)
+    midnight = now.replace(hour=0, minute=0, second=0, microsecond=0)
+    return midnight.astimezone(UTC).strftime("%Y-%m-%d %H:%M:%S")
+
+
+def limit_reached(db, user_id, now=None):
+    return bool(DAILY_LIMIT) and quiz_db.count_asked_by(db, user_id, kyiv_day_start(now)) >= DAILY_LIMIT
+
+
+def limit_text():
+    questions = plural(DAILY_LIMIT, "вопрос", "вопроса", "вопросов")
+    return (
+        f"На сегодня всё: {DAILY_LIMIT} {questions} в день 🧠🔥\n"
+        "Мозгу нужен отдых, новые вопросы — завтра с 00:00 по Киеву."
+    )
 
 
 def render_topic_picker(owner_id=None):

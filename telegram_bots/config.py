@@ -33,6 +33,8 @@ LOG_LEVEL = os.getenv("FAT_JOKE_LOG_LEVEL", "INFO").upper()
 QUIZ_ANSWER_MINUTES = int(os.getenv("FAT_JOKE_QUIZ_ANSWER_MINUTES") or 15)
 # quiz questions every 20 minutes; off while the chat is small, /quiz still works
 QUIZ_SCHEDULE_ENABLED = _flag("FAT_JOKE_QUIZ_SCHEDULE_ENABLED")
+# how many /quiz questions one person can call a day (Kyiv time), 0 means no limit
+QUIZ_DAILY_LIMIT = int(os.getenv("FAT_JOKE_QUIZ_DAILY_LIMIT") or 20)
 # Kyiv time hours without scheduled questions, "0-8" means from 00:00 to 07:59; empty turns quiet hours off
 QUIZ_QUIET_HOURS = os.getenv("FAT_JOKE_QUIZ_QUIET_HOURS", "0-8")
 # "we miss you" roll call of inactive members, was switched off in the old version

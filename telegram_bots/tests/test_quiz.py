@@ -1,5 +1,6 @@
 import json
 import random
+from datetime import UTC, datetime
 
 import pytest
 
@@ -274,3 +275,26 @@ def test_aliases_must_be_strings(tmp_path):
     path.write_text(json.dumps({"code": "test", "title": "T", "aliases": [""], "questions": [GOOD]}), encoding="utf-8")
     with pytest.raises(ValueError, match="aliases"):
         load_discipline(path)
+
+
+def test_kyiv_day_start():
+    # 23:30 in Kyiv (UTC+2 in winter) is still November 2nd there
+    assert quiz.kyiv_day_start(datetime(2026, 11, 2, 21, 30, tzinfo=UTC)) == "2026-11-01 22:00:00"
+    assert quiz.kyiv_day_start(datetime(2026, 11, 2, 22, 30, tzinfo=UTC)) == "2026-11-02 22:00:00"
+    # summer time, UTC+3
+    assert quiz.kyiv_day_start(datetime(2026, 7, 1, 12, 0, tzinfo=UTC)) == "2026-06-30 21:00:00"
+
+
+def test_daily_limit(db, monkeypatch):
+    monkeypatch.setattr(quiz, "DAILY_LIMIT", 2)
+    quiz_db.save_quiz_message(db, -100, 1, "geo", 1, 1, asked_by=7)
+    assert not quiz.limit_reached(db, 7)
+    quiz_db.save_quiz_message(db, -100, 2, "geo", 1, 2, asked_by=7)
+    assert quiz.limit_reached(db, 7) and not quiz.limit_reached(db, 8)
+    # yesterday's questions don't count
+    db.execute("UPDATE QuizMessages SET created_at = datetime('now', '-2 days')")
+    assert not quiz.limit_reached(db, 7)
+    monkeypatch.setattr(quiz, "DAILY_LIMIT", 0)
+    quiz_db.save_quiz_message(db, -100, 3, "geo", 1, 3, asked_by=7)
+    quiz_db.save_quiz_message(db, -100, 4, "geo", 1, 4, asked_by=7)
+    assert not quiz.limit_reached(db, 7)

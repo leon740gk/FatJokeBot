@@ -224,6 +224,26 @@ def test_only_the_caller_can_answer(db, bot, dispatcher):
     assert bot.session.of_type(methods.AnswerCallbackQuery)[-1].text == "Этот вопрос уже закрыт"
 
 
+def test_daily_limit_stops_quiz(db, bot, dispatcher, monkeypatch):
+    monkeypatch.setattr(quiz, "DAILY_LIMIT", 1)
+    feed(dispatcher, bot, **text_update(user(7, "Alex"), "/quiz"))
+    picker_id = bot.session.next_message_id
+    feed(dispatcher, bot, **text_update(user(7, "Alex"), "/quiz мобла"))
+    question_id = bot.session.next_message_id
+    _, buttons = sent_question(bot)
+    feed(dispatcher, bot, **press(user(7, "Alex"), question_id, buttons[0].callback_data))
+
+    feed(dispatcher, bot, **text_update(user(7, "Alex"), "/quiz бух"))
+    assert sent_texts(bot)[-1].startswith("На сегодня всё: 1 вопрос в день")
+    feed(dispatcher, bot, **press(user(7, "Alex"), picker_id, "t geo 7"))
+    alert = bot.session.of_type(methods.AnswerCallbackQuery)[-1]
+    assert alert.show_alert and alert.text.startswith("На сегодня всё")
+    assert db.fetch_one("SELECT COUNT(*) FROM QuizMessages")[0] == 1
+    # the limit is per person
+    feed(dispatcher, bot, **text_update(user(8, "Bob"), "/quiz бух"))
+    assert sent_texts(bot)[-1].startswith("Бухгалтерия.")
+
+
 def test_scheduled_question_is_for_everyone(db, bot, dispatcher):
     users_db.register(db, user(8, "Bob"))
     asyncio.run(ask_question(bot, db, CHAT.id))
