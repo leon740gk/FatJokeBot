@@ -19,6 +19,7 @@ from telegram_bots.bots.fat_joke.handlers import (
     quiz,
     quotes,
     reactions,
+    who,
 )
 from telegram_bots.bots.fat_joke.middlewares import UserActivityMiddleware
 from telegram_bots.bots.fat_joke.scheduler import check_chat, create_scheduler
@@ -34,6 +35,7 @@ from telegram_bots.config import (
     QUIZ_SCHEDULE_ENABLED,
     QUOTE_OF_THE_DAY_ENABLED,
     WEEKLY_SUMMARY_ENABLED,
+    WHO_POLL_ENABLED,
     get_bot_token,
 )
 from telegram_bots.knowledge_base.fat_joke.reaction_data import bot_commands
@@ -55,6 +57,7 @@ ROUTERS = (
     quotes.router,
     fat_day.router,
     profile.router,
+    who.router,
     party.router,
     loot.router,
     quiz.router,
@@ -95,6 +98,7 @@ async def main():
         quiet_hours=parse_quiet_hours(QUIZ_QUIET_HOURS),
         quote_of_the_day_enabled=QUOTE_OF_THE_DAY_ENABLED,
         weekly_summary_enabled=WEEKLY_SUMMARY_ENABLED,
+        who_poll_enabled=WHO_POLL_ENABLED,
     )
     scheduler.start()
     try:

@@ -6,6 +6,7 @@ from zoneinfo import ZoneInfo
 
 from aiogram.enums import ChatMemberStatus
 from aiogram.exceptions import TelegramAPIError
+from aiogram.types import ReplyParameters
 from aiogram.utils.keyboard import InlineKeyboardBuilder
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 
@@ -13,8 +14,9 @@ from telegram_bots.bots.fat_joke.db import loot as loot_db
 from telegram_bots.bots.fat_joke.db import quiz as quiz_db
 from telegram_bots.bots.fat_joke.db import quotes as quotes_db
 from telegram_bots.bots.fat_joke.db import users as users_db
+from telegram_bots.bots.fat_joke.db import who_polls as who_db
 from telegram_bots.bots.fat_joke.db.backup import backup_database
-from telegram_bots.bots.fat_joke.services import loot, quiz, quotes, texts, weekly
+from telegram_bots.bots.fat_joke.services import loot, quiz, quotes, texts, weekly, who
 from telegram_bots.bots.fat_joke.services.quiet_hours import is_quiet
 from telegram_bots.knowledge_base.fat_joke.mlbb_data import loot_button
 from telegram_bots.knowledge_base.fat_joke.reaction_data import wanted
@@ -152,6 +154,37 @@ async def weekly_summary(bot, db, chat_id):
     await bot.send_message(chat_id, weekly.format_week(week))
 
 
+async def start_who_poll(bot, db, chat_id, rng=random):
+    """Sends a "Кто из нас…" poll with the chat members; returns its message_id, None with fewer than two people."""
+    options = who.pick_options(users_db.get_member_profiles(db), rng)
+    if not options:
+        return None
+    question = who.pick_question(who_db.used_questions(db, int(chat_id)), rng)
+    sent = await bot.send_poll(chat_id, question, options=who.option_labels(options), is_anonymous=False)
+    who_db.create(db, int(chat_id), sent.message_id, question, options)
+    return sent.message_id
+
+
+@chat_job
+async def who_poll(bot, db, chat_id):
+    if not who_db.get_open(db, int(chat_id)):
+        await start_who_poll(bot, db, chat_id)
+
+
+async def close_who_polls(bot, db, hours=who.POLL_HOURS):
+    for chat_id, message_id, question, options in who_db.take_expired(db, hours):
+        try:
+            poll = await bot.stop_poll(chat_id, message_id)
+            text = who.result(question, options, [option.voter_count for option in poll.options])
+            await bot.send_message(
+                chat_id,
+                **text.as_kwargs(),
+                reply_parameters=ReplyParameters(message_id=message_id, allow_sending_without_reply=True),
+            )
+        except TelegramAPIError as error:
+            logger.warning("can't close the who poll %s in chat %s: %s", message_id, chat_id, error.message)
+
+
 async def backup(db_path, backup_dir):
     backup_database(db_path, backup_dir)
 
@@ -168,12 +201,14 @@ def create_scheduler(
     quiet_hours=None,
     quote_of_the_day_enabled=False,
     weekly_summary_enabled=False,
+    who_poll_enabled=False,
 ):
     scheduler = AsyncIOScheduler(timezone=KYIV)
     scheduler.add_job(update_activity, "cron", hour=14, minute=55, kwargs={"db": db})
     scheduler.add_job(
         close_expired_questions, "interval", minutes=1, kwargs={"bot": bot, "db": db, "minutes": answer_minutes}
     )
+    scheduler.add_job(close_who_polls, "interval", minutes=1, kwargs={"bot": bot, "db": db})
     if db_path and backup_dir:
         # the bot may be down at 04:00 (laptop asleep, restart), so a missed backup still runs later the same day
         scheduler.add_job(
@@ -209,6 +244,8 @@ def create_scheduler(
         scheduler.add_job(
             quote_of_the_day, "cron", hour=19, minute=0, kwargs={"bot": bot, "db": db, "chat_id": chat_id}
         )
+    if who_poll_enabled:
+        scheduler.add_job(who_poll, "cron", hour=12, minute=0, kwargs={"bot": bot, "db": db, "chat_id": chat_id})
     if weekly_summary_enabled:
         scheduler.add_job(
             weekly_summary,

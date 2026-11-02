@@ -147,6 +147,19 @@ CREATE TABLE IF NOT EXISTS MessageCounts (
 )
 """
 
+WHO_POLLS_TABLE = """
+CREATE TABLE IF NOT EXISTS WhoPolls (
+    id INTEGER PRIMARY KEY,
+    chat_id INTEGER NOT NULL,
+    message_id INTEGER NOT NULL,
+    question TEXT NOT NULL,
+    options TEXT NOT NULL,
+    created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+    closed_at TEXT,
+    UNIQUE (chat_id, message_id)
+)
+"""
+
 TABLES = (
     USERS_TABLE,
     ANSWERS_TABLE,
@@ -160,6 +173,7 @@ TABLES = (
     LOOT_TABLE,
     ACHIEVEMENTS_TABLE,
     MESSAGE_COUNTS_TABLE,
+    WHO_POLLS_TABLE,
 )
 
 

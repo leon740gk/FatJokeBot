@@ -4,7 +4,7 @@ from random import Random
 import pytest
 
 from telegram_bots.bots.fat_joke.db import users
-from telegram_bots.bots.fat_joke.services import achievements, fat_day, iq, quotes, texts, weekly
+from telegram_bots.bots.fat_joke.services import achievements, fat_day, iq, quotes, texts, weekly, who
 from telegram_bots.bots.fat_joke.services.reactions import Reply, StickerReplier, text_reactions
 from telegram_bots.knowledge_base.fat_joke.random_phrases import random_phrase_groups
 from telegram_bots.knowledge_base.fat_joke.reaction_data import (
@@ -157,3 +157,26 @@ def test_streak_and_night_achievements(db):
 )
 def test_plural(count, word):
     assert weekly.plural(count, "сообщение", "сообщения", "сообщений") == word
+
+
+def test_who_result_with_a_tie_and_without_votes():
+    options = [(1, "Alex", "alex"), (2, "Bob", None), (3, "Eve", None)]
+    tie = who.result("Кто из нас?", options, [2, 2, 1])
+    assert "это Alex и Bob! 2 голоса, делят титул поровну" in tie.as_kwargs()["text"]
+    assert [entity.user.id for entity in tie.as_kwargs()["entities"]] == [1, 2]
+    assert "Никто не проголосовал" in who.result("Кто из нас?", options, [0, 0, 0]).as_kwargs()["text"]
+
+
+def test_who_options():
+    assert who.pick_options([(1, "Alex", None)]) is None
+    many = [(number, f"P{number}", None) for number in range(15)]
+    assert len(who.pick_options(many, Random(1))) == who.MAX_OPTIONS
+    assert who.option_labels([(1, "Alex", "a1"), (2, "Alex", None), (3, "Bob", "b")]) == ["Alex (@a1)", "Alex", "Bob"]
+
+
+def test_who_questions_go_round():
+    every = {who.PREFIX + question for question in who.who_questions}
+    assert len(every) == len(who.who_questions) >= 100
+    last = who.pick_question(every - {who.PREFIX + who.who_questions[5]})
+    assert last == who.PREFIX + who.who_questions[5]
+    assert who.pick_question(every) in every

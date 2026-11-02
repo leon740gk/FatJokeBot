@@ -16,6 +16,8 @@ from aiogram.types import (
     ChatMemberRestricted,
     ChatMemberUpdated,
     Message,
+    Poll,
+    PollOption,
     Update,
     User,
 )
@@ -30,11 +32,13 @@ from telegram_bots.bots.fat_joke.scheduler import (
     ask_question,
     check_chat,
     close_expired_questions,
+    close_who_polls,
     create_scheduler,
     hourly_bam,
     quote_of_the_day,
     scheduled_question,
     weekly_summary,
+    who_poll,
 )
 from telegram_bots.bots.fat_joke.services import achievements, loot, party, quiz
 from telegram_bots.knowledge_base.fat_joke.mlbb_data import gone_phrase, late_phrases
@@ -55,6 +59,7 @@ class FakeSession(BaseSession):
         self.left_users = set()
         self.muted_users = set()
         self.unknown_users = set()
+        self.poll_votes = []  # voter counts StopPoll returns, by option
 
     async def make_request(self, bot, method, timeout=None):
         self.requests.append(method)
@@ -75,7 +80,30 @@ class FakeSession(BaseSession):
             if method.user_id in self.admins:
                 return ChatMemberOwner(user=member_user, is_anonymous=False)
             return ChatMemberMember(user=member_user)
-        if isinstance(method, (methods.SendMessage, methods.SendSticker, methods.SendAnimation, methods.SendPhoto)):
+        if isinstance(method, methods.StopPoll):
+            options = [
+                PollOption(persistent_id=str(i), text=str(i), voter_count=n) for i, n in enumerate(self.poll_votes)
+            ]
+            return Poll(
+                id="1",
+                question="?",
+                options=options,
+                total_voter_count=sum(self.poll_votes),
+                is_closed=True,
+                is_anonymous=False,
+                type="regular",
+                allows_multiple_answers=False,
+                allows_revoting=True,
+                members_only=False,
+            )
+        sent_types = (
+            methods.SendMessage,
+            methods.SendSticker,
+            methods.SendAnimation,
+            methods.SendPhoto,
+            methods.SendPoll,
+        )
+        if isinstance(method, sent_types):
             self.next_message_id += 1
             return Message(message_id=self.next_message_id, date=datetime.now(), chat=CHAT, from_user=BOT_USER)
         return True
@@ -401,15 +429,20 @@ def test_scheduler_jobs(db, bot):
         scheduler = create_scheduler(bot, db, chat_id, miss_you, quiz_schedule_enabled=quiz_schedule)
         return sorted(job.func.__name__ for job in scheduler.get_jobs())
 
-    assert asyncio.run(job_ids("", False)) == ["close_expired_questions", "update_activity"]
+    assert asyncio.run(job_ids("", False)) == ["close_expired_questions", "close_who_polls", "update_activity"]
     # questions only on /quiz unless the schedule is switched on
-    assert asyncio.run(job_ids(CHAT.id, False)) == ["close_expired_questions", "hourly_bam", "update_activity"]
+    assert asyncio.run(job_ids(CHAT.id, False)) == [
+        "close_expired_questions",
+        "close_who_polls",
+        "hourly_bam",
+        "update_activity",
+    ]
     scheduler = create_scheduler(bot, db, CHAT.id, quote_of_the_day_enabled=True)
     assert "quote_of_the_day" in [job.func.__name__ for job in scheduler.get_jobs()]
     assert "scheduled_question" in asyncio.run(job_ids(CHAT.id, False, quiz_schedule=True))
     assert "we_miss_you" in asyncio.run(job_ids(CHAT.id, True))
-    scheduler = create_scheduler(bot, db, CHAT.id, weekly_summary_enabled=True)
-    assert "weekly_summary" in [job.func.__name__ for job in scheduler.get_jobs()]
+    scheduler = create_scheduler(bot, db, CHAT.id, weekly_summary_enabled=True, who_poll_enabled=True)
+    assert {"weekly_summary", "who_poll"} <= {job.func.__name__ for job in scheduler.get_jobs()}
 
 
 def test_scheduler_backup_job(db, bot, tmp_path):
@@ -743,3 +776,40 @@ def test_weekly_summary(db, bot, dispatcher, monkeypatch):
     assert "🍩 Жиртресты недели:" in summary and "«Я на диете»" in summary
     assert "🦗 Молчуны недели: Ghost (@ghost)" in summary
     assert "👑 MVP недели: Bob!" in summary
+
+
+def test_who_poll(db, bot, dispatcher):
+    feed(dispatcher, bot, **text_update(user(7, "Alex"), "/who"))
+    assert sent_texts(bot)[-1].startswith("Для опроса нужно хотя бы двое")
+
+    feed(dispatcher, bot, **text_update(user(8, "Bob"), "привет"))
+    feed(dispatcher, bot, **text_update(user(7, "Alex"), "/who"))
+    poll = bot.session.of_type(methods.SendPoll)[-1]
+    poll_id = bot.session.next_message_id
+    assert poll.question.startswith("Кто из нас ") and sorted(poll.options) == ["Alex", "Bob"]
+    assert poll.is_anonymous is False
+
+    # one poll at a time, the scheduled one too
+    feed(dispatcher, bot, **text_update(user(8, "Bob"), "/who"))
+    assert sent_texts(bot)[-1].startswith("Опрос уже идёт") and len(bot.session.of_type(methods.SendPoll)) == 1
+    asyncio.run(who_poll(bot, db, chat_id=CHAT.id))
+    assert len(bot.session.of_type(methods.SendPoll)) == 1
+
+    # not closed before its time
+    asyncio.run(close_who_polls(bot, db))
+    assert not bot.session.of_type(methods.StopPoll)
+
+    db.execute("UPDATE WhoPolls SET created_at = datetime('now', '-4 hours')")
+    winner = poll.options.index("Bob")
+    bot.session.poll_votes = [2 if index == winner else 1 for index in range(2)]
+    asyncio.run(close_who_polls(bot, db))
+    assert bot.session.of_type(methods.StopPoll)[-1].message_id == poll_id
+    announce = bot.session.of_type(methods.SendMessage)[-1]
+    assert f"«{poll.question}»" in announce.text and "это Bob! 2 голоса 🏆" in announce.text
+    assert announce.entities[0].user.id == 8 and announce.reply_parameters.message_id == poll_id
+    asyncio.run(close_who_polls(bot, db))
+    assert len(bot.session.of_type(methods.StopPoll)) == 1
+
+    # the next poll asks a new question
+    feed(dispatcher, bot, **text_update(user(7, "Alex"), "/who"))
+    assert bot.session.of_type(methods.SendPoll)[-1].question != poll.question
