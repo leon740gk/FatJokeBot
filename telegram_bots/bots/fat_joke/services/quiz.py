@@ -19,6 +19,7 @@ BUTTON_OPTION = 30
 
 class Outcome(Enum):
     CLOSED = "closed"  # old button, time is up, or someone has already answered this message
+    NOT_YOURS = "not_yours"  # someone else called this question, text is their name
     CHEATER = "cheater"
     CORRECT = "correct"
     WRONG = "wrong"
@@ -68,20 +69,23 @@ def find_discipline(text):
     return resolve_discipline(text, DISCIPLINES)
 
 
-def topic_callback_data(code):
-    return f"t {code}"
+def topic_callback_data(code, owner_id=None):
+    return f"t {code} {owner_id}" if owner_id else f"t {code}"
 
 
 def parse_topic_callback(data):
+    """(discipline, who may pick it or None for anyone), or None; "t <code> [<owner id>]"."""
     parts = (data or "").split(" ")
-    if len(parts) == 2 and parts[0] == "t" and parts[1] in DISCIPLINES:
-        return parts[1]
-    return None
+    if len(parts) not in (2, 3) or parts[0] != "t" or parts[1] not in DISCIPLINES:
+        return None
+    if len(parts) == 2:
+        return parts[1], None
+    return (parts[1], int(parts[2])) if parts[2].isdigit() else None
 
 
-def render_topic_picker():
-    """Buttons with all disciplines for "/quiz" without a topic, two per row."""
-    buttons = [(discipline.title, topic_callback_data(code)) for code, discipline in DISCIPLINES.items()]
+def render_topic_picker(owner_id=None):
+    """Buttons with all disciplines for "/quiz" without a topic, two per row; only owner_id may press them."""
+    buttons = [(discipline.title, topic_callback_data(code, owner_id)) for code, discipline in DISCIPLINES.items()]
     return RenderedQuestion("Какую тему хотите? 👇", [buttons[i : i + 2] for i in range(0, len(buttons), 2)])
 
 
@@ -152,6 +156,9 @@ def process_answer(db, user_id, chat_id, message_id, callback_data):
     parsed = parse_callback(callback_data)
     if not parsed:
         return AnswerResult(Outcome.CLOSED)
+    owner = quiz_db.get_open_owner(db, chat_id, message_id)
+    if owner and owner != user_id:
+        return AnswerResult(Outcome.NOT_YOURS, users_db.get_iq_and_name(db, owner)[1])
     season = quiz_db.claim_quiz_message(db, chat_id, message_id, parsed.discipline, parsed.number, user_id)
     if season is None:
         return AnswerResult(Outcome.CLOSED)

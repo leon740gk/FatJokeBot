@@ -192,31 +192,66 @@ def test_quiz_round(db, bot, dispatcher):
     assert "Читер в чате" in bot.session.of_type(methods.EditMessageText)[-1].text
 
 
-def test_quiz_command_with_topic_asks_once_per_topic(db, bot, dispatcher):
+def test_one_own_question_at_a_time(db, bot, dispatcher):
     feed(dispatcher, bot, **text_update(user(7, "Alex"), "/quiz мобла"))
-    feed(dispatcher, bot, **text_update(user(7, "Alex"), "/quiz по мобле"))
-    feed(dispatcher, bot, **text_update(user(8, "Bob"), "/quiz по бухгалтерии"))
-    texts = [request.text for request in bot.session.of_type(methods.SendMessage)]
-    assert texts[0].startswith("MLBB 2.")
-    assert texts[1].startswith("Сначала ответьте на предыдущий вопрос по теме MLBB 2")
-    assert texts[2].startswith("Бухгалтерия.")
-    assert {row[0] for row in db.fetch_all("SELECT discipline FROM QuizMessages")} == {"mlbb2", "accounting"}
+    alex_question = bot.session.next_message_id
+    feed(dispatcher, bot, **text_update(user(7, "Alex"), "/quiz бух"))
+    # someone else's open question doesn't stop Bob, even on the same topic
+    feed(dispatcher, bot, **text_update(user(8, "Bob"), "/quiz по мобле"))
+    sent = bot.session.of_type(methods.SendMessage)
+    assert sent[0].text.startswith("MLBB 2.")
+    assert sent[1].text == "Сначала ответь на свой вопрос 👆" and sent[1].reply_parameters.message_id == alex_question
+    assert sent[2].text.startswith("MLBB 2.")
+    assert db.fetch_all("SELECT asked_by, discipline FROM QuizMessages ORDER BY id") == [(7, "mlbb2"), (8, "mlbb2")]
+
+
+def test_only_the_caller_can_answer(db, bot, dispatcher):
+    feed(dispatcher, bot, **text_update(user(7, "Alex"), "/quiz мобла"))
+    message_id = bot.session.next_message_id
+    _, buttons = sent_question(bot)
+
+    feed(dispatcher, bot, **press(user(8, "Bob"), message_id, buttons[0].callback_data))
+    alert = bot.session.of_type(methods.AnswerCallbackQuery)[-1]
+    assert alert.show_alert and alert.text.startswith("Ворюга! 😈 Это вопрос для Alex")
+    assert not bot.session.of_type(methods.EditMessageText) and users_db.get_iq_and_name(db, 8)[0] == 100
+    assert db.fetch_one("SELECT COUNT(*) FROM Answers")[0] == 0
+
+    feed(dispatcher, bot, **press(user(7, "Alex"), message_id, buttons[0].callback_data))
+    assert bot.session.of_type(methods.EditMessageText)[-1].message_id == message_id
+    assert db.fetch_all("SELECT telegram_id FROM Answers") == [(7,)]
+    # after the answer it's simply closed for everyone
+    feed(dispatcher, bot, **press(user(8, "Bob"), message_id, buttons[1].callback_data))
+    assert bot.session.of_type(methods.AnswerCallbackQuery)[-1].text == "Этот вопрос уже закрыт"
+
+
+def test_scheduled_question_is_for_everyone(db, bot, dispatcher):
+    users_db.register(db, user(8, "Bob"))
+    asyncio.run(ask_question(bot, db, CHAT.id))
+    message_id = bot.session.next_message_id
+    _, buttons = sent_question(bot)
+    feed(dispatcher, bot, **press(user(8, "Bob"), message_id, buttons[0].callback_data))
+    assert db.fetch_all("SELECT telegram_id FROM Answers") == [(8,)]
 
 
 def test_quiz_command_without_topic_shows_picker(db, bot, dispatcher):
     feed(dispatcher, bot, **text_update(user(7, "Alex"), "/quiz"))
     picker = bot.session.of_type(methods.SendMessage)[-1]
     buttons = {button.text: button.callback_data for row in picker.reply_markup.inline_keyboard for button in row}
-    assert picker.text.startswith("Какую тему") and buttons["Бухгалтерия"] == "t accounting"
+    assert picker.text.startswith("Какую тему") and buttons["Бухгалтерия"] == "t accounting 7"
     picker_id = bot.session.next_message_id
 
-    feed(dispatcher, bot, **press(user(8, "Bob"), picker_id, "t accounting"))
+    # Bob can't pick a topic on Alex's /quiz
+    feed(dispatcher, bot, **press(user(8, "Bob"), picker_id, "t accounting 7"))
+    assert bot.session.of_type(methods.AnswerCallbackQuery)[-1].text.startswith("Это не твой /quiz")
+    assert quiz_db.get_open_question(db, CHAT.id) is None
+
+    feed(dispatcher, bot, **press(user(7, "Alex"), picker_id, "t accounting 7"))
     edit = bot.session.of_type(methods.EditMessageText)[-1]
     assert edit.message_id == picker_id and edit.text.startswith("Бухгалтерия.") and edit.reply_markup
-    assert quiz_db.get_open_question(db, CHAT.id, "accounting") == (picker_id,)
+    assert quiz_db.get_open_question_of(db, CHAT.id, 7) == (picker_id,)
 
     # a second press on the same picker doesn't overwrite the question
-    feed(dispatcher, bot, **press(user(7, "Alex"), picker_id, "t geo"))
+    feed(dispatcher, bot, **press(user(7, "Alex"), picker_id, "t geo 7"))
     assert bot.session.of_type(methods.AnswerCallbackQuery)[-1].text == "Тему уже выбрали"
     assert quiz_db.get_open_question(db, CHAT.id, "geo") is None
 
@@ -224,7 +259,7 @@ def test_quiz_command_without_topic_shows_picker(db, bot, dispatcher):
 def test_picker_refuses_topic_with_open_question(db, bot, dispatcher):
     feed(dispatcher, bot, **text_update(user(7, "Alex"), "/quiz бух"))
     feed(dispatcher, bot, **text_update(user(7, "Alex"), "/quiz"))
-    feed(dispatcher, bot, **press(user(7, "Alex"), bot.session.next_message_id, "t accounting"))
+    feed(dispatcher, bot, **press(user(7, "Alex"), bot.session.next_message_id, "t geo 7"))
     assert bot.session.of_type(methods.AnswerCallbackQuery)[-1].show_alert
     assert len(db.fetch_all("SELECT 1 FROM QuizMessages")) == 1
 

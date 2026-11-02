@@ -41,6 +41,7 @@ CREATE TABLE IF NOT EXISTS QuizMessages (
     created_at TEXT DEFAULT CURRENT_TIMESTAMP,
     season INTEGER NOT NULL DEFAULT 1,
     closed_at TEXT,
+    asked_by INTEGER,
     UNIQUE (chat_id, message_id)
 )
 """
@@ -170,6 +171,9 @@ def init_schema(db):
     if "in_chat" not in _columns(db, "Users"):
         # added 2026-10-31; everyone counts as a member until /members or a leave says otherwise
         db.execute("ALTER TABLE Users ADD COLUMN in_chat INTEGER NOT NULL DEFAULT 1")
+    if "asked_by" not in _columns(db, "QuizMessages"):
+        # added 2026-11-02; older questions have no owner, anyone could answer them
+        db.execute("ALTER TABLE QuizMessages ADD COLUMN asked_by INTEGER")
 
 
 def _columns(db, table):

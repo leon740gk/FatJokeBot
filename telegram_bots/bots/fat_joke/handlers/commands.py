@@ -1,7 +1,7 @@
 from aiogram import Router
 from aiogram.enums import ChatMemberStatus, ChatType
 from aiogram.filters import Command, CommandObject
-from aiogram.types import Message
+from aiogram.types import Message, ReplyParameters
 
 from telegram_bots.bots.fat_joke.db import quiz as quiz_db
 from telegram_bots.bots.fat_joke.db import users as users_db
@@ -73,27 +73,30 @@ async def already_answered_command(message: Message, command: CommandObject, db)
     await message.answer(quiz.format_answered(numbers))
 
 
-async def ask_if_free(message: Message, db, discipline, into_message_id=None):
-    """Asks a question of the discipline unless one of it is already open in this chat."""
-    if quiz_db.get_open_question(db, message.chat.id, discipline):
-        return False
-    await ask_question(message.bot, db, message.chat.id, discipline, into_message_id=into_message_id)
-    return True
+OWN_QUESTION_FIRST = "Сначала ответь на свой вопрос 👆"
+
+
+async def quiz_for(message: Message, db, discipline):
+    """Asks the sender a question of their own, unless they still have one open."""
+    own = quiz_db.get_open_question_of(db, message.chat.id, message.from_user.id)
+    if own:
+        await message.answer(
+            OWN_QUESTION_FIRST, reply_parameters=ReplyParameters(message_id=own[0], allow_sending_without_reply=True)
+        )
+        return
+    await ask_question(message.bot, db, message.chat.id, discipline, asked_by=message.from_user.id)
 
 
 @router.message(Command("quiz"))
 async def quiz_command(message: Message, command: CommandObject, db):
-    if not command.args:
-        picker = quiz.render_topic_picker()
-        await message.answer(picker.text, reply_markup=build_keyboard(picker))
-        return
-    discipline = quiz.find_discipline(command.args)
+    discipline = quiz.find_discipline(command.args) if command.args else None
     if not discipline:
-        picker = quiz.render_topic_picker()
-        await message.answer(UNKNOWN_TOPIC + picker.text, reply_markup=build_keyboard(picker))
+        # the topic buttons work only for whoever sent /quiz
+        picker = quiz.render_topic_picker(message.from_user.id)
+        prefix = UNKNOWN_TOPIC if command.args else ""
+        await message.answer(prefix + picker.text, reply_markup=build_keyboard(picker))
         return
-    if not await ask_if_free(message, db, discipline):
-        await message.answer(f"Сначала ответьте на предыдущий вопрос по теме {quiz.title(discipline)}! ☝️")
+    await quiz_for(message, db, discipline)
 
 
 async def is_chat_admin(message: Message):

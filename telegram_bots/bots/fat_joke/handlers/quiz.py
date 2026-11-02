@@ -22,21 +22,26 @@ OUTCOME_MEDIA = {
 @router.callback_query(F.data.startswith("t "))
 async def topic_callback(callback: CallbackQuery, db):
     message = callback.message
-    discipline = quiz.parse_topic_callback(callback.data)
-    if not isinstance(message, Message) or not discipline:
+    parsed = quiz.parse_topic_callback(callback.data)
+    if not isinstance(message, Message) or not parsed:
         await callback.answer("Эта кнопка уже не работает, напишите /quiz")
         return
+    discipline, owner = parsed
+    user_id = callback.from_user.id
+    if owner and owner != user_id:
+        await callback.answer("Это не твой /quiz 😉 Вызови свой: /quiz", show_alert=True)
+        return
     if quiz_db.is_quiz_message(db, message.chat.id, message.message_id):
-        # someone else picked a topic on this message a moment earlier
+        # the topic on this message was picked a moment earlier
         await callback.answer("Тему уже выбрали")
         return
-    if quiz_db.get_open_question(db, message.chat.id, discipline):
-        await callback.answer(
-            f"Сначала ответьте на предыдущий вопрос по теме {quiz.title(discipline)}!", show_alert=True
-        )
+    if quiz_db.get_open_question_of(db, message.chat.id, user_id):
+        await callback.answer("Сначала ответь на свой вопрос, он выше 👆", show_alert=True)
         return
     await callback.answer()
-    await ask_question(callback.bot, db, message.chat.id, discipline, into_message_id=message.message_id)
+    await ask_question(
+        callback.bot, db, message.chat.id, discipline, into_message_id=message.message_id, asked_by=user_id
+    )
 
 
 @router.callback_query()
@@ -51,6 +56,9 @@ async def answer_callback(callback: CallbackQuery, db):
     logger.info("answer from %s: %s -> %s", callback.from_user.id, callback.data, result.outcome.value)
     if result.outcome is Outcome.CLOSED:
         await callback.answer("Этот вопрос уже закрыт")
+        return
+    if result.outcome is Outcome.NOT_YOURS:
+        await callback.answer(f"Ворюга! 😈 Это вопрос для {result.text}. Вызови свой: /quiz", show_alert=True)
         return
 
     await callback.answer()

@@ -259,11 +259,14 @@ def test_find_discipline(text, code):
 
 
 def test_topic_picker_has_every_discipline():
-    picker = quiz.render_topic_picker()
+    picker = quiz.render_topic_picker(owner_id=7)
     buttons = [button for row in picker.rows for button in row]
     assert len(buttons) == len(quiz.DISCIPLINES) and all(len(row) <= 2 for row in picker.rows)
-    assert {quiz.parse_topic_callback(data) for _, data in buttons} == set(quiz.DISCIPLINES)
+    assert {quiz.parse_topic_callback(data) for _, data in buttons} == {(code, 7) for code in quiz.DISCIPLINES}
+    # pickers sent before owners existed still work for anyone
+    assert quiz.parse_topic_callback("t geo") == ("geo", None)
     assert quiz.parse_topic_callback("t nope") is None and quiz.parse_topic_callback("q mlbb 1 1") is None
+    assert quiz.parse_topic_callback("t geo x") is None
 
 
 def test_aliases_must_be_strings(tmp_path):

@@ -82,10 +82,11 @@ def build_keyboard(rendered):
     return keyboard.as_markup()
 
 
-async def ask_question(bot, db, chat_id, discipline=None, into_message_id=None, rng=random):
+async def ask_question(bot, db, chat_id, discipline=None, into_message_id=None, asked_by=None, rng=random):
     """Sends a quiz question, of the current discipline unless another one is given.
 
     into_message_id turns an existing message (the topic picker) into the question instead of sending a new one.
+    asked_by is who called it, only they can answer; scheduled questions are for everyone.
     When a season runs out of questions, the winners are announced first.
     """
     discipline = discipline or quiz.current_discipline(db)
@@ -101,7 +102,7 @@ async def ask_question(bot, db, chat_id, discipline=None, into_message_id=None, 
         message_id = into_message_id
     else:
         message_id = (await bot.send_message(chat_id, rendered.text, reply_markup=build_keyboard(rendered))).message_id
-    quiz_db.save_quiz_message(db, chat_id, message_id, discipline, picked.season, picked.question.number)
+    quiz_db.save_quiz_message(db, chat_id, message_id, discipline, picked.season, picked.question.number, asked_by)
 
 
 @chat_job
