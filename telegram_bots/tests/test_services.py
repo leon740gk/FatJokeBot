@@ -4,7 +4,7 @@ from random import Random
 import pytest
 
 from telegram_bots.bots.fat_joke.db import users
-from telegram_bots.bots.fat_joke.services import achievements, duel, fat_day, iq, quiz, quotes, texts, weekly, who
+from telegram_bots.bots.fat_joke.services import achievements, bets, duel, fat_day, iq, quiz, quotes, texts, weekly, who
 from telegram_bots.bots.fat_joke.services.reactions import Reply, StickerReplier, text_reactions
 from telegram_bots.knowledge_base.fat_joke.random_phrases import random_phrase_groups
 from telegram_bots.knowledge_base.fat_joke.reaction_data import (
@@ -196,3 +196,13 @@ def test_duel_winner():
     assert outcome((right, 2.0), (right, 2.0)) is None
     assert duel.parse_callback("duel a 5 2") == ("a", 5, 2) and duel.parse_callback("duel yes 5") == ("yes", 5, None)
     assert duel.parse_callback("duel maybe 5") is None and duel.parse_callback("q geo 1 1") is None
+
+
+def test_bet_payouts():
+    placed = [(1, 7, 30), (2, 7, 10), (3, 8, 20)]
+    assert bets.payouts(placed, 7) == {1: 45, 2: 15, 3: 0}
+    assert bets.payouts(placed, 8) == {1: 0, 2: 0, 3: 60}
+    assert bets.payouts(placed, None) == {1: 30, 2: 10, 3: 20}
+    # nobody bet on the winner: everyone gets the stake back
+    assert bets.payouts([(1, 8, 10)], 7) == {1: 10}
+    assert bets.parse_callback("bet 3 7") == (3, 7) and bets.parse_callback("bet x 7") is None

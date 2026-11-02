@@ -11,6 +11,7 @@ from aiogram.types import ReplyParameters
 from aiogram.utils.keyboard import InlineKeyboardBuilder
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 
+from telegram_bots.bots.fat_joke.db import bets as bets_db
 from telegram_bots.bots.fat_joke.db import duels as duels_db
 from telegram_bots.bots.fat_joke.db import loot as loot_db
 from telegram_bots.bots.fat_joke.db import quiz as quiz_db
@@ -18,7 +19,7 @@ from telegram_bots.bots.fat_joke.db import quotes as quotes_db
 from telegram_bots.bots.fat_joke.db import users as users_db
 from telegram_bots.bots.fat_joke.db import who_polls as who_db
 from telegram_bots.bots.fat_joke.db.backup import backup_database
-from telegram_bots.bots.fat_joke.services import duel, loot, quiz, quotes, texts, weekly, who
+from telegram_bots.bots.fat_joke.services import bets, duel, loot, quiz, quotes, texts, weekly, who
 from telegram_bots.bots.fat_joke.services.people import mention
 from telegram_bots.bots.fat_joke.services.quiet_hours import is_quiet
 from telegram_bots.knowledge_base.fat_joke.mlbb_data import loot_button
@@ -196,15 +197,28 @@ def duelist_names(db, current):
     return names
 
 
+def settle_bets(db, current, winner):
+    """Pays the bets out (or back) and returns the lines about them for the duel message."""
+    placed = bets_db.for_duel(db, current.id)
+    paid = bets.payouts(placed, winner)
+    bets_db.settle(db, current.id, paid)
+    names = {}
+    for user_id, _, _ in placed:
+        profile = users_db.get_profile(db, user_id)
+        names[user_id] = profile[1] if profile else str(user_id)
+    return bets.settle_lines(placed, paid, names)
+
+
 async def finish_duel(bot, db, current):
     """Picks the winner once both have answered or the time is up, and shows the result on the duel message."""
     question = quiz.get_question(current.discipline, current.question_number)
     winner = duel.winner_of(current, question) if question else None
     if not duels_db.finish(db, current.id, winner, duel.PRIZE if winner else 0):
         return
+    bet_lines = settle_bets(db, current, winner)
     if not question:
         return
-    text = duel.result_text(current, question, duelist_names(db, current), winner)
+    text = "\n".join([duel.result_text(current, question, duelist_names(db, current), winner), *bet_lines])
     try:
         await bot.edit_message_text(text, chat_id=current.chat_id, message_id=current.message_id)
     except TelegramAPIError as error:
@@ -217,9 +231,11 @@ async def close_duels(bot, db):
         current = duel.from_row(row)
         if duels_db.set_status(db, current.id, "pending", "expired") and current.message_id:
             names = duelist_names(db, current)
+            refunded = "\n💰 Ставки вернули." if settle_bets(db, current, None) else ""
             try:
                 await bot.edit_message_text(
-                    f"⌛ {names[current.opponent]} так и не принял(а) вызов {names[current.challenger]}. Струсил(а)?",
+                    f"⌛ {names[current.opponent]} так и не принял(а) вызов {names[current.challenger]}. "
+                    f"Струсил(а)?{refunded}",
                     chat_id=current.chat_id,
                     message_id=current.message_id,
                 )

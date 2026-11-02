@@ -2,6 +2,7 @@ import random
 from dataclasses import dataclass
 
 from telegram_bots.bots.fat_joke.db import achievements as achievements_db
+from telegram_bots.bots.fat_joke.db import bets as bets_db
 from telegram_bots.bots.fat_joke.db import duels as duels_db
 from telegram_bots.bots.fat_joke.db import loot as loot_db
 from telegram_bots.bots.fat_joke.services.fat_day import times_word
@@ -75,6 +76,7 @@ def battle_points(db, user_id):
     return (
         loot_db.points(db, user_id)
         + duels_db.points(db, user_id)
+        + bets_db.balance_change(db, user_id)
         + ACHIEVEMENT_BP * len(achievements_db.unlocked(db, user_id))
     )
 

@@ -42,7 +42,7 @@ from telegram_bots.bots.fat_joke.scheduler import (
     weekly_summary,
     who_poll,
 )
-from telegram_bots.bots.fat_joke.services import achievements, duel, loot, party, quiz
+from telegram_bots.bots.fat_joke.services import achievements, bets, duel, loot, party, quiz
 from telegram_bots.knowledge_base.fat_joke.mlbb_data import gone_phrase, late_phrases
 from telegram_bots.knowledge_base.fat_joke.reaction_data import bot_commands, red_blink
 
@@ -847,7 +847,7 @@ def test_duel_round(db, bot, dispatcher):
     challenge = bot.session.of_type(methods.SendMessage)[-1]
     duel_message = bot.session.next_message_id
     assert challenge.text.startswith("⚔️ Alex (@alex) вызывает Bob (@bob) на дуэль по теме MLBB 2!")
-    accept, decline = [b.callback_data for row in challenge.reply_markup.inline_keyboard for b in row]
+    accept, decline = [button.callback_data for button in challenge.reply_markup.inline_keyboard[0]]
 
     # a second duel for either of them waits
     feed(dispatcher, bot, **text_update(user(9, "Eve"), "/duel @bob"))
@@ -911,3 +911,66 @@ def test_duel_timeouts(db, bot, dispatcher):
     asyncio.run(close_duels(bot, db))
     result = bot.session.of_type(methods.EditMessageText)[-1].text
     assert "😴 Alex (@alex) не успел(а) ответить" in result and "Побеждает Bob (@bob)" in result
+
+
+def give_bp(db, user_id, points):
+    db.execute(
+        "INSERT INTO Loot (chat_id, message_id, kind, points, taken_by) VALUES (?, ?, 'red', ?, ?)",
+        (CHAT.id, 9000 + user_id, points, user_id),
+    )
+
+
+def test_bets_on_a_duel(db, bot, dispatcher):
+    for user_id, name in ((8, "Bob"), (9, "Eve"), (10, "Max"), (11, "Ann")):
+        feed(dispatcher, bot, **text_update(user(user_id, name), "привет"))
+    give_bp(db, 9, 100)
+    give_bp(db, 10, 100)
+    give_bp(db, 11, 5)
+    feed(dispatcher, bot, **text_update(user(7, "Alex"), "/duel @bob"))
+    duel_message = bot.session.next_message_id
+    challenge = bot.session.of_type(methods.SendMessage)[-1]
+    assert "💰 Ставок пока нет" in challenge.text
+    bet_buttons = {b.text: b.callback_data for b in challenge.reply_markup.inline_keyboard[1]}
+    on_alex, on_bob = bet_buttons["💰 +10 на Alex"], bet_buttons["💰 +10 на Bob"]
+
+    feed(dispatcher, bot, **press(user(7, "Alex"), duel_message, on_alex))
+    assert answers(bot)[-1] == "Дуэлянтам ставить нельзя, это договорняк 😏"
+    feed(dispatcher, bot, **press(user(11, "Ann"), duel_message, on_alex))
+    assert answers(bot)[-1] == "Не хватает BP: у тебя 5 BP"
+    feed(dispatcher, bot, **press(user(9, "Eve"), duel_message, on_alex))
+    feed(dispatcher, bot, **press(user(9, "Eve"), duel_message, on_alex))
+    assert answers(bot)[-1] == "Ставка принята! Всего 20 BP 💰"
+    assert "💰 Банк: 20 BP (на Alex 20, на Bob 0)" in bot.session.of_type(methods.EditMessageText)[-1].text
+    feed(dispatcher, bot, **press(user(9, "Eve"), duel_message, on_bob))
+    assert answers(bot)[-1].startswith("Ты уже поставил(а) на другого")
+    feed(dispatcher, bot, **text_update(user(10, "Max"), "/bet 40 @bob"))
+    assert sent_texts(bot)[-1] == "💰 Max ставит 40 BP на Bob!"
+    feed(dispatcher, bot, **text_update(user(10, "Max"), "/bet 20 @bob"))
+    assert sent_texts(bot)[-1] == f"Не больше {bets.MAX_BET} BP на одну дуэль"
+    assert achievements.battle_points(db, 10) == 60
+
+    feed(dispatcher, bot, **press(user(8, "Bob"), duel_message, duel.challenge_callback(duel_row(db).id, "yes")))
+    feed(dispatcher, bot, **text_update(user(10, "Max"), "/bet 5 @bob"))
+    assert sent_texts(bot)[-1].startswith("У Bob сейчас нет дуэли")
+    current = duel_row(db)
+    question = quiz.get_question(current.discipline, current.question_number)
+    wrong = next(option for option in range(4) if option not in question.correct)
+    feed(
+        dispatcher, bot, **press(user(7, "Alex"), duel_message, duel.answer_callback(current.id, min(question.correct)))
+    )
+    feed(dispatcher, bot, **press(user(8, "Bob"), duel_message, duel.answer_callback(current.id, wrong)))
+    result = bot.session.of_type(methods.EditMessageText)[-1].text
+    # Eve bet 20 on Alex and takes Max's 40
+    assert result.endswith("💰 Ставки:\nEve: +40 BP\nMax: −40 BP")
+    assert achievements.battle_points(db, 9) == 140 and achievements.battle_points(db, 10) == 60
+
+
+def test_bets_come_back_when_the_duel_is_off(db, bot, dispatcher):
+    feed(dispatcher, bot, **text_update(user(9, "Eve"), "привет"))
+    give_bp(db, 9, 30)
+    feed(dispatcher, bot, **reply_update(user(7, "Alex"), "/duel", user(8, "Bob"), "ну давай"))
+    feed(dispatcher, bot, **text_update(user(9, "Eve"), "/bet 30 @alex"))
+    assert achievements.battle_points(db, 9) == 0
+    feed(dispatcher, bot, **press(user(8, "Bob"), bot.session.next_message_id - 1, duel.challenge_callback(1, "no")))
+    assert bot.session.of_type(methods.EditMessageText)[-1].text.endswith("💰 Ставки вернули.")
+    assert achievements.battle_points(db, 9) == 30

@@ -181,6 +181,17 @@ CREATE TABLE IF NOT EXISTS Duels (
 )
 """
 
+DUEL_BETS_TABLE = """
+CREATE TABLE IF NOT EXISTS DuelBets (
+    duel_id INTEGER NOT NULL,
+    telegram_id INTEGER NOT NULL,
+    side INTEGER NOT NULL,
+    amount INTEGER NOT NULL,
+    payout INTEGER,
+    PRIMARY KEY (duel_id, telegram_id)
+)
+"""
+
 TABLES = (
     USERS_TABLE,
     ANSWERS_TABLE,
@@ -196,6 +207,7 @@ TABLES = (
     MESSAGE_COUNTS_TABLE,
     WHO_POLLS_TABLE,
     DUELS_TABLE,
+    DUEL_BETS_TABLE,
 )
 
 
