@@ -242,6 +242,27 @@ def test_leaders_for_a_named_topic(db, bot, dispatcher):
     assert bot.session.of_type(methods.SendMessage)[-1].text.startswith("Вот ленивая срака")
 
 
+def test_leaders_of_all_topics(db, bot, dispatcher):
+    feed(dispatcher, bot, **text_update(user(7, "Alex"), "/leaders"))
+    text = bot.session.of_type(methods.SendMessage)[-1].text
+    assert "Пока без лидеров:" in text and "Бухгалтерия" in text and "🥇" not in text
+
+    for number, (user_id, discipline) in enumerate(
+        [(7, "accounting"), (7, "accounting"), (8, "accounting"), (8, "geo")]
+    ):
+        db.execute(
+            "INSERT INTO Answers (telegram_id, discipline, question_number, is_correct) VALUES (?, ?, ?, 1)",
+            (user_id, discipline, number + 1),
+        )
+    users_db.register(db, user(8, "Bob"))
+    feed(dispatcher, bot, **text_update(user(7, "Alex"), "/leaders"))
+    # the inserted answers also bring Alex achievements, announced after the reply
+    text = [text for text in sent_texts(bot) if text.startswith("🏆 Лидеры викторины")][-1]
+    assert "Бухгалтерия, сезон 1:\n🥇 Alex — 2\n🥈 Bob — 1" in text
+    assert "География, сезон 1:\n🥇 Bob — 1" in text
+    assert "Бухгалтерия" not in text.split("Пока без лидеров:")[1]
+
+
 def test_discipline_command(db, bot, dispatcher):
     feed(dispatcher, bot, **text_update(user(7, "Alex"), "/discipline"))
     assert "👉 mlbb2" in bot.session.of_type(methods.SendMessage)[-1].text

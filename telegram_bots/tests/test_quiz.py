@@ -13,10 +13,9 @@ from telegram_bots.tests.conftest import FakeRandom, make_user
 
 
 def test_all_disciplines_load():
-    assert {"ukr", "geo", "bio", "mix", "mlbb", "mlbb2", "accounting"} <= set(quiz.DISCIPLINES)
-    assert len(quiz.DISCIPLINES["accounting"].questions) == 50
-    assert len(quiz.DISCIPLINES["mlbb"].questions) == 100
-    assert len(quiz.DISCIPLINES["mlbb2"].questions) == 50
+    assert {"ukr", "geo", "bio", "mix", "mlbb", "mlbb2", "accounting", "welding"} <= set(quiz.DISCIPLINES)
+    # every topic has the same number of questions, so their seasons last about as long
+    assert {len(discipline.questions) for discipline in quiz.DISCIPLINES.values()} == {150}
     assert quiz.DISCIPLINES["mlbb2"].shuffle_options
 
 
@@ -190,14 +189,15 @@ def test_discipline_setting(db):
 
 def test_questions_do_not_repeat_until_the_season_ends(db, player):
     numbers = set()
-    for message_id in range(50):
+    total = len(quiz.DISCIPLINES["mlbb2"].questions)
+    for message_id in range(total):
         picked = quiz.pick_question(db, "mlbb2", rng=random.Random(message_id))
         assert picked.season == 1 and picked.finished_season is None
         numbers.add(picked.question.number)
         ask(db, message_id, number=picked.question.number)
         if message_id == 0:
             answer(db, player, 0, "mlbb2", picked.question.number, min(picked.question.correct))
-    assert len(numbers) == 50
+    assert len(numbers) == total
 
     picked = quiz.pick_question(db, "mlbb2", rng=random.Random(0))
     assert (picked.finished_season, picked.season) == (1, 2)
@@ -217,7 +217,7 @@ def test_formatting():
     leaders = quiz.format_leaders([("B", 2), ("A", 1)], "mlbb2", 3)
     assert leaders.startswith("Лидеры в дисциплине MLBB 2, сезон 3") and "B: 2 верных" in leaders
     listing = quiz.format_disciplines("mlbb2")
-    assert "👉 mlbb2: MLBB 2 (50 вопросов)" in listing and "geo: География" in listing
+    assert "👉 mlbb2: MLBB 2 (150 вопросов)" in listing and "geo: География" in listing
 
 
 @pytest.mark.parametrize(
@@ -247,6 +247,8 @@ def test_quiet_hours_off(value):
         ("географии", "geo"),
         ("по українській", "ukr"),
         ("accounting", "accounting"),
+        ("по сварке", "welding"),
+        ("зварювання", "welding"),
         ("ерунда", None),
         ("", None),
         ("мобла бух", None),

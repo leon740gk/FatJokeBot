@@ -187,6 +187,22 @@ def format_leaders(rows, discipline, season):
     return "".join(lines)
 
 
+def format_all_leaders(rows):
+    """rows of (discipline, season, leaders) for every topic; topics nobody has answered go to one line."""
+    lines = ["🏆 Лидеры викторины по темам, текущие сезоны"]
+    empty = []
+    for discipline, season, leaders in rows:
+        if not leaders:
+            empty.append(title(discipline))
+            continue
+        lines.append(f"\n{title(discipline)}, сезон {season}:")
+        lines.extend(f"{iq.PRIZES[place]} {name} — {count}" for place, (name, count) in enumerate(leaders, start=1))
+    if empty:
+        lines.append(f"\nПока без лидеров: {', '.join(empty)}")
+    lines.append("\nСыграть: /quiz")
+    return "\n".join(lines)
+
+
 def format_season_end(discipline, season, winners):
     lines = [f"🏁 Сезон {season} в дисциплине {title(discipline)} завершён! Вопросы закончились.\n"]
     if winners:

@@ -53,6 +53,15 @@ async def show_leaders_command(message: Message, command: CommandObject, db):
     await message.answer(quiz.format_leaders(quiz_db.get_leaders(db, discipline, season), discipline, season))
 
 
+@router.message(Command("leaders"))
+async def leaders_command(message: Message, db):
+    rows = []
+    for discipline in quiz.DISCIPLINES:
+        season = quiz_db.current_season(db, discipline)
+        rows.append((discipline, season, quiz_db.get_leaders(db, discipline, season)))
+    await message.answer(quiz.format_all_leaders(rows))
+
+
 @router.message(Command("already_answered_questions"))
 async def already_answered_command(message: Message, command: CommandObject, db):
     discipline = discipline_from_args(command, db)
