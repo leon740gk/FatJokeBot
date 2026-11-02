@@ -4,7 +4,7 @@ from random import Random
 import pytest
 
 from telegram_bots.bots.fat_joke.db import users
-from telegram_bots.bots.fat_joke.services import achievements, fat_day, iq, quotes, texts, weekly, who
+from telegram_bots.bots.fat_joke.services import achievements, duel, fat_day, iq, quiz, quotes, texts, weekly, who
 from telegram_bots.bots.fat_joke.services.reactions import Reply, StickerReplier, text_reactions
 from telegram_bots.knowledge_base.fat_joke.random_phrases import random_phrase_groups
 from telegram_bots.knowledge_base.fat_joke.reaction_data import (
@@ -180,3 +180,19 @@ def test_who_questions_go_round():
     last = who.pick_question(every - {who.PREFIX + who.who_questions[5]})
     assert last == who.PREFIX + who.who_questions[5]
     assert who.pick_question(every) in every
+
+
+def test_duel_winner():
+    question = quiz.get_question("geo", 1)
+    right, wrong = min(question.correct), next(i for i in range(4) if i not in question.correct)
+
+    def outcome(a, b):
+        return duel.winner_of(duel.Duel(1, -1, 1, 7, 8, "geo", 1, "active", 0.0, *a, *b), question)
+
+    assert outcome((right, 3.0), (right, 5.0)) == 7
+    assert outcome((right, 5.0), (right, 3.0)) == 8
+    assert outcome((wrong, 1.0), (right, 9.0)) == 8
+    assert outcome((wrong, 1.0), (None, None)) is None
+    assert outcome((right, 2.0), (right, 2.0)) is None
+    assert duel.parse_callback("duel a 5 2") == ("a", 5, 2) and duel.parse_callback("duel yes 5") == ("yes", 5, None)
+    assert duel.parse_callback("duel maybe 5") is None and duel.parse_callback("q geo 1 1") is None

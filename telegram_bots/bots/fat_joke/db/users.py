@@ -82,6 +82,13 @@ def get_all_ids(db):
     return [row[0] for row in db.fetch_all("SELECT telegram_id FROM Users ORDER BY telegram_id")]
 
 
+def find_by_username(db, username):
+    """(telegram_id, name, username) of the user with this @username, case-insensitive, or None."""
+    return db.fetch_one(
+        "SELECT telegram_id, name, username FROM Users WHERE lower(username) = lower(?)", (username.lstrip("@"),)
+    )
+
+
 def get_member_profiles(db):
     """(telegram_id, name, username) of everyone in the chat."""
     return db.fetch_all("SELECT telegram_id, name, username FROM Users WHERE in_chat = 1 ORDER BY telegram_id")

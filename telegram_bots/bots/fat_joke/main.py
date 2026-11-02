@@ -11,6 +11,7 @@ from telegram_bots.bots.fat_joke.db.connection import Database
 from telegram_bots.bots.fat_joke.db.schema import init_schema
 from telegram_bots.bots.fat_joke.handlers import (
     commands,
+    duel,
     fat_day,
     loot,
     members,
@@ -50,7 +51,7 @@ async def set_commands(bot):
 
 
 # commands go first, so "/help" never reaches the keyword reactions;
-# party and loot buttons go before quiz, which takes every other button press
+# party, loot and duel buttons go before quiz, which takes every other button press
 ROUTERS = (
     commands.router,
     members.router,
@@ -60,6 +61,7 @@ ROUTERS = (
     who.router,
     party.router,
     loot.router,
+    duel.router,
     quiz.router,
     reactions.router,
 )

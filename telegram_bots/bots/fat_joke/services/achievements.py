@@ -2,6 +2,7 @@ import random
 from dataclasses import dataclass
 
 from telegram_bots.bots.fat_joke.db import achievements as achievements_db
+from telegram_bots.bots.fat_joke.db import duels as duels_db
 from telegram_bots.bots.fat_joke.db import loot as loot_db
 from telegram_bots.bots.fat_joke.services.fat_day import times_word
 from telegram_bots.knowledge_base.fat_joke.mlbb_data import achievements as ACHIEVEMENTS
@@ -20,6 +21,7 @@ class Stats:
     fat_days: int
     parties: int
     quotes: int
+    duels_won: int = 0
 
 
 def best_streak(results):
@@ -38,6 +40,7 @@ def collect(db, user_id):
         fat_days=achievements_db.fat_days(db, user_id),
         parties=achievements_db.parties(db, user_id),
         quotes=achievements_db.quotes_authored(db, user_id),
+        duels_won=duels_db.wins(db, user_id),
     )
 
 
@@ -55,6 +58,7 @@ CONDITIONS = {
     "tank": lambda stats, now: stats.fat_days >= 3,
     "teammate": lambda stats, now: stats.parties >= 5,
     "mvp_quotes": lambda stats, now: stats.quotes >= 3,
+    "duelist": lambda stats, now: stats.duels_won >= 3,
     "night_farm": lambda stats, now: now.hour in NIGHT_HOURS,
 }
 
@@ -68,7 +72,11 @@ def unlock_new(db, user_id, now):
 
 
 def battle_points(db, user_id):
-    return loot_db.points(db, user_id) + ACHIEVEMENT_BP * len(achievements_db.unlocked(db, user_id))
+    return (
+        loot_db.points(db, user_id)
+        + duels_db.points(db, user_id)
+        + ACHIEVEMENT_BP * len(achievements_db.unlocked(db, user_id))
+    )
 
 
 def rank_for(points):
@@ -112,6 +120,7 @@ def format_profile(name, iq_level, points, stats, unlocked_codes):
         f"⚔️ Объектов из «Бам»: {sum(stats.loot.values())}" + (f", из них Лордов: {lords}" if lords else ""),
         f"🍩 Жиртрест дня: {stats.fat_days} {times_word(stats.fat_days)}",
         f"🎮 Пати: {stats.parties}",
+        f"🤺 Побед в дуэлях: {stats.duels_won}",
         "",
         f"Достижения {len(unlocked_codes)}/{len(ACHIEVEMENTS)}:",
     ]

@@ -26,11 +26,13 @@ from telegram_bots.bots.fat_joke import main
 from telegram_bots.bots.fat_joke import scheduler as scheduler_module
 from telegram_bots.bots.fat_joke.db import quiz as quiz_db
 from telegram_bots.bots.fat_joke.db import users as users_db
+from telegram_bots.bots.fat_joke.db.duels import COLUMNS as DUEL_COLUMNS
 from telegram_bots.bots.fat_joke.handlers import fat_day as fat_day_handlers
 from telegram_bots.bots.fat_joke.handlers import reactions
 from telegram_bots.bots.fat_joke.scheduler import (
     ask_question,
     check_chat,
+    close_duels,
     close_expired_questions,
     close_who_polls,
     create_scheduler,
@@ -40,7 +42,7 @@ from telegram_bots.bots.fat_joke.scheduler import (
     weekly_summary,
     who_poll,
 )
-from telegram_bots.bots.fat_joke.services import achievements, loot, party, quiz
+from telegram_bots.bots.fat_joke.services import achievements, duel, loot, party, quiz
 from telegram_bots.knowledge_base.fat_joke.mlbb_data import gone_phrase, late_phrases
 from telegram_bots.knowledge_base.fat_joke.reaction_data import bot_commands, red_blink
 
@@ -429,9 +431,15 @@ def test_scheduler_jobs(db, bot):
         scheduler = create_scheduler(bot, db, chat_id, miss_you, quiz_schedule_enabled=quiz_schedule)
         return sorted(job.func.__name__ for job in scheduler.get_jobs())
 
-    assert asyncio.run(job_ids("", False)) == ["close_expired_questions", "close_who_polls", "update_activity"]
+    assert asyncio.run(job_ids("", False)) == [
+        "close_duels",
+        "close_expired_questions",
+        "close_who_polls",
+        "update_activity",
+    ]
     # questions only on /quiz unless the schedule is switched on
     assert asyncio.run(job_ids(CHAT.id, False)) == [
+        "close_duels",
         "close_expired_questions",
         "close_who_polls",
         "hourly_bam",
@@ -813,3 +821,93 @@ def test_who_poll(db, bot, dispatcher):
     # the next poll asks a new question
     feed(dispatcher, bot, **text_update(user(7, "Alex"), "/who"))
     assert bot.session.of_type(methods.SendPoll)[-1].question != poll.question
+
+
+def duel_row(db):
+    return duel.from_row(db.fetch_one(f"SELECT {DUEL_COLUMNS} FROM Duels ORDER BY id DESC LIMIT 1"))
+
+
+def duel_buttons(bot):
+    markup = bot.session.of_type(methods.EditMessageText)[-1].reply_markup
+    return [button.callback_data for row in markup.inline_keyboard for button in row]
+
+
+def test_duel_needs_an_opponent(db, bot, dispatcher):
+    feed(dispatcher, bot, **text_update(user(7, "Alex"), "/duel"))
+    assert sent_texts(bot)[-1].startswith("Кого вызываешь?")
+    feed(dispatcher, bot, **text_update(user(7, "Alex"), "/duel @nobody"))
+    assert sent_texts(bot)[-1] == "Не знаю такого человека в чате 🤔"
+    feed(dispatcher, bot, **reply_update(user(7, "Alex"), "/duel", user(7, "Alex"), "я"))
+    assert sent_texts(bot)[-1].startswith("Дуэль с самим собой?")
+
+
+def test_duel_round(db, bot, dispatcher):
+    feed(dispatcher, bot, **text_update(user(8, "Bob"), "привет"))
+    feed(dispatcher, bot, **text_update(user(7, "Alex"), "/duel @BOB мобла"))
+    challenge = bot.session.of_type(methods.SendMessage)[-1]
+    duel_message = bot.session.next_message_id
+    assert challenge.text.startswith("⚔️ Alex (@alex) вызывает Bob (@bob) на дуэль по теме MLBB 2!")
+    accept, decline = [b.callback_data for row in challenge.reply_markup.inline_keyboard for b in row]
+
+    # a second duel for either of them waits
+    feed(dispatcher, bot, **text_update(user(9, "Eve"), "/duel @bob"))
+    assert sent_texts(bot)[-1] == "У соперника уже есть незаконченная дуэль ⚔️"
+    # only Bob can accept
+    feed(dispatcher, bot, **press(user(9, "Eve"), duel_message, accept))
+    feed(dispatcher, bot, **press(user(7, "Alex"), duel_message, accept))
+    assert answers(bot)[-2:] == ["Это не тебя вызвали 🍿", "Это не тебя вызвали 🍿"]
+
+    feed(dispatcher, bot, **press(user(8, "Bob"), duel_message, accept))
+    asked = bot.session.of_type(methods.EditMessageText)[-1]
+    assert asked.text.startswith("⚔️ Дуэль: Alex (@alex) vs Bob (@bob)") and "MLBB 2." in asked.text
+    current = duel_row(db)
+    question = quiz.get_question(current.discipline, current.question_number)
+    by_option = {duel.parse_callback(data)[2]: data for data in duel_buttons(bot)}
+    right = by_option[min(question.correct)]
+    wrong = next(data for option, data in by_option.items() if option not in question.correct)
+
+    feed(dispatcher, bot, **press(user(9, "Eve"), duel_message, right))
+    assert answers(bot)[-1].startswith("Ты не участвуешь")
+    feed(dispatcher, bot, **press(user(8, "Bob"), duel_message, wrong))
+    feed(dispatcher, bot, **press(user(8, "Bob"), duel_message, right))
+    assert answers(bot)[-2:] == ["Ответ принят, ждём соперника ⏳", "Ты уже ответил(а), ждём соперника ⏳"]
+    feed(dispatcher, bot, **press(user(7, "Alex"), duel_message, right))
+    result = bot.session.of_type(methods.EditMessageText)[-1].text
+    assert "✅ Alex (@alex):" in result and "❌ Bob (@bob):" in result
+    assert "🏆 Побеждает Alex (@alex)! +10 BP" in result
+    assert achievements.battle_points(db, 7) == 10 and achievements.battle_points(db, 8) == 0
+    feed(dispatcher, bot, **text_update(user(7, "Alex"), "/me"))
+    assert "🤺 Побед в дуэлях: 1" in sent_texts(bot)[-1]
+    # finished, a new one is possible
+    feed(dispatcher, bot, **text_update(user(8, "Bob"), "/duel @alex"))
+    assert sent_texts(bot)[-1].startswith("⚔️ Bob (@bob) вызывает Alex (@alex)")
+
+
+def test_duel_declined(db, bot, dispatcher):
+    feed(dispatcher, bot, **reply_update(user(7, "Alex"), "/duel", user(8, "Bob"), "ну давай"))
+    duel_message = bot.session.next_message_id
+    feed(dispatcher, bot, **press(user(8, "Bob"), duel_message, duel.challenge_callback(duel_row(db).id, "no")))
+    assert bot.session.of_type(methods.EditMessageText)[-1].text == "🏳️ Bob (@bob) отказался(ась) от дуэли."
+    assert duel_row(db).status == "declined"
+
+
+def test_duel_timeouts(db, bot, dispatcher):
+    feed(dispatcher, bot, **reply_update(user(7, "Alex"), "/duel", user(8, "Bob"), "ну давай"))
+    db.execute("UPDATE Duels SET created_at = datetime('now', '-11 minutes')")
+    asyncio.run(close_duels(bot, db))
+    assert "так и не принял(а) вызов" in bot.session.of_type(methods.EditMessageText)[-1].text
+
+    feed(dispatcher, bot, **reply_update(user(7, "Alex"), "/duel", user(8, "Bob"), "ещё раз", message_id=5))
+    duel_message = bot.session.next_message_id
+    feed(dispatcher, bot, **press(user(8, "Bob"), duel_message, duel.challenge_callback(duel_row(db).id, "yes")))
+    current = duel_row(db)
+    question = quiz.get_question(current.discipline, current.question_number)
+    feed(
+        dispatcher, bot, **press(user(8, "Bob"), duel_message, duel.answer_callback(current.id, min(question.correct)))
+    )
+    asyncio.run(close_duels(bot, db))
+    assert duel_row(db).status == "active"
+    db.execute("UPDATE Duels SET started_at = started_at - 300")
+    asyncio.run(close_duels(bot, db))
+    result = bot.session.of_type(methods.EditMessageText)[-1].text
+    assert "😴 Alex (@alex) не успел(а) ответить" in result and "Побеждает Bob (@bob)" in result

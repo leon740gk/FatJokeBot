@@ -1,6 +1,7 @@
 import functools
 import logging
 import random
+import time
 from datetime import datetime
 from zoneinfo import ZoneInfo
 
@@ -10,13 +11,15 @@ from aiogram.types import ReplyParameters
 from aiogram.utils.keyboard import InlineKeyboardBuilder
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 
+from telegram_bots.bots.fat_joke.db import duels as duels_db
 from telegram_bots.bots.fat_joke.db import loot as loot_db
 from telegram_bots.bots.fat_joke.db import quiz as quiz_db
 from telegram_bots.bots.fat_joke.db import quotes as quotes_db
 from telegram_bots.bots.fat_joke.db import users as users_db
 from telegram_bots.bots.fat_joke.db import who_polls as who_db
 from telegram_bots.bots.fat_joke.db.backup import backup_database
-from telegram_bots.bots.fat_joke.services import loot, quiz, quotes, texts, weekly, who
+from telegram_bots.bots.fat_joke.services import duel, loot, quiz, quotes, texts, weekly, who
+from telegram_bots.bots.fat_joke.services.people import mention
 from telegram_bots.bots.fat_joke.services.quiet_hours import is_quiet
 from telegram_bots.knowledge_base.fat_joke.mlbb_data import loot_button
 from telegram_bots.knowledge_base.fat_joke.reaction_data import wanted
@@ -185,6 +188,47 @@ async def close_who_polls(bot, db, hours=who.POLL_HOURS):
             logger.warning("can't close the who poll %s in chat %s: %s", message_id, chat_id, error.message)
 
 
+def duelist_names(db, current):
+    names = {}
+    for user_id in (current.challenger, current.opponent):
+        profile = users_db.get_profile(db, user_id)
+        names[user_id] = mention(profile[1], profile[2]) if profile else str(user_id)
+    return names
+
+
+async def finish_duel(bot, db, current):
+    """Picks the winner once both have answered or the time is up, and shows the result on the duel message."""
+    question = quiz.get_question(current.discipline, current.question_number)
+    winner = duel.winner_of(current, question) if question else None
+    if not duels_db.finish(db, current.id, winner, duel.PRIZE if winner else 0):
+        return
+    if not question:
+        return
+    text = duel.result_text(current, question, duelist_names(db, current), winner)
+    try:
+        await bot.edit_message_text(text, chat_id=current.chat_id, message_id=current.message_id)
+    except TelegramAPIError as error:
+        logger.warning("can't show the duel %s result: %s", current.id, error.message)
+
+
+async def close_duels(bot, db):
+    pending, active = duels_db.stale(db, duel.ACCEPT_MINUTES, time.time() - duel.ANSWER_SECONDS)
+    for row in pending:
+        current = duel.from_row(row)
+        if duels_db.set_status(db, current.id, "pending", "expired") and current.message_id:
+            names = duelist_names(db, current)
+            try:
+                await bot.edit_message_text(
+                    f"⌛ {names[current.opponent]} так и не принял(а) вызов {names[current.challenger]}. Струсил(а)?",
+                    chat_id=current.chat_id,
+                    message_id=current.message_id,
+                )
+            except TelegramAPIError as error:
+                logger.warning("can't close the duel %s: %s", current.id, error.message)
+    for row in active:
+        await finish_duel(bot, db, duel.from_row(row))
+
+
 async def backup(db_path, backup_dir):
     backup_database(db_path, backup_dir)
 
@@ -209,6 +253,7 @@ def create_scheduler(
         close_expired_questions, "interval", minutes=1, kwargs={"bot": bot, "db": db, "minutes": answer_minutes}
     )
     scheduler.add_job(close_who_polls, "interval", minutes=1, kwargs={"bot": bot, "db": db})
+    scheduler.add_job(close_duels, "interval", minutes=1, kwargs={"bot": bot, "db": db})
     if db_path and backup_dir:
         # the bot may be down at 04:00 (laptop asleep, restart), so a missed backup still runs later the same day
         scheduler.add_job(

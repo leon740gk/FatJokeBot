@@ -160,6 +160,27 @@ CREATE TABLE IF NOT EXISTS WhoPolls (
 )
 """
 
+DUELS_TABLE = """
+CREATE TABLE IF NOT EXISTS Duels (
+    id INTEGER PRIMARY KEY,
+    chat_id INTEGER NOT NULL,
+    message_id INTEGER,
+    challenger INTEGER NOT NULL,
+    opponent INTEGER NOT NULL,
+    discipline TEXT,
+    question_number INTEGER,
+    status TEXT NOT NULL DEFAULT 'pending',
+    created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+    started_at REAL,
+    challenger_option INTEGER,
+    challenger_seconds REAL,
+    opponent_option INTEGER,
+    opponent_seconds REAL,
+    winner INTEGER,
+    points INTEGER NOT NULL DEFAULT 0
+)
+"""
+
 TABLES = (
     USERS_TABLE,
     ANSWERS_TABLE,
@@ -174,6 +195,7 @@ TABLES = (
     ACHIEVEMENTS_TABLE,
     MESSAGE_COUNTS_TABLE,
     WHO_POLLS_TABLE,
+    DUELS_TABLE,
 )
 
 
