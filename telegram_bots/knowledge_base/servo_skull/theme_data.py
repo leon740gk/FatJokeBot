@@ -17,7 +17,7 @@ loot_button = "🎁 Забрати"
 rare_loot = "epic"
 top_loot = "legendary"
 # quiz topic of the scheduled questions until an admin picks another with /discipline
-default_discipline = "ukr"
+default_discipline = "games"
 
 # a press after someone else has taken it
 late_phrases = [
