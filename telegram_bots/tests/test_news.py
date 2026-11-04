@@ -28,17 +28,21 @@ ATOM = b"""<?xml version="1.0" encoding="utf-8"?>
 </feed>"""
 
 
-def item(source, number, hours_ago):
+def item(source, number, hours_ago, section="games", title=None):
     return news.NewsItem(
-        source, f"{source} {number}", f"https://{source}.ua/{number}", NOW - timedelta(hours=hours_ago)
+        section,
+        source,
+        title or f"{source} {number}",
+        f"https://{source}.ua/{number}",
+        NOW - timedelta(hours=hours_ago),
     )
 
 
 def test_parse_rss_and_atom():
-    rss = news.parse_feed(RSS, "Site")
-    assert [(i.title, i.link) for i in rss] == [
-        ("NAVI – чемпіони", "https://site.ua/navi"),
-        ("Old news", "https://site.ua/old"),
+    rss = news.parse_feed(RSS, "Site", "games")
+    assert [(i.section, i.title, i.link) for i in rss] == [
+        ("games", "NAVI – чемпіони", "https://site.ua/navi"),
+        ("games", "Old news", "https://site.ua/old"),
     ]
     assert rss[0].published == datetime(2026, 11, 4, 8, 0, tzinfo=UTC)
     atom = news.parse_feed(ATOM, "Atom")
@@ -48,17 +52,45 @@ def test_parse_rss_and_atom():
 
 def test_pick_takes_fresh_unsent_news_from_every_site():
     items = [item("a", n, n) for n in range(1, 6)] + [item("b", 1, 2), item("b", 2, 40)]
-    picked = news.pick(items, sent_links={"https://a.ua/1"}, now=NOW, limit=4)
+    picked = news.pick(items, sent_links={"https://a.ua/1"}, now=NOW, per_section=4)
     # a/1 was sent before, b/2 is too old; the sites take turns, the newest first
-    assert [i.title for i in picked] == ["a 2", "b 1", "a 3", "a 4"]
+    assert [i.title for i in picked["games"]] == ["a 2", "b 1", "a 3", "a 4"]
     # the same story in two feeds goes once
-    assert len(news.pick([item("a", 1, 1), item("a", 1, 1)], set(), NOW)) == 1
+    assert len(news.pick([item("a", 1, 1), item("a", 1, 1)], set(), NOW, 5)["games"]) == 1
 
 
-def test_digest_links():
-    text, entities = news.digest([item("a", 1, 1)], NOW.date()).render()
-    assert text.startswith("🎮 Игровые новости, 04.11") and "a 1 — a" in text
-    assert [(e.type, e.url) for e in entities] == [(MessageEntityType.TEXT_LINK, "https://a.ua/1")]
+def test_pick_by_sections():
+    items = [item("g", n, n) for n in range(1, 5)] + [item("h", n, n, section="ai") for n in range(1, 3)]
+    picked = news.pick(items, set(), NOW, per_section=3)
+    assert {section: len(found) for section, found in picked.items()} == {"games": 3, "ai": 2}
+
+
+def test_skip_words_match_the_start_of_a_word():
+    skip = ["росси", "рф", "рубл"]
+    assert news.skipped("Российские студенты и ИИ", skip)
+    assert news.skipped("Курс рубля упал", skip)
+    assert news.skipped("Новый закон в РФ", skip)
+    # inside a word it is not a match
+    assert not news.skipped("Абрфикс выпустил патч", skip)
+    assert not news.skipped("NVIDIA показала RTX 6090", skip)
+    picked = news.pick([item("a", 1, 1, title="В России запретили VPN"), item("a", 2, 1)], set(), NOW, 3, skip)
+    assert [i.title for i in picked["games"]] == ["a 2"]
+
+
+def test_digest_sections():
+    picked = {"ai": [item("h", 1, 1, section="ai")], "games": [item("g", 1, 1)]}
+    sections = {"games": "🎮 Игры", "it": "💻 IT", "ai": "🤖 AI"}
+    text, entities = news.digest(picked, sections, NOW.date()).render()
+    # the order of the sections, not of picked; an empty section has no heading
+    assert text.startswith("📰 Новости, 04.11") and text.index("🎮 Игры") < text.index("🤖 AI")
+    assert "💻 IT" not in text and "g 1 — g" in text
+    assert [(e.type, e.url) for e in entities] == [
+        (MessageEntityType.TEXT_LINK, "https://g.ua/1"),
+        (MessageEntityType.TEXT_LINK, "https://h.ua/1"),
+    ]
+    # one section without a heading: just the list
+    text, _ = news.digest({"games": [item("g", 1, 1)]}, {"games": ""}, NOW.date()).render()
+    assert text == "📰 Новости, 04.11\n\n▫️ g 1 — g"
 
 
 def test_sent_links_are_kept_per_chat(db):
@@ -73,14 +105,16 @@ def servo_skull():
     content.activate(content.DEFAULT_BOT)
 
 
-def test_news_command(db, bot, dispatcher, servo_skull, monkeypatch):
-    fetched = [item("PlayUA", 1, 1), item("ITC", 1, 2)]
-
-    async def fake_fetch(feeds):
+def fake_fetch(monkeypatch, fetched):
+    async def fetch(feeds):
         assert feeds == content.kb.news_data.feeds
-        return [news.NewsItem(i.source, i.title, i.link, datetime.now(UTC)) for i in fetched]
+        return [news.NewsItem(i.section, i.source, i.title, i.link, datetime.now(UTC)) for i in fetched]
 
-    monkeypatch.setattr(news, "fetch_all", fake_fetch)
+    monkeypatch.setattr(news, "fetch_all", fetch)
+
+
+def test_servo_skull_news_command(db, bot, dispatcher, servo_skull, monkeypatch):
+    fake_fetch(monkeypatch, [item("PlayUA", 1, 1), item("ITC", 1, 2)])
     feed(dispatcher, bot, **text_update(user(7, "Alex"), "/news"))
     sent = bot.session.of_type(methods.SendMessage)[-1]
     assert sent.text.startswith("🎮 Ігрові новини") and sent.link_preview_options.is_disabled
@@ -90,15 +124,23 @@ def test_news_command(db, bot, dispatcher, servo_skull, monkeypatch):
     assert sent_texts(bot)[-1].startswith("Свіжих новин поки немає")
 
 
-def test_news_are_off_without_feeds(db, bot, dispatcher):
+def test_fat_joke_news_in_sections_without_russian_politics(db, bot, dispatcher, monkeypatch):
+    fake_fetch(
+        monkeypatch,
+        [
+            item("StopGame", 1, 1),
+            item("Хабр", 1, 1, section="it", title="Роскомнадзор заблокировал ещё один VPN"),
+            item("Хабр", 2, 1, section="it"),
+            item("Хабр", 3, 1, section="ai"),
+        ],
+    )
     feed(dispatcher, bot, **text_update(user(7, "Alex"), "/news"))
-    assert sent_texts(bot)[-1] == "Новости у этого бота выключены 📰"
-    # FatJoke has no feeds, so nothing is scheduled even with the flag on
-    jobs = {job.func.__name__ for job in create_scheduler(bot, db, CHAT.id, news_enabled=True).get_jobs()}
-    assert "daily_news" not in jobs
+    text = sent_texts(bot)[-1]
+    assert text.startswith("📰 Новости") and "🎮 Игры" in text and "💻 IT" in text and "🤖 AI" in text
+    assert "Роскомнадзор" not in text
 
 
-def test_daily_news_scheduled_for_servo_skull(db, bot, servo_skull):
+def test_daily_news_scheduled(db, bot, servo_skull):
     def jobs(**flags):
         return {job.func.__name__ for job in create_scheduler(bot, db, CHAT.id, **flags).get_jobs()}
 
@@ -106,9 +148,17 @@ def test_daily_news_scheduled_for_servo_skull(db, bot, servo_skull):
     assert "daily_news" not in jobs(news_enabled=False)
 
 
+def test_no_feeds_no_news(db, bot, dispatcher, monkeypatch):
+    monkeypatch.setattr(content.kb.news_data, "feeds", [])
+    feed(dispatcher, bot, **text_update(user(7, "Alex"), "/news"))
+    assert sent_texts(bot)[-1] == "Новости у этого бота выключены 📰"
+    jobs = {job.func.__name__ for job in create_scheduler(bot, db, CHAT.id, news_enabled=True).get_jobs()}
+    assert "daily_news" not in jobs
+
+
 def test_a_dead_feed_is_skipped():
     async def run():
-        return await news.fetch_all([("Dead", "http://127.0.0.1:9/feed")])
+        return await news.fetch_all([("games", "Dead", "http://127.0.0.1:9/feed")])
 
     assert asyncio.run(run()) == []
 
@@ -135,7 +185,7 @@ def test_a_slow_feed_is_read_to_the_end():
         await site.start()
         port = runner.addresses[0][1]
         try:
-            return await news.fetch_all([("Slow", f"http://127.0.0.1:{port}/feed")])
+            return await news.fetch_all([("games", "Slow", f"http://127.0.0.1:{port}/feed")])
         finally:
             await runner.cleanup()
 

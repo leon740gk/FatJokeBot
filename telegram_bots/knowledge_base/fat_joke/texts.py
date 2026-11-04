@@ -235,6 +235,6 @@ birthday_wishes = [
 ]
 
 # gaming news, /news
-news_title = "🎮 Игровые новости, {date}"
+news_title = "📰 Новости, {date}"
 news_empty = "Свежих новостей пока нет, всё уже было 📰"
 news_off = "Новости у этого бота выключены 📰"

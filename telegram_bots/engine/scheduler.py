@@ -170,18 +170,21 @@ async def birthday_greetings(bot, db, chat_id):
 
 async def post_news(bot, db, chat_id):
     """Sends the fresh news not posted to this chat yet; returns how many, 0 when there were none."""
+    data = kb.news_data
     sent = news_db.sent_links(db, int(chat_id))
-    picked = news.pick(await news.fetch_all(kb.news_data.feeds), sent, datetime.now(KYIV))
-    if not picked:
+    items = await news.fetch_all(data.feeds)
+    picked = news.pick(items, sent, datetime.now(KYIV), data.per_section, data.skip_words)
+    links = [item.link for section in picked.values() for item in section]
+    if not links:
         return 0
     await bot.send_message(
         chat_id,
-        **news.digest(picked, datetime.now(KYIV).date()).as_kwargs(),
+        **news.digest(picked, data.sections, datetime.now(KYIV).date()).as_kwargs(),
         # one big preview of the first link would push the list off the screen
         link_preview_options=LinkPreviewOptions(is_disabled=True),
     )
-    news_db.mark_sent(db, int(chat_id), [item.link for item in picked])
-    return len(picked)
+    news_db.mark_sent(db, int(chat_id), links)
+    return len(links)
 
 
 @chat_job
