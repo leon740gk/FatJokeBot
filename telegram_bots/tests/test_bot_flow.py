@@ -457,15 +457,31 @@ def test_party_gathers_five_and_pings_them(db, bot, dispatcher):
     assert "1. P6" in bot.session.of_type(methods.SendPhoto)[-1].caption
 
 
+def test_party_for_two(db, bot, dispatcher):
+    feed(dispatcher, bot, **text_update(user(1, "P1"), "/party 2 ранкед"))
+    party_message = bot.session.next_message_id
+    first = bot.session.of_type(methods.SendPhoto)[-1]
+    assert "В деле 1/2" in first.caption and "ранкед" in first.caption and "2 ранкед" not in first.caption
+
+    feed(dispatcher, bot, **press(user(2, "P2"), party_message, party.JOIN, photo=True))
+    edit = bot.session.of_type(methods.EditMessageCaption)[-1]
+    assert "В деле 2/2" in edit.caption and "Пати собрана" in edit.caption and edit.reply_markup is None
+    call = bot.session.of_type(methods.SendMessage)[-1]
+    assert sorted(entity.user.id for entity in call.entities) == [1, 2]
+
+
 def test_old_party_falls_apart(db, bot, dispatcher, monkeypatch):
     # a party without a picture, like ServoSkull's, is edited as plain text
     monkeypatch.setattr(reaction_data, "party_photo", None)
     feed(dispatcher, bot, **text_update(user(1, "P1"), "/party"))
     party_message = bot.session.next_message_id
-    db.execute("UPDATE Parties SET created_at = datetime('now', '-4 hours')")
+    db.execute("UPDATE Parties SET created_at = datetime('now', '-20 minutes')")
+    feed(dispatcher, bot, **press(user(3, "P3"), party_message, party.JOIN))
+    assert answers(bot)[-1] == "Ты в деле! 🎮"
+    db.execute("UPDATE Parties SET created_at = datetime('now', '-31 minutes')")
     feed(dispatcher, bot, **press(user(2, "P2"), party_message, party.JOIN))
     assert answers(bot)[-1].startswith("Эта пати уже не работает")
-    assert "Не собрались" in bot.session.of_type(methods.EditMessageText)[-1].text
+    assert "Не собрались за 30 минут" in bot.session.of_type(methods.EditMessageText)[-1].text
     feed(dispatcher, bot, **press(user(2, "P2"), 12345, party.JOIN))
     assert answers(bot)[-1].startswith("Эта пати уже не работает")
 

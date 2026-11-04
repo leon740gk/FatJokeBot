@@ -32,40 +32,42 @@ async def edit_party(message: Message, text, reply_markup=None):
 @router.message(Command("party"))
 async def party_command(message: Message, command: CommandObject, db):
     chat_id = message.chat.id
-    open_message_id = parties_db.get_open(db, chat_id, party.PARTY_HOURS)
+    open_message_id = parties_db.get_open(db, chat_id, party.PARTY_MINUTES)
     if open_message_id:
         await message.answer(
             kb.texts.party_already_open,
             reply_parameters=ReplyParameters(message_id=open_message_id, allow_sending_without_reply=True),
         )
         return
-    comment = (command.args or "").strip()
+    size, comment = party.parse_args(command.args)
     user = message.from_user
     creator = (user.id, display_name(user), user.username)
-    text = party.party_text(comment, [creator])
+    text = party.party_text(comment, [creator], size)
     if kb.reaction_data.party_photo:
         sent = await message.answer_photo(kb.reaction_data.party_photo, caption=text, reply_markup=party_keyboard())
     else:
         sent = await message.answer(text, reply_markup=party_keyboard())
-    party_id = parties_db.create(db, chat_id, sent.message_id, user.id, comment)
+    party_id = parties_db.create(db, chat_id, sent.message_id, user.id, comment, size)
     parties_db.join(db, party_id, *creator)
 
 
 @router.callback_query(F.data.in_({party.JOIN, party.LEAVE}))
 async def party_callback(callback: CallbackQuery, db):
     message = callback.message
-    found = isinstance(message, Message) and parties_db.find(db, message.chat.id, message.message_id, party.PARTY_HOURS)
+    found = isinstance(message, Message) and parties_db.find(
+        db, message.chat.id, message.message_id, party.PARTY_MINUTES
+    )
     if not found:
         await callback.answer(kb.texts.party_dead, show_alert=True)
         return
-    party_id, comment, is_gathered, is_expired = found
+    party_id, comment, size, is_gathered, is_expired = found
     if is_gathered:
         await callback.answer(kb.texts.party_already_gathered)
         return
     if is_expired:
         await callback.answer(kb.texts.party_dead, show_alert=True)
         with contextlib.suppress(TelegramBadRequest):
-            await edit_party(message, party.party_text(comment, parties_db.members(db, party_id), expired=True))
+            await edit_party(message, party.party_text(comment, parties_db.members(db, party_id), size, expired=True))
         return
 
     user = callback.from_user
@@ -81,7 +83,9 @@ async def party_callback(callback: CallbackQuery, db):
         await callback.answer(kb.texts.party_left)
 
     members = parties_db.members(db, party_id)
-    gathered = len(members) >= party.PARTY_SIZE and parties_db.mark_gathered(db, party_id)
-    await edit_party(message, party.party_text(comment, members), reply_markup=None if gathered else party_keyboard())
+    gathered = len(members) >= size and parties_db.mark_gathered(db, party_id)
+    await edit_party(
+        message, party.party_text(comment, members, size), reply_markup=None if gathered else party_keyboard()
+    )
     if gathered:
         await message.answer(**party.gathered_call(members).as_kwargs())

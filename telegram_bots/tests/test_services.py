@@ -5,7 +5,7 @@ from zoneinfo import ZoneInfo
 import pytest
 
 from telegram_bots.engine.db import users
-from telegram_bots.engine.services import achievements, bets, duel, fat_day, iq, quiz, quotes, texts, who, words
+from telegram_bots.engine.services import achievements, bets, duel, fat_day, iq, party, quiz, quotes, texts, who, words
 from telegram_bots.engine.services.reactions import Reply, StickerReplier, text_reactions
 from telegram_bots.knowledge_base.fat_joke.random_phrases import random_phrase_groups
 from telegram_bots.knowledge_base.fat_joke.reaction_data import (
@@ -209,3 +209,19 @@ def test_bet_payouts():
     # nobody bet on the winner: everyone gets the stake back
     assert bets.payouts([(1, 8, 10)], 7) == {1: 10}
     assert bets.parse_callback("bet 3 7") == (3, 7) and bets.parse_callback("bet x 7") is None
+
+
+@pytest.mark.parametrize(
+    ("args", "expected"),
+    [
+        (None, (5, "")),
+        ("ранкед в 21:00", (5, "ранкед в 21:00")),
+        ("3", (3, "")),
+        ("2  ранкед в 21:00", (2, "ранкед в 21:00")),
+        # only 2, 3 and 5 are sizes, anything else stays in the comment
+        ("4 ранкед", (5, "4 ранкед")),
+        ("21:00", (5, "21:00")),
+    ],
+)
+def test_party_size_from_args(args, expected):
+    assert party.parse_args(args) == expected

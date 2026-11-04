@@ -77,7 +77,7 @@ members_footer = '\nКто ни разу не писал при боте, поя
 party_title = '🎮 Собираем пати в MLBB!'
 party_count = '\nВ деле {count}/{size}:'
 party_gathered = '\n✅ Пати собрана!'
-party_expired = '\n💨 Не собрались за {hours} часа. Новая пати: /party'
+party_expired = '\n💨 Не собрались за {minutes} минут. Новая пати: /party'
 party_join_hint = '\nЖми «Я в деле» 👇'
 party_call = ' — пати собрана, заходим в игру! 🎮'
 

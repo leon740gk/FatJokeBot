@@ -140,3 +140,19 @@ def test_old_users_get_in_chat_column(tmp_path):
     init_schema(db)
     init_schema(db)
     assert db.fetch_all("SELECT telegram_id, in_chat FROM Users") == [(1, 1)]
+
+
+def test_old_parties_get_size_column(tmp_path):
+    from telegram_bots.engine.db.connection import Database
+
+    db = Database(tmp_path / "old.db")
+    db.execute(
+        """
+        CREATE TABLE Parties (id INTEGER PRIMARY KEY, chat_id INTEGER NOT NULL, message_id INTEGER NOT NULL,
+        created_by INTEGER NOT NULL, comment TEXT, created_at TEXT DEFAULT CURRENT_TIMESTAMP, gathered_at TEXT)
+        """
+    )
+    db.execute("INSERT INTO Parties (chat_id, message_id, created_by) VALUES (1, 2, 3)")
+    init_schema(db)
+    init_schema(db)
+    assert db.fetch_all("SELECT message_id, size FROM Parties") == [(2, 5)]

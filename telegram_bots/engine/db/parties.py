@@ -1,32 +1,32 @@
-def create(db, chat_id, message_id, user_id, comment):
+def create(db, chat_id, message_id, user_id, comment, size):
     db.execute(
-        "INSERT INTO Parties (chat_id, message_id, created_by, comment) VALUES (?, ?, ?, ?)",
-        (chat_id, message_id, user_id, comment),
+        "INSERT INTO Parties (chat_id, message_id, created_by, comment, size) VALUES (?, ?, ?, ?, ?)",
+        (chat_id, message_id, user_id, comment, size),
     )
     return db.fetch_one("SELECT id FROM Parties WHERE chat_id = ? AND message_id = ?", (chat_id, message_id))[0]
 
 
-def get_open(db, chat_id, hours):
-    """message_id of the party still gathering in this chat, started less than `hours` ago."""
+def get_open(db, chat_id, minutes):
+    """message_id of the party still gathering in this chat, started less than `minutes` ago."""
     row = db.fetch_one(
         """
         SELECT message_id FROM Parties
         WHERE chat_id = ? AND gathered_at IS NULL AND created_at > datetime('now', ?)
         ORDER BY id DESC LIMIT 1
         """,
-        (chat_id, f"-{hours} hours"),
+        (chat_id, f"-{minutes} minutes"),
     )
     return row[0] if row else None
 
 
-def find(db, chat_id, message_id, hours):
-    """(party_id, comment, is_gathered, is_expired) of the party on this message, or None."""
+def find(db, chat_id, message_id, minutes):
+    """(party_id, comment, size, is_gathered, is_expired) of the party on this message, or None."""
     return db.fetch_one(
         """
-        SELECT id, comment, gathered_at IS NOT NULL, created_at <= datetime('now', ?) FROM Parties
+        SELECT id, comment, size, gathered_at IS NOT NULL, created_at <= datetime('now', ?) FROM Parties
         WHERE chat_id = ? AND message_id = ?
         """,
-        (f"-{hours} hours", chat_id, message_id),
+        (f"-{minutes} minutes", chat_id, message_id),
     )
 
 

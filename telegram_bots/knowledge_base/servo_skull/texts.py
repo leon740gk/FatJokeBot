@@ -82,7 +82,7 @@ members_footer = "\nХто жодного разу не писав при бот
 party_title = "🎮 Збираємо загін!"
 party_count = "\nУ ділі {count}/{size}:"
 party_gathered = "\n✅ Загін зібрано!"
-party_expired = "\n💨 Не зібралися за {hours} години. Новий загін: /party"
+party_expired = "\n💨 Не зібралися за {minutes} хвилин. Новий загін: /party"
 party_join_hint = "\nТисни «Я в ділі» 👇"
 party_call = " — загін зібрано, заходимо в гру! 🎮"
 

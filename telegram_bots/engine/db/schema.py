@@ -97,6 +97,7 @@ CREATE TABLE IF NOT EXISTS Parties (
     message_id INTEGER NOT NULL,
     created_by INTEGER NOT NULL,
     comment TEXT,
+    size INTEGER NOT NULL DEFAULT 5,
     created_at TEXT DEFAULT CURRENT_TIMESTAMP,
     gathered_at TEXT,
     UNIQUE (chat_id, message_id)
@@ -232,6 +233,9 @@ def init_schema(db):
     if "asked_by" not in _columns(db, "QuizMessages"):
         # added 2026-11-02; older questions have no owner, anyone could answer them
         db.execute("ALTER TABLE QuizMessages ADD COLUMN asked_by INTEGER")
+    if "size" not in _columns(db, "Parties"):
+        # added 2026-11-04; every party was for five before
+        db.execute("ALTER TABLE Parties ADD COLUMN size INTEGER NOT NULL DEFAULT 5")
 
 
 def _columns(db, table):
