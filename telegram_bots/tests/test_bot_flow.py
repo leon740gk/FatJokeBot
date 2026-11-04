@@ -21,6 +21,7 @@ from telegram_bots.engine.db.duels import COLUMNS as DUEL_COLUMNS
 from telegram_bots.engine.handlers import fat_day as fat_day_handlers
 from telegram_bots.engine.handlers import reactions
 from telegram_bots.engine.scheduler import (
+    KYIV,
     ask_question,
     check_chat,
     close_duels,
@@ -388,7 +389,7 @@ def test_quote_book(db, bot, dispatcher):
     assert texts[1].startswith("Ответь командой /save")
     assert texts[2].endswith("Всего цитат: 1")
     assert texts[3] == "Эта цитата уже в цитатнике 📜"
-    today = datetime.now().strftime("%d.%m.%Y")
+    today = datetime.now(KYIV).strftime("%d.%m.%Y")
     assert texts[4] == f"«Я на диете с понедельника»\n— Sergio (@sergio), {today}"
     assert texts[5] == "У «Вася» цитат пока нет 🤔"
 
