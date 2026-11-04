@@ -97,3 +97,24 @@ def get_member_profiles(db):
 def get_members(db):
     """(telegram_id, name) of everyone in the chat."""
     return db.fetch_all("SELECT telegram_id, name FROM Users WHERE in_chat = 1 ORDER BY telegram_id")
+
+
+def set_birthday(db, user_id, stored):
+    """stored is "DD.MM.YYYY" or "DD.MM", None forgets the birthday."""
+    db.execute("UPDATE Users SET DOB = ? WHERE telegram_id = ?", (stored, user_id))
+
+
+def get_birthday(db, user_id):
+    row = db.fetch_one("SELECT DOB FROM Users WHERE telegram_id = ?", (user_id,))
+    return row[0] if row else None
+
+
+def get_birthdays(db):
+    """(telegram_id, name, username, DOB) of everyone in the chat who has a birthday saved."""
+    return db.fetch_all(
+        """
+        SELECT telegram_id, name, username, DOB FROM Users
+        WHERE in_chat = 1 AND DOB IS NOT NULL AND DOB != ''
+        ORDER BY telegram_id
+        """
+    )

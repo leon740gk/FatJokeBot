@@ -5,21 +5,11 @@ from datetime import datetime
 
 import pytest
 from aiogram import Bot, methods
-from aiogram.client.session.base import BaseSession
-from aiogram.exceptions import TelegramBadRequest
 from aiogram.types import (
-    CallbackQuery,
-    Chat,
     ChatMemberLeft,
     ChatMemberMember,
-    ChatMemberOwner,
-    ChatMemberRestricted,
     ChatMemberUpdated,
     Message,
-    Poll,
-    PollOption,
-    Update,
-    User,
 )
 
 from telegram_bots.config import Settings
@@ -46,133 +36,20 @@ from telegram_bots.engine.scheduler import (
 from telegram_bots.engine.services import achievements, bets, duel, loot, party, quiz
 from telegram_bots.knowledge_base.fat_joke.reaction_data import bot_commands, red_blink
 from telegram_bots.knowledge_base.fat_joke.theme_data import gone_phrase, late_phrases
-
-CHAT = Chat(id=-100500, type="supergroup", title="Test chat")
-BOT_USER = User(id=42, is_bot=True, first_name="FatJoke", username="fat_joke_bot")
-
-
-class FakeSession(BaseSession):
-    def __init__(self):
-        super().__init__()
-        self.requests = []
-        self.next_message_id = 1000
-        self.admins = set()
-        self.missing_chats = set()
-        self.left_chats = set()
-        self.left_users = set()
-        self.muted_users = set()
-        self.unknown_users = set()
-        self.poll_votes = []  # voter counts StopPoll returns, by option
-
-    async def make_request(self, bot, method, timeout=None):
-        self.requests.append(method)
-        if getattr(method, "chat_id", None) in self.missing_chats:
-            raise TelegramBadRequest(method=method, message="Bad Request: chat not found")
-        if isinstance(method, methods.GetChatMember) and method.chat_id in self.left_chats:
-            return ChatMemberLeft(user=BOT_USER)
-        if isinstance(method, methods.GetMe):
-            return BOT_USER
-        if isinstance(method, methods.GetChatMember) and method.user_id in self.unknown_users:
-            raise TelegramBadRequest(method=method, message="Bad Request: PARTICIPANT_ID_INVALID")
-        if isinstance(method, methods.GetChatMember):
-            member_user = User(id=method.user_id, is_bot=False, first_name=f"Name{method.user_id}")
-            if method.user_id in self.left_users:
-                return ChatMemberLeft(user=member_user)
-            if method.user_id in self.muted_users:
-                return muted(member_user)
-            if method.user_id in self.admins:
-                return ChatMemberOwner(user=member_user, is_anonymous=False)
-            return ChatMemberMember(user=member_user)
-        if isinstance(method, methods.StopPoll):
-            options = [
-                PollOption(persistent_id=str(i), text=str(i), voter_count=n) for i, n in enumerate(self.poll_votes)
-            ]
-            return Poll(
-                id="1",
-                question="?",
-                options=options,
-                total_voter_count=sum(self.poll_votes),
-                is_closed=True,
-                is_anonymous=False,
-                type="regular",
-                allows_multiple_answers=False,
-                allows_revoting=True,
-                members_only=False,
-            )
-        sent_types = (
-            methods.SendMessage,
-            methods.SendSticker,
-            methods.SendAnimation,
-            methods.SendPhoto,
-            methods.SendPoll,
-        )
-        if isinstance(method, sent_types):
-            self.next_message_id += 1
-            return Message(message_id=self.next_message_id, date=datetime.now(), chat=CHAT, from_user=BOT_USER)
-        return True
-
-    async def stream_content(self, *args, **kwargs):
-        yield b""
-
-    async def close(self):
-        pass
-
-    def of_type(self, method_type):
-        return [request for request in self.requests if isinstance(request, method_type)]
-
-
-def muted(member_user):
-    # every can_* right off, taken from the model so new Bot API rights don't break the test
-    rights = {name: False for name in ChatMemberRestricted.model_fields if name.startswith("can_")}
-    return ChatMemberRestricted(user=member_user, is_member=True, until_date=datetime.now(), **rights)
-
-
-@pytest.fixture(autouse=True)
-def no_philosophy(monkeypatch):
-    # a random philosopher quote on any text message would add an unexpected reply now and then
-    monkeypatch.setattr("telegram_bots.engine.services.reactions.PHILOSOPHY_CHANCE", 0)
-    # tests run at night too, the night achievement would add a message
-    monkeypatch.setattr(achievements, "NIGHT_HOURS", range(0))
-
-
-@pytest.fixture
-def bot():
-    return Bot("42:TEST", session=FakeSession())
-
-
-@pytest.fixture
-def dispatcher(db):
-    yield main.build_dispatcher(db)
-    # module level routers can belong to one dispatcher only, detach them for the next test
-    for router in main.ROUTERS:
-        router._parent_router = None
-
-
-def user(user_id, name):
-    return User(id=user_id, is_bot=False, first_name=name, username=name.lower())
-
-
-def feed(dispatcher, bot, **update):
-    asyncio.run(dispatcher.feed_update(bot, Update(update_id=1, **update)))
-
-
-def text_update(from_user, text, message_id=1):
-    return {"message": Message(message_id=message_id, date=datetime.now(), chat=CHAT, from_user=from_user, text=text)}
-
-
-def reply_update(from_user, text, original_author, original_text, message_id=2, original_id=1):
-    original = Message(
-        message_id=original_id, date=datetime.now(), chat=CHAT, from_user=original_author, text=original_text
-    )
-    message = Message(
-        message_id=message_id, date=datetime.now(), chat=CHAT, from_user=from_user, text=text, reply_to_message=original
-    )
-    return {"message": message}
-
-
-def press(from_user, message_id, data):
-    message = Message(message_id=message_id, date=datetime.now(), chat=CHAT, from_user=BOT_USER, text="?")
-    return {"callback_query": CallbackQuery(id="1", from_user=from_user, chat_instance="c", message=message, data=data)}
+from telegram_bots.tests.fake_telegram import (
+    BOT_USER,
+    CHAT,
+    FakeSession,
+    LootRandom,
+    feed,
+    press,
+    press_loot,
+    reply_update,
+    sent_question,
+    sent_texts,
+    text_update,
+    user,
+)
 
 
 def test_help_command_replies_and_registers_user(db, bot, dispatcher):
@@ -187,12 +64,6 @@ def test_text_keywords_reply_once_per_group(db, bot, dispatcher):
     texts = [request.text for request in bot.session.of_type(methods.SendMessage)]
     assert len(texts) == 1 and texts[0].startswith("10 правил Серджио")
     assert len(bot.session.of_type(methods.SendSticker)) == 1
-
-
-def sent_question(bot):
-    message = bot.session.of_type(methods.SendMessage)[-1]
-    buttons = [button for row in message.reply_markup.inline_keyboard for button in row]
-    return message, buttons
 
 
 def test_quiz_round(db, bot, dispatcher):
@@ -499,10 +370,6 @@ def test_command_menu_has_a_handler_for_every_command(bot):
     assert [command.command for command in sent.commands] == list(bot_commands)
 
 
-def sent_texts(bot):
-    return [request.text for request in bot.session.of_type(methods.SendMessage)]
-
-
 def answers(bot):
     return [request.text for request in bot.session.of_type(methods.AnswerCallbackQuery)]
 
@@ -683,32 +550,10 @@ def test_main_starts_up_to_polling(tmp_path, monkeypatch):
     assert "chat_member" in session.allowed_updates
 
 
-class LootRandom:
-    """Always spawns the given objective."""
-
-    def __init__(self, code):
-        self.code = code
-
-    def random(self):
-        return 0
-
-    def choices(self, kinds, weights):
-        return [loot.kinds()[self.code]]
-
-    def choice(self, items):
-        return list(items)[0]
-
-
 def bam_with_loot(bot, db, code):
     asyncio.run(hourly_bam(bot, db, chat_id=CHAT.id, rng=LootRandom(code)))
     sent = bot.session.of_type(methods.SendMessage)[-1]
     return sent, bot.session.next_message_id
-
-
-def press_loot(dispatcher, bot, from_user, message_id, text):
-    message = Message(message_id=message_id, date=datetime.now(), chat=CHAT, from_user=BOT_USER, text=text)
-    query = CallbackQuery(id="1", from_user=from_user, chat_instance="c", message=message, data=loot.CALLBACK)
-    feed(dispatcher, bot, callback_query=query)
 
 
 def test_bam_loot_goes_to_the_fastest(db, bot, dispatcher):

@@ -15,6 +15,7 @@ from telegram_bots.engine.db.backup import backup_if_stale
 from telegram_bots.engine.db.connection import Database
 from telegram_bots.engine.db.schema import init_schema
 from telegram_bots.engine.handlers import (
+    birthdays,
     commands,
     duel,
     fat_day,
@@ -46,6 +47,7 @@ async def set_commands(bot):
 ROUTERS = (
     commands.router,
     members.router,
+    birthdays.router,
     quotes.router,
     fat_day.router,
     profile.router,
@@ -93,6 +95,7 @@ async def main(settings):
         quote_of_the_day_enabled=settings.quote_of_the_day_enabled,
         weekly_summary_enabled=settings.weekly_summary_enabled,
         who_poll_enabled=settings.who_poll_enabled,
+        birthdays_enabled=settings.birthdays_enabled,
     )
     scheduler.start()
     try:

@@ -54,6 +54,8 @@ class Settings:
     who_poll_enabled: bool = True
     # the weekly summary in the main chat on Sundays at 20:00 Kyiv time
     weekly_summary_enabled: bool = True
+    # birthday greetings in the main chat at 09:00 Kyiv time; /birthday and /birthdays work anyway
+    birthdays_enabled: bool = True
 
     @property
     def env_prefix(self):
@@ -83,6 +85,7 @@ def load_settings(bot, environ=None):
         quote_of_the_day_enabled=_flag(get("QUOTE_OF_THE_DAY_ENABLED"), default=True),
         who_poll_enabled=_flag(get("WHO_POLL_ENABLED"), default=True),
         weekly_summary_enabled=_flag(get("WEEKLY_SUMMARY_ENABLED"), default=True),
+        birthdays_enabled=_flag(get("BIRTHDAYS_ENABLED"), default=True),
     )
 
 

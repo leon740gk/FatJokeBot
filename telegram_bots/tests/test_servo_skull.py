@@ -3,14 +3,13 @@
 import asyncio
 
 import pytest
-from aiogram import Bot, methods
+from aiogram import methods
 
-from telegram_bots.engine import content, main
+from telegram_bots.engine import content
 from telegram_bots.engine.scheduler import hourly_bam, weekly_summary
-from telegram_bots.engine.services import achievements, quiz
-from telegram_bots.tests.test_bot_flow import (
+from telegram_bots.engine.services import quiz
+from telegram_bots.tests.fake_telegram import (
     CHAT,
-    FakeSession,
     LootRandom,
     feed,
     press,
@@ -23,25 +22,10 @@ from telegram_bots.tests.test_bot_flow import (
 
 
 @pytest.fixture(autouse=True)
-def servo_skull(monkeypatch):
+def servo_skull():
     content.activate("servo_skull")
-    # no random philosopher replies and no night achievement, the same as in the FatJoke flow tests
-    monkeypatch.setattr("telegram_bots.engine.services.reactions.PHILOSOPHY_CHANCE", 0)
-    monkeypatch.setattr(achievements, "NIGHT_HOURS", range(0))
     yield
     content.activate(content.DEFAULT_BOT)
-
-
-@pytest.fixture
-def bot():
-    return Bot("42:TEST", session=FakeSession())
-
-
-@pytest.fixture
-def dispatcher(db):
-    yield main.build_dispatcher(db)
-    for router in main.ROUTERS:
-        router._parent_router = None
 
 
 def test_help_and_quiz_speak_ukrainian(db, bot, dispatcher):

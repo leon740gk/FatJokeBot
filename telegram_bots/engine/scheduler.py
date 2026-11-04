@@ -22,7 +22,7 @@ from telegram_bots.engine.db import quotes as quotes_db
 from telegram_bots.engine.db import users as users_db
 from telegram_bots.engine.db import who_polls as who_db
 from telegram_bots.engine.db.backup import backup_database
-from telegram_bots.engine.services import bets, duel, loot, quiz, quotes, texts, weekly, who
+from telegram_bots.engine.services import bets, birthdays, duel, loot, quiz, quotes, texts, weekly, who
 from telegram_bots.engine.services.people import mention
 from telegram_bots.engine.services.quiet_hours import is_quiet
 
@@ -160,6 +160,14 @@ async def quote_of_the_day(bot, db, chat_id):
 
 
 @chat_job
+async def birthday_greetings(bot, db, chat_id):
+    today = datetime.now(KYIV).date()
+    people = birthdays.todays(users_db.get_birthdays(db), today)
+    if people:
+        await bot.send_message(chat_id, **birthdays.greeting(people, today).as_kwargs())
+
+
+@chat_job
 async def weekly_summary(bot, db, chat_id):
     week = weekly.collect(db, int(chat_id), datetime.now(KYIV).date())
     await bot.send_message(chat_id, weekly.format_week(week))
@@ -269,6 +277,7 @@ def create_scheduler(
     quote_of_the_day_enabled=False,
     weekly_summary_enabled=False,
     who_poll_enabled=False,
+    birthdays_enabled=False,
 ):
     scheduler = AsyncIOScheduler(timezone=KYIV)
     scheduler.add_job(update_activity, "cron", hour=14, minute=55, kwargs={"db": db})
@@ -314,6 +323,17 @@ def create_scheduler(
         )
     if who_poll_enabled:
         scheduler.add_job(who_poll, "cron", hour=12, minute=0, kwargs={"bot": bot, "db": db, "chat_id": chat_id})
+    if birthdays_enabled:
+        # a restart around 09:00 must not lose the greeting, the job still runs within the next 3 hours
+        scheduler.add_job(
+            birthday_greetings,
+            "cron",
+            hour=9,
+            minute=0,
+            misfire_grace_time=3 * 60 * 60,
+            coalesce=True,
+            kwargs={"bot": bot, "db": db, "chat_id": chat_id},
+        )
     if weekly_summary_enabled:
         scheduler.add_job(
             weekly_summary,
