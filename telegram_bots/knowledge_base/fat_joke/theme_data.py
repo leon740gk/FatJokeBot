@@ -9,6 +9,8 @@ loot_kinds = [
     ("lord", 5, 25, "🐉 ЛОРД ПРОСНУЛСЯ! Кто заберёт?", "🐉 Лорда забрал(а) {who}! Пушим базу!"),
 ]
 
+# what the loot, achievements and bets give, BP are Battle Points
+points = "BP"
 loot_button = "⚔️ Забрать"
 # quiz topic of the scheduled questions until an admin picks another with /discipline
 default_discipline = "mlbb2"

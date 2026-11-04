@@ -4,7 +4,8 @@ The engine is the same for every bot, each process runs one of them: main picks 
 before anything is sent. The engine reads the content at call time through `kb`, never at import:
 kb.texts.unknown_topic is telegram_bots/knowledge_base/<bot>/texts.py, unknown_topic.
 
-Every bot's folder has the same modules with the same names, telegram_bots/tests/test_content.py checks it.
+Every bot's folder has the same modules: texts.py with every name FatJoke's has, the other modules with the names
+in REQUIRED. telegram_bots/tests/test_content.py checks both.
 """
 
 import importlib
@@ -13,7 +14,43 @@ from pathlib import Path
 KNOWLEDGE_BASE = Path(__file__).resolve().parent.parent / "knowledge_base"
 # the tests and anything started without a bot speak as FatJoke
 DEFAULT_BOT = "fat_joke"
-MODULES = ("texts", "theme_data", "reaction_data", "random_phrases", "timer_data", "who_data", "fat_day_data")
+# what the engine reads from each module besides texts.py; the rest of a module is the bot's own business
+REQUIRED = {
+    "theme_data": (
+        "points",
+        "loot_kinds",
+        "loot_button",
+        "rare_loot",
+        "top_loot",
+        "late_phrases",
+        "gone_line",
+        "gone_phrase",
+        "ranks",
+        "achievements",
+        "unlocked_phrases",
+        "default_discipline",
+    ),
+    "reaction_data": (
+        "text_to_text_reactions",
+        "sticker_to_text_reactions",
+        "photo_to_text_reactions",
+        "animation_to_text_reactions",
+        "special_sticker_responses",
+        "sticker_responses",
+        "commands_responses",
+        "bot_commands",
+        # stickers and animations; None when the bot has none of its own
+        "wanted",
+        "quiz_correct_sticker",
+        "quiz_wrong_sticker",
+        "quiz_cheater_animation",
+    ),
+    "random_phrases": ("random_phrase_groups",),
+    "timer_data": ("bam_title", "clocks"),
+    "who_data": ("prefix", "who_questions"),
+    "fat_day_data": ("scan_phrases", "winner_phrases", "already_phrases"),
+}
+MODULES = ("texts", *REQUIRED)
 
 _active = DEFAULT_BOT
 

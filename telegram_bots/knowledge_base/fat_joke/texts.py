@@ -39,6 +39,7 @@ duel_no_answer = '😴 {name} не успел(а) ответить'
 duel_answer = '{mark} {name}: {option} ({seconds} с)'
 duel_winner = '🏆 Побеждает {winner}! +{prize} BP'
 duel_draw = '🤝 Ничья, BP остаются при своих.'
+duel_expired = "⌛ {opponent} так и не принял(а) вызов {challenger}. Струсил(а)?"
 
 # IQ from the quiz, /show_iq; lowest IQ -> [title, emoji]
 iq_levels = {
@@ -202,4 +203,3 @@ quote_of_the_day = '📜 Цитата дня'
 # /who
 who_already_open = 'Опрос уже идёт, голосуй тут 👆'
 who_not_enough = 'Для опроса нужно хотя бы двое знакомых боту людей в чате 🤷'
-duel_expired = "⌛ {opponent} так и не принял(а) вызов {challenger}. Струсил(а)?"

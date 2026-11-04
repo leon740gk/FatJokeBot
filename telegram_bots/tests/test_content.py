@@ -1,6 +1,7 @@
 """Every bot speaks through the same engine, so its knowledge_base folder must have everything the engine reads."""
 
 import importlib
+import re
 import string
 
 import pytest
@@ -32,10 +33,24 @@ def test_fat_joke_is_a_bot():
 
 
 @pytest.mark.parametrize("bot", BOTS)
-@pytest.mark.parametrize("module", content.MODULES)
-def test_bot_has_what_fat_joke_has(bot, module):
+def test_bot_has_every_text(bot):
     # FatJoke is the reference: the engine was written against it
-    assert names("fat_joke", module) - names(bot, module) == set()
+    assert names("fat_joke", "texts") - names(bot, "texts") == set()
+
+
+@pytest.mark.parametrize("bot", BOTS)
+@pytest.mark.parametrize("module", content.REQUIRED)
+def test_bot_has_what_the_engine_reads(bot, module):
+    assert set(content.REQUIRED[module]) - names(bot, module) == set()
+
+
+@pytest.mark.parametrize("module", content.REQUIRED)
+def test_required_lists_what_the_engine_reads(module):
+    """kb.<module>.<name> anywhere in the engine must be in REQUIRED, or a new bot would miss it."""
+    used = set()
+    for path in (content.KNOWLEDGE_BASE.parent / "engine").rglob("*.py"):
+        used |= set(re.findall(rf"kb\.{module}\.(\w+)", path.read_text(encoding="utf-8")))
+    assert used - set(content.REQUIRED[module]) == set()
 
 
 @pytest.mark.parametrize("bot", BOTS)

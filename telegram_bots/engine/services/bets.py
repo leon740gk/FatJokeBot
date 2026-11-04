@@ -67,5 +67,5 @@ def settle_lines(bets, paid, names):
     lines = [kb.texts.bets_settled]
     for user_id, _, amount in bets:
         change = paid[user_id] - amount
-        lines.append(f"{names[user_id]}: {'+' if change >= 0 else '−'}{abs(change)} BP")
+        lines.append(f"{names[user_id]}: {'+' if change >= 0 else '−'}{abs(change)} {kb.theme_data.points}")
     return lines

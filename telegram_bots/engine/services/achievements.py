@@ -101,7 +101,7 @@ def announcement(who, codes, old_points, new_points, rng=random):
     achievements = kb.theme_data.achievements
     lines = [
         rng.choice(kb.theme_data.unlocked_phrases).format(who=who, name=achievements[code][0])
-        + f"\n   {achievements[code][1].capitalize()}, +{ACHIEVEMENT_BP} BP"
+        + f"\n   {achievements[code][1].capitalize()}, +{ACHIEVEMENT_BP} {kb.theme_data.points}"
         for code in codes
     ]
     rank_up = rank_up_line(who, old_points, new_points)
@@ -146,6 +146,6 @@ def format_ranks(rows):
     lines = [kb.texts.ranks_title]
     for place, (name, points) in enumerate(rows):
         marker = medals[place] if place < len(medals) else f"{place + 1}."
-        lines.append(f"{marker} {name} — {points} BP, {rank_for(points)}")
+        lines.append(f"{marker} {name} — {points} {kb.theme_data.points}, {rank_for(points)}")
     lines.append(kb.texts.ranks_footer)
     return "\n".join(lines)

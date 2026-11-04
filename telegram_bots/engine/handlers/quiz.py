@@ -15,11 +15,10 @@ router = Router(name="quiz")
 
 def outcome_media(outcome):
     """(kind, file id) the bot sends after the answer, from reaction_data of the bot."""
-    data = kb.reaction_data
     return {
-        Outcome.CORRECT: ("sticker", data.quiz_correct_sticker),
-        Outcome.WRONG: ("sticker", data.quiz_wrong_sticker),
-        Outcome.CHEATER: ("animation", data.quiz_cheater_animation),
+        Outcome.CORRECT: ("sticker", kb.reaction_data.quiz_correct_sticker),
+        Outcome.WRONG: ("sticker", kb.reaction_data.quiz_wrong_sticker),
+        Outcome.CHEATER: ("animation", kb.reaction_data.quiz_cheater_animation),
     }[outcome]
 
 
@@ -71,8 +70,9 @@ async def answer_callback(callback: CallbackQuery, db):
 
     await callback.answer()
     kind, file_id = outcome_media(result.outcome)
-    if kind == "animation":
+    # a bot may have no stickers of its own yet: file ids of one bot don't always work for another
+    if kind == "animation" and file_id:
         await message.answer_animation(file_id)
     await message.edit_text(result.text)
-    if kind == "sticker":
+    if kind == "sticker" and file_id:
         await message.answer_sticker(file_id)

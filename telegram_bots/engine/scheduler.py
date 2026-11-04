@@ -148,7 +148,8 @@ async def we_miss_you(bot, db, chat_id):
     message = texts.miss_you_message(users_db.get_inactive(db))
     if message:
         await bot.send_message(chat_id, message)
-        await bot.send_sticker(chat_id, kb.reaction_data.wanted)
+        if kb.reaction_data.wanted:
+            await bot.send_sticker(chat_id, kb.reaction_data.wanted)
 
 
 @chat_job

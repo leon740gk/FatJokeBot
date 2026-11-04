@@ -42,7 +42,9 @@ def spawn_text(bam_text, kind):
 
 
 def taken_text(bam_text, kind, who, extra_lines=()):
-    return "\n".join([bam_text, "", f"{kind.taken_line.format(who=who)}: +{kind.points} BP", *extra_lines])
+    return "\n".join(
+        [bam_text, "", f"{kind.taken_line.format(who=who)}: +{kind.points} {kb.theme_data.points}", *extra_lines]
+    )
 
 
 def bam_part(text):

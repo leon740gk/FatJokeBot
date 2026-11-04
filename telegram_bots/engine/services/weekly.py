@@ -79,7 +79,10 @@ def format_week(week):
     if week.loot:
         lines += ["", texts.week_farmers]
         lines += top_lines(
-            week.loot, lambda row: f"{row[1]} BP" + (texts.week_top_loot.format(count=row[2]) if row[2] else "")
+            week.loot,
+            lambda row: (
+                f"{row[1]} {kb.theme_data.points}" + (texts.week_top_loot.format(count=row[2]) if row[2] else "")
+            ),
         )
     if week.fat_days:
         fatties = ", ".join(f"{name} {days} {times_word(days)}" for name, days in week.fat_days)

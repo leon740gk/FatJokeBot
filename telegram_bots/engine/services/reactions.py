@@ -30,12 +30,11 @@ def _matches(text, mapper, kind, rng):
 
 def text_reactions(text, rng=random):
     text = text.lower()
-    data = kb.reaction_data
     replies = (
-        _matches(text, data.text_to_text_reactions, "text", rng)
-        + _matches(text, data.sticker_to_text_reactions, "sticker", rng)
-        + _matches(text, data.photo_to_text_reactions, "photo", rng)
-        + _matches(text, data.animation_to_text_reactions, "animation", rng)
+        _matches(text, kb.reaction_data.text_to_text_reactions, "text", rng)
+        + _matches(text, kb.reaction_data.sticker_to_text_reactions, "sticker", rng)
+        + _matches(text, kb.reaction_data.photo_to_text_reactions, "photo", rng)
+        + _matches(text, kb.reaction_data.animation_to_text_reactions, "animation", rng)
     )
     if rng.random() < PHILOSOPHY_CHANCE:
         replies.append(Reply("text", rng.choice(rng.choice(kb.random_phrases.random_phrase_groups))))

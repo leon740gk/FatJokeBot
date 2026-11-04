@@ -32,7 +32,7 @@ async def loot_callback(callback: CallbackQuery, db):
         return
 
     kind = loot.kinds()[kind_code]
-    await callback.answer(f"+{kind.points} BP! 💰")
+    await callback.answer(f"+{kind.points} {kb.theme_data.points}! 💰")
     who = mention(display_name(user), user.username)
     rank_up = achievements.rank_up_line(who, old_points, achievements.battle_points(db, user.id))
     await message.edit_text(loot.taken_text(bam_text, kind, who, [rank_up] if rank_up else []))
