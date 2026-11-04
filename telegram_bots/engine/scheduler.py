@@ -7,7 +7,7 @@ from zoneinfo import ZoneInfo
 
 from aiogram.enums import ChatMemberStatus
 from aiogram.exceptions import TelegramAPIError
-from aiogram.types import ReplyParameters
+from aiogram.types import LinkPreviewOptions, ReplyParameters
 from aiogram.utils.keyboard import InlineKeyboardBuilder
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 
@@ -17,12 +17,13 @@ from telegram_bots.engine.content import kb
 from telegram_bots.engine.db import bets as bets_db
 from telegram_bots.engine.db import duels as duels_db
 from telegram_bots.engine.db import loot as loot_db
+from telegram_bots.engine.db import news as news_db
 from telegram_bots.engine.db import quiz as quiz_db
 from telegram_bots.engine.db import quotes as quotes_db
 from telegram_bots.engine.db import users as users_db
 from telegram_bots.engine.db import who_polls as who_db
 from telegram_bots.engine.db.backup import backup_database
-from telegram_bots.engine.services import bets, birthdays, duel, loot, quiz, quotes, texts, weekly, who
+from telegram_bots.engine.services import bets, birthdays, duel, loot, news, quiz, quotes, texts, weekly, who
 from telegram_bots.engine.services.people import mention
 from telegram_bots.engine.services.quiet_hours import is_quiet
 
@@ -167,6 +168,27 @@ async def birthday_greetings(bot, db, chat_id):
         await bot.send_message(chat_id, **birthdays.greeting(people, today).as_kwargs())
 
 
+async def post_news(bot, db, chat_id):
+    """Sends the fresh news not posted to this chat yet; returns how many, 0 when there were none."""
+    sent = news_db.sent_links(db, int(chat_id))
+    picked = news.pick(await news.fetch_all(kb.news_data.feeds), sent, datetime.now(KYIV))
+    if not picked:
+        return 0
+    await bot.send_message(
+        chat_id,
+        **news.digest(picked, datetime.now(KYIV).date()).as_kwargs(),
+        # one big preview of the first link would push the list off the screen
+        link_preview_options=LinkPreviewOptions(is_disabled=True),
+    )
+    news_db.mark_sent(db, int(chat_id), [item.link for item in picked])
+    return len(picked)
+
+
+@chat_job
+async def daily_news(bot, db, chat_id):
+    await post_news(bot, db, chat_id)
+
+
 @chat_job
 async def weekly_summary(bot, db, chat_id):
     week = weekly.collect(db, int(chat_id), datetime.now(KYIV).date())
@@ -278,6 +300,7 @@ def create_scheduler(
     weekly_summary_enabled=False,
     who_poll_enabled=False,
     birthdays_enabled=False,
+    news_enabled=False,
 ):
     scheduler = AsyncIOScheduler(timezone=KYIV)
     scheduler.add_job(update_activity, "cron", hour=14, minute=55, kwargs={"db": db})
@@ -329,6 +352,16 @@ def create_scheduler(
             birthday_greetings,
             "cron",
             hour=9,
+            minute=0,
+            misfire_grace_time=3 * 60 * 60,
+            coalesce=True,
+            kwargs={"bot": bot, "db": db, "chat_id": chat_id},
+        )
+    if news_enabled and kb.news_data.feeds:
+        scheduler.add_job(
+            daily_news,
+            "cron",
+            hour=10,
             minute=0,
             misfire_grace_time=3 * 60 * 60,
             coalesce=True,

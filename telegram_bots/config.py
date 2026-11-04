@@ -56,6 +56,8 @@ class Settings:
     weekly_summary_enabled: bool = True
     # birthday greetings in the main chat at 09:00 Kyiv time; /birthday and /birthdays work anyway
     birthdays_enabled: bool = True
+    # gaming news in the main chat at 10:00 Kyiv time, for a bot with feeds in its news_data.py
+    news_enabled: bool = True
 
     @property
     def env_prefix(self):
@@ -86,6 +88,7 @@ def load_settings(bot, environ=None):
         who_poll_enabled=_flag(get("WHO_POLL_ENABLED"), default=True),
         weekly_summary_enabled=_flag(get("WEEKLY_SUMMARY_ENABLED"), default=True),
         birthdays_enabled=_flag(get("BIRTHDAYS_ENABLED"), default=True),
+        news_enabled=_flag(get("NEWS_ENABLED"), default=True),
     )
 
 

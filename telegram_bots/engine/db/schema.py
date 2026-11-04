@@ -192,6 +192,15 @@ CREATE TABLE IF NOT EXISTS DuelBets (
 )
 """
 
+NEWS_SENT_TABLE = """
+CREATE TABLE IF NOT EXISTS NewsSent (
+    chat_id INTEGER NOT NULL,
+    link TEXT NOT NULL,
+    sent_at TEXT DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (chat_id, link)
+)
+"""
+
 TABLES = (
     USERS_TABLE,
     ANSWERS_TABLE,
@@ -208,6 +217,7 @@ TABLES = (
     WHO_POLLS_TABLE,
     DUELS_TABLE,
     DUEL_BETS_TABLE,
+    NEWS_SENT_TABLE,
 )
 
 

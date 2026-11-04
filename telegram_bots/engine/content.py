@@ -49,6 +49,8 @@ REQUIRED = {
     "timer_data": ("bam_title", "clocks"),
     "who_data": ("prefix", "who_questions"),
     "fat_day_data": ("scan_phrases", "winner_phrases", "already_phrases"),
+    # (site name, RSS url) of the daily news; empty turns the news off
+    "news_data": ("feeds",),
 }
 MODULES = ("texts", *REQUIRED)
 

@@ -21,6 +21,7 @@ from telegram_bots.engine.handlers import (
     fat_day,
     loot,
     members,
+    news,
     party,
     profile,
     quiz,
@@ -48,6 +49,7 @@ ROUTERS = (
     commands.router,
     members.router,
     birthdays.router,
+    news.router,
     quotes.router,
     fat_day.router,
     profile.router,
@@ -96,6 +98,7 @@ async def main(settings):
         weekly_summary_enabled=settings.weekly_summary_enabled,
         who_poll_enabled=settings.who_poll_enabled,
         birthdays_enabled=settings.birthdays_enabled,
+        news_enabled=settings.news_enabled,
     )
     scheduler.start()
     try:

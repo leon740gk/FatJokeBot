@@ -1,3 +1,5 @@
 aiogram>=3.13,<4
+# comes with aiogram; the news feeds use it directly
+aiohttp
 apscheduler>=3.10,<4
 python-dotenv
