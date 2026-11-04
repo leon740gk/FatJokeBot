@@ -38,7 +38,7 @@ async def sticker_reply(message: Message):
 
 @router.message(F.photo)
 async def photo_reply(message: Message):
-    logger.debug("photo file_id=%s", message.photo[0].file_id)
+    logger.debug("photo file_id=%s", message.photo[-1].file_id)
 
 
 @router.message(F.animation)
