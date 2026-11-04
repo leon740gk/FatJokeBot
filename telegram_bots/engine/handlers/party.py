@@ -21,6 +21,14 @@ def party_keyboard():
     return keyboard.as_markup()
 
 
+async def edit_party(message: Message, text, reply_markup=None):
+    # a party with a picture keeps its text in the caption; parties sent as plain text stay that way
+    if message.photo:
+        await message.edit_caption(caption=text, reply_markup=reply_markup)
+    else:
+        await message.edit_text(text, reply_markup=reply_markup)
+
+
 @router.message(Command("party"))
 async def party_command(message: Message, command: CommandObject, db):
     chat_id = message.chat.id
@@ -34,7 +42,11 @@ async def party_command(message: Message, command: CommandObject, db):
     comment = (command.args or "").strip()
     user = message.from_user
     creator = (user.id, display_name(user), user.username)
-    sent = await message.answer(party.party_text(comment, [creator]), reply_markup=party_keyboard())
+    text = party.party_text(comment, [creator])
+    if kb.reaction_data.party_photo:
+        sent = await message.answer_photo(kb.reaction_data.party_photo, caption=text, reply_markup=party_keyboard())
+    else:
+        sent = await message.answer(text, reply_markup=party_keyboard())
     party_id = parties_db.create(db, chat_id, sent.message_id, user.id, comment)
     parties_db.join(db, party_id, *creator)
 
@@ -53,7 +65,7 @@ async def party_callback(callback: CallbackQuery, db):
     if is_expired:
         await callback.answer(kb.texts.party_dead, show_alert=True)
         with contextlib.suppress(TelegramBadRequest):
-            await message.edit_text(party.party_text(comment, parties_db.members(db, party_id), expired=True))
+            await edit_party(message, party.party_text(comment, parties_db.members(db, party_id), expired=True))
         return
 
     user = callback.from_user
@@ -70,6 +82,6 @@ async def party_callback(callback: CallbackQuery, db):
 
     members = parties_db.members(db, party_id)
     gathered = len(members) >= party.PARTY_SIZE and parties_db.mark_gathered(db, party_id)
-    await message.edit_text(party.party_text(comment, members), reply_markup=None if gathered else party_keyboard())
+    await edit_party(message, party.party_text(comment, members), reply_markup=None if gathered else party_keyboard())
     if gathered:
         await message.answer(**party.gathered_call(members).as_kwargs())

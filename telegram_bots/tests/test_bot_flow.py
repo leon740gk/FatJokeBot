@@ -34,6 +34,7 @@ from telegram_bots.engine.scheduler import (
     who_poll,
 )
 from telegram_bots.engine.services import achievements, bets, duel, loot, party, quiz
+from telegram_bots.knowledge_base.fat_joke import reaction_data
 from telegram_bots.knowledge_base.fat_joke.reaction_data import bot_commands, red_blink
 from telegram_bots.knowledge_base.fat_joke.theme_data import gone_phrase, late_phrases
 from telegram_bots.tests.fake_telegram import (
@@ -424,38 +425,41 @@ def test_fat_of_the_day_once_a_day(db, bot, dispatcher, monkeypatch):
 def test_party_gathers_five_and_pings_them(db, bot, dispatcher):
     feed(dispatcher, bot, **text_update(user(1, "P1"), "/party ранкед в 21:00"))
     party_message = bot.session.next_message_id
-    first = bot.session.of_type(methods.SendMessage)[-1]
-    assert "ранкед в 21:00" in first.text and "1. P1 (@p1)" in first.text and first.reply_markup
+    first = bot.session.of_type(methods.SendPhoto)[-1]
+    assert first.photo == reaction_data.party_photo
+    assert "ранкед в 21:00" in first.caption and "1. P1 (@p1)" in first.caption and first.reply_markup
 
     feed(dispatcher, bot, **text_update(user(2, "P2"), "/party"))
     again = bot.session.of_type(methods.SendMessage)[-1]
     assert again.text.startswith("Пати уже собирается") and again.reply_parameters.message_id == party_message
 
-    feed(dispatcher, bot, **press(user(1, "P1"), party_message, party.JOIN))
-    feed(dispatcher, bot, **press(user(2, "P2"), party_message, party.LEAVE))
+    feed(dispatcher, bot, **press(user(1, "P1"), party_message, party.JOIN, photo=True))
+    feed(dispatcher, bot, **press(user(2, "P2"), party_message, party.LEAVE, photo=True))
     for number in (2, 3, 4):
-        feed(dispatcher, bot, **press(user(number, f"P{number}"), party_message, party.JOIN))
-    feed(dispatcher, bot, **press(user(4, "P4"), party_message, party.LEAVE))
+        feed(dispatcher, bot, **press(user(number, f"P{number}"), party_message, party.JOIN, photo=True))
+    feed(dispatcher, bot, **press(user(4, "P4"), party_message, party.LEAVE, photo=True))
     assert answers(bot)[:2] == ["Ты уже в пати 😉", "Тебя и так нет в пати 🤷"]
-    assert "В деле 3/5" in bot.session.of_type(methods.EditMessageText)[-1].text
+    assert "В деле 3/5" in bot.session.of_type(methods.EditMessageCaption)[-1].caption
     assert not bot.session.of_type(methods.SendMessage)[-1].entities
 
     for number in (4, 5):
-        feed(dispatcher, bot, **press(user(number, f"P{number}"), party_message, party.JOIN))
-    edit = bot.session.of_type(methods.EditMessageText)[-1]
-    assert "В деле 5/5" in edit.text and "Пати собрана" in edit.text and edit.reply_markup is None
+        feed(dispatcher, bot, **press(user(number, f"P{number}"), party_message, party.JOIN, photo=True))
+    edit = bot.session.of_type(methods.EditMessageCaption)[-1]
+    assert "В деле 5/5" in edit.caption and "Пати собрана" in edit.caption and edit.reply_markup is None
     call = bot.session.of_type(methods.SendMessage)[-1]
     assert "пати собрана, заходим" in call.text
     assert sorted(entity.user.id for entity in call.entities) == [1, 2, 3, 4, 5]
 
-    feed(dispatcher, bot, **press(user(6, "P6"), party_message, party.JOIN))
+    feed(dispatcher, bot, **press(user(6, "P6"), party_message, party.JOIN, photo=True))
     assert answers(bot)[-1] == "Пати уже собрана 🎮"
     # the gathered party doesn't block a new one
     feed(dispatcher, bot, **text_update(user(6, "P6"), "/party"))
-    assert "1. P6" in bot.session.of_type(methods.SendMessage)[-1].text
+    assert "1. P6" in bot.session.of_type(methods.SendPhoto)[-1].caption
 
 
-def test_old_party_falls_apart(db, bot, dispatcher):
+def test_old_party_falls_apart(db, bot, dispatcher, monkeypatch):
+    # a party without a picture, like ServoSkull's, is edited as plain text
+    monkeypatch.setattr(reaction_data, "party_photo", None)
     feed(dispatcher, bot, **text_update(user(1, "P1"), "/party"))
     party_message = bot.session.next_message_id
     db.execute("UPDATE Parties SET created_at = datetime('now', '-4 hours')")

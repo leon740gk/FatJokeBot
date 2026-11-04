@@ -14,6 +14,7 @@ from aiogram.types import (
     ChatMemberOwner,
     ChatMemberRestricted,
     Message,
+    PhotoSize,
     Poll,
     PollOption,
     Update,
@@ -124,8 +125,15 @@ def reply_update(from_user, text, original_author, original_text, message_id=2, 
     return {"message": message}
 
 
-def press(from_user, message_id, data):
-    message = Message(message_id=message_id, date=datetime.now(), chat=CHAT, from_user=BOT_USER, text="?")
+def press(from_user, message_id, data, photo=False):
+    content = {"photo": [PhotoSize(file_id="p", file_unique_id="p", width=1, height=1)], "caption": "?"}
+    message = Message(
+        message_id=message_id,
+        date=datetime.now(),
+        chat=CHAT,
+        from_user=BOT_USER,
+        **(content if photo else {"text": "?"}),
+    )
     return {"callback_query": CallbackQuery(id="1", from_user=from_user, chat_instance="c", message=message, data=data)}
 
 

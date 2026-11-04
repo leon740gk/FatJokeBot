@@ -45,6 +45,9 @@ quiz_correct_sticker = smart_nigga
 quiz_wrong_sticker = genuis_sticker
 quiz_cheater_animation = red_blink
 
+# the picture of a /party message
+party_photo = "AgACAgIAAxkBAAIQwWrrq9EeT3bozQRBgvgfY8u2KFlCAAJFJWsbVfxZS24yKVqAiGBVAQADAgADeAADPQQ"
+
 adolf_set = [adolf_1, adolf_2, adolf_3]
 
 

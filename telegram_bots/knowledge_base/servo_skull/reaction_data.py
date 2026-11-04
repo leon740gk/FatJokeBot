@@ -8,6 +8,8 @@ wanted = None
 quiz_correct_sticker = None
 quiz_wrong_sticker = None
 quiz_cheater_animation = None
+# the picture of a /party message; None sends the party as plain text
+party_photo = None
 
 # now and then in reply to any sticker
 sticker_responses = [

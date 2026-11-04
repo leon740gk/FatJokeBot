@@ -39,11 +39,12 @@ REQUIRED = {
         "sticker_responses",
         "commands_responses",
         "bot_commands",
-        # stickers and animations; None when the bot has none of its own
+        # stickers, animations and photos; None when the bot has none of its own
         "wanted",
         "quiz_correct_sticker",
         "quiz_wrong_sticker",
         "quiz_cheater_animation",
+        "party_photo",
     ),
     "random_phrases": ("random_phrase_groups",),
     "timer_data": ("bam_title", "clocks"),
