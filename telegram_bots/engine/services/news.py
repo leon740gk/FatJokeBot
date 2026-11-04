@@ -109,11 +109,17 @@ async def _fetch(session, source, url):
     try:
         async with session.get(url, headers=HEADERS) as response:
             response.raise_for_status()
-            data = await response.content.read(MAX_FEED_BYTES)
+            # read() returns only what has arrived so far, a slow site would give half a feed
+            data = bytearray()
+            async for chunk in response.content.iter_chunked(64 * 1024):
+                data += chunk
+                if len(data) > MAX_FEED_BYTES:
+                    logger.warning("news feed %s is over %s bytes, skipped", source, MAX_FEED_BYTES)
+                    return []
     except (aiohttp.ClientError, TimeoutError) as error:
         logger.warning("can't fetch news feed %s: %s", source, error)
         return []
-    return parse_feed(data, source)
+    return parse_feed(bytes(data), source)
 
 
 async def fetch_all(feeds):

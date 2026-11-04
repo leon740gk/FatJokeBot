@@ -111,3 +111,32 @@ def test_a_dead_feed_is_skipped():
         return await news.fetch_all([("Dead", "http://127.0.0.1:9/feed")])
 
     assert asyncio.run(run()) == []
+
+
+def test_a_slow_feed_is_read_to_the_end():
+    """The server sends the feed in pieces with pauses, as a slow site does; the whole feed must be parsed."""
+    from aiohttp import web
+
+    async def slow_feed(request):
+        response = web.StreamResponse(headers={"Content-Type": "application/rss+xml"})
+        await response.prepare(request)
+        for start in range(0, len(RSS), 100):
+            await response.write(RSS[start : start + 100])
+            await asyncio.sleep(0.01)
+        await response.write_eof()
+        return response
+
+    async def run():
+        app = web.Application()
+        app.router.add_get("/feed", slow_feed)
+        runner = web.AppRunner(app)
+        await runner.setup()
+        site = web.TCPSite(runner, "127.0.0.1", 0)
+        await site.start()
+        port = runner.addresses[0][1]
+        try:
+            return await news.fetch_all([("Slow", f"http://127.0.0.1:{port}/feed")])
+        finally:
+            await runner.cleanup()
+
+    assert [i.link for i in asyncio.run(run())] == ["https://site.ua/navi", "https://site.ua/old"]
