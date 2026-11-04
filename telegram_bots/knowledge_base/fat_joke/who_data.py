@@ -1,4 +1,5 @@
-# "Кто из нас…" poll: the bot puts the chat members as options, the question goes after "Кто из нас"
+# "Кто из нас…" poll: the bot puts the chat members as options, the question goes after the prefix
+prefix = "Кто из нас "
 who_questions = [
     "первым сдастся в зомби-апокалипсисе?",
     "выживет на необитаемом острове дольше всех?",

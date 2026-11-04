@@ -1,8 +1,8 @@
 from datetime import datetime
 
-from telegram_bots.bots.fat_joke.db import quiz as quiz_db
-from telegram_bots.bots.fat_joke.db import users as users_db
-from telegram_bots.bots.fat_joke.db.schema import init_schema
+from telegram_bots.engine.db import quiz as quiz_db
+from telegram_bots.engine.db import users as users_db
+from telegram_bots.engine.db.schema import init_schema
 from telegram_bots.tests.conftest import make_user
 
 
@@ -40,7 +40,7 @@ def test_legacy_answers_migrate_once(db):
 
 
 def test_old_tables_get_seasons(tmp_path):
-    from telegram_bots.bots.fat_joke.db.connection import Database
+    from telegram_bots.engine.db.connection import Database
 
     db = Database(tmp_path / "old.db")
     db.execute("CREATE TABLE Users (id INTEGER PRIMARY KEY, telegram_id INTEGER, name TEXT, questionare_done TEXT)")
@@ -123,7 +123,7 @@ def test_leaders_count_correct_answers_of_one_discipline_and_season(db):
 
 
 def test_settings(db):
-    from telegram_bots.bots.fat_joke.db import settings
+    from telegram_bots.engine.db import settings
 
     assert settings.get(db, "x", "default") == "default"
     settings.set_value(db, "x", "1")
@@ -132,7 +132,7 @@ def test_settings(db):
 
 
 def test_old_users_get_in_chat_column(tmp_path):
-    from telegram_bots.bots.fat_joke.db.connection import Database
+    from telegram_bots.engine.db.connection import Database
 
     db = Database(tmp_path / "old.db")
     db.execute("CREATE TABLE Users (id INTEGER PRIMARY KEY, telegram_id INTEGER, name TEXT, questionare_done TEXT)")

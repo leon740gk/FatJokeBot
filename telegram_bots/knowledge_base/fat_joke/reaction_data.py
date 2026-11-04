@@ -40,6 +40,11 @@ burning_ass = "CgACAgQAAx0CW-jr9QAChU5l3GnDF_JU8Lk7rCSb8fFkKU2KbgACDgMAAo-rDFMBl
 burning_ass_2 = "CgACAgQAAx0CW-jr9QAChVVl3GsjZejadoN-RvvLhG6UQbuQcAACMQMAAlvPBFNRIe0ZNDV2CzQE"
 red_blink = "CgACAgQAAxkBAAIEmmXfFGMvnmkfOj15m_zsivbOZF0_AAI3AwACyaodU4J2i3NmQUFaNAQ"
 
+# after a quiz answer
+quiz_correct_sticker = smart_nigga
+quiz_wrong_sticker = genuis_sticker
+quiz_cheater_animation = red_blink
+
 adolf_set = [adolf_1, adolf_2, adolf_3]
 
 

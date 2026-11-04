@@ -2,8 +2,8 @@ from types import SimpleNamespace
 
 import pytest
 
-from telegram_bots.bots.fat_joke.db.connection import Database
-from telegram_bots.bots.fat_joke.db.schema import init_schema
+from telegram_bots.engine.db.connection import Database
+from telegram_bots.engine.db.schema import init_schema
 
 
 @pytest.fixture

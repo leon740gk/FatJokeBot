@@ -2,7 +2,7 @@ import os
 import sqlite3
 from datetime import datetime, timedelta
 
-from telegram_bots.bots.fat_joke.db.backup import backup_database, backup_if_stale
+from telegram_bots.engine.db.backup import backup_database, backup_if_stale
 
 
 def make_db(path):

@@ -1,4 +1,6 @@
-# the hourly message: "Час ..." (Ukrainian) and "Время ..." (Russian) phrases by country and part of the day, one is picked at random
+# the "Бам" every 3 hours: "Час ..." (Ukrainian) and "Время ..." (Russian) phrases by country and part of the day, one is picked at random
+bam_title = "Бам!!! Говорит Омниссия!"
+
 hour_phrases = {
     "ua": {
         "night": [
@@ -65,3 +67,9 @@ hour_phrases = {
         ],
     },
 }
+
+# (flag, time zone, "time to" word, phrases): a line per clock; Ukraine keeps its Ukrainian "час ...", the rest is Russian
+clocks = [
+    ("🇺🇦", "Europe/Kyiv", "час", hour_phrases["ua"]),
+    ("🇩🇪", "Europe/Berlin", "время", hour_phrases["de"]),
+]

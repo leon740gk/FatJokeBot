@@ -4,20 +4,20 @@ from datetime import UTC, datetime
 
 import pytest
 
-from telegram_bots.bots.fat_joke.db import quiz as quiz_db
-from telegram_bots.bots.fat_joke.db import users as users_db
-from telegram_bots.bots.fat_joke.services import quiz
-from telegram_bots.bots.fat_joke.services.quiet_hours import is_quiet, parse_quiet_hours
-from telegram_bots.bots.fat_joke.services.quiz import Outcome
-from telegram_bots.bots.fat_joke.services.quiz_bank import load_discipline
+from telegram_bots.engine.db import quiz as quiz_db
+from telegram_bots.engine.db import users as users_db
+from telegram_bots.engine.services import quiz
+from telegram_bots.engine.services.quiet_hours import is_quiet, parse_quiet_hours
+from telegram_bots.engine.services.quiz import Outcome
+from telegram_bots.engine.services.quiz_bank import load_discipline
 from telegram_bots.tests.conftest import FakeRandom, make_user
 
 
 def test_all_disciplines_load():
-    assert {"ukr", "geo", "bio", "mix", "mlbb", "mlbb2", "accounting", "welding"} <= set(quiz.DISCIPLINES)
+    assert {"ukr", "geo", "bio", "mix", "mlbb", "mlbb2", "accounting", "welding"} <= set(quiz.disciplines())
     # every topic has the same number of questions, so their seasons last about as long
-    assert {len(discipline.questions) for discipline in quiz.DISCIPLINES.values()} == {150}
-    assert quiz.DISCIPLINES["mlbb2"].shuffle_options
+    assert {len(discipline.questions) for discipline in quiz.disciplines().values()} == {150}
+    assert quiz.disciplines()["mlbb2"].shuffle_options
 
 
 def write_discipline(tmp_path, questions, code="test"):
@@ -59,7 +59,7 @@ def test_callback_data_round_trip_and_fits_telegram_limit():
     assert (
         max(
             len(quiz.option_callback_data(q, 3).encode())
-            for d in quiz.DISCIPLINES.values()
+            for d in quiz.disciplines().values()
             for q in d.questions.values()
         )
         <= 64
@@ -80,7 +80,7 @@ def test_render_short_options_two_per_row():
 
 
 def test_render_medium_options_one_per_row():
-    question = next(q for q in quiz.DISCIPLINES["mlbb2"].questions.values() if 14 < max(map(len, q.options)) <= 30)
+    question = next(q for q in quiz.disciplines()["mlbb2"].questions.values() if 14 < max(map(len, q.options)) <= 30)
     rendered = quiz.render_question(question, rng=random.Random(1))
     assert [len(row) for row in rendered.rows] == [1, 1, 1, 1]
     assert rendered.text == f"MLBB 2.\n{question.text}"
@@ -190,7 +190,7 @@ def test_discipline_setting(db):
 
 def test_questions_do_not_repeat_until_the_season_ends(db, player):
     numbers = set()
-    total = len(quiz.DISCIPLINES["mlbb2"].questions)
+    total = len(quiz.disciplines()["mlbb2"].questions)
     for message_id in range(total):
         picked = quiz.pick_question(db, "mlbb2", rng=random.Random(message_id))
         assert picked.season == 1 and picked.finished_season is None
@@ -262,8 +262,8 @@ def test_find_discipline(text, code):
 def test_topic_picker_has_every_discipline():
     picker = quiz.render_topic_picker(owner_id=7)
     buttons = [button for row in picker.rows for button in row]
-    assert len(buttons) == len(quiz.DISCIPLINES) and all(len(row) <= 2 for row in picker.rows)
-    assert {quiz.parse_topic_callback(data) for _, data in buttons} == {(code, 7) for code in quiz.DISCIPLINES}
+    assert len(buttons) == len(quiz.disciplines()) and all(len(row) <= 2 for row in picker.rows)
+    assert {quiz.parse_topic_callback(data) for _, data in buttons} == {(code, 7) for code in quiz.disciplines()}
     # pickers sent before owners existed still work for anyone
     assert quiz.parse_topic_callback("t geo") == ("geo", None)
     assert quiz.parse_topic_callback("t nope") is None and quiz.parse_topic_callback("q mlbb 1 1") is None
@@ -285,16 +285,15 @@ def test_kyiv_day_start():
     assert quiz.kyiv_day_start(datetime(2026, 7, 1, 12, 0, tzinfo=UTC)) == "2026-06-30 21:00:00"
 
 
-def test_daily_limit(db, monkeypatch):
-    monkeypatch.setattr(quiz, "DAILY_LIMIT", 2)
+def test_daily_limit(db):
     quiz_db.save_quiz_message(db, -100, 1, "geo", 1, 1, asked_by=7)
-    assert not quiz.limit_reached(db, 7)
+    assert not quiz.limit_reached(db, 7, 2)
     quiz_db.save_quiz_message(db, -100, 2, "geo", 1, 2, asked_by=7)
-    assert quiz.limit_reached(db, 7) and not quiz.limit_reached(db, 8)
+    assert quiz.limit_reached(db, 7, 2) and not quiz.limit_reached(db, 8, 2)
     # yesterday's questions don't count
     db.execute("UPDATE QuizMessages SET created_at = datetime('now', '-2 days')")
-    assert not quiz.limit_reached(db, 7)
-    monkeypatch.setattr(quiz, "DAILY_LIMIT", 0)
+    assert not quiz.limit_reached(db, 7, 2)
+    # 0 is no limit
     quiz_db.save_quiz_message(db, -100, 3, "geo", 1, 3, asked_by=7)
     quiz_db.save_quiz_message(db, -100, 4, "geo", 1, 4, asked_by=7)
-    assert not quiz.limit_reached(db, 7)
+    assert not quiz.limit_reached(db, 7, 0)

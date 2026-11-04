@@ -22,14 +22,15 @@ from aiogram.types import (
     User,
 )
 
-from telegram_bots.bots.fat_joke import main
-from telegram_bots.bots.fat_joke import scheduler as scheduler_module
-from telegram_bots.bots.fat_joke.db import quiz as quiz_db
-from telegram_bots.bots.fat_joke.db import users as users_db
-from telegram_bots.bots.fat_joke.db.duels import COLUMNS as DUEL_COLUMNS
-from telegram_bots.bots.fat_joke.handlers import fat_day as fat_day_handlers
-from telegram_bots.bots.fat_joke.handlers import reactions
-from telegram_bots.bots.fat_joke.scheduler import (
+from telegram_bots.config import Settings
+from telegram_bots.engine import main
+from telegram_bots.engine import scheduler as scheduler_module
+from telegram_bots.engine.db import quiz as quiz_db
+from telegram_bots.engine.db import users as users_db
+from telegram_bots.engine.db.duels import COLUMNS as DUEL_COLUMNS
+from telegram_bots.engine.handlers import fat_day as fat_day_handlers
+from telegram_bots.engine.handlers import reactions
+from telegram_bots.engine.scheduler import (
     ask_question,
     check_chat,
     close_duels,
@@ -42,9 +43,9 @@ from telegram_bots.bots.fat_joke.scheduler import (
     weekly_summary,
     who_poll,
 )
-from telegram_bots.bots.fat_joke.services import achievements, bets, duel, loot, party, quiz
-from telegram_bots.knowledge_base.fat_joke.mlbb_data import gone_phrase, late_phrases
+from telegram_bots.engine.services import achievements, bets, duel, loot, party, quiz
 from telegram_bots.knowledge_base.fat_joke.reaction_data import bot_commands, red_blink
+from telegram_bots.knowledge_base.fat_joke.theme_data import gone_phrase, late_phrases
 
 CHAT = Chat(id=-100500, type="supergroup", title="Test chat")
 BOT_USER = User(id=42, is_bot=True, first_name="FatJoke", username="fat_joke_bot")
@@ -129,7 +130,7 @@ def muted(member_user):
 @pytest.fixture(autouse=True)
 def no_philosophy(monkeypatch):
     # a random philosopher quote on any text message would add an unexpected reply now and then
-    monkeypatch.setattr("telegram_bots.bots.fat_joke.services.reactions.PHILOSOPHY_CHANCE", 0)
+    monkeypatch.setattr("telegram_bots.engine.services.reactions.PHILOSOPHY_CHANCE", 0)
     # tests run at night too, the night achievement would add a message
     monkeypatch.setattr(achievements, "NIGHT_HOURS", range(0))
 
@@ -255,7 +256,7 @@ def test_only_the_caller_can_answer(db, bot, dispatcher):
 
 
 def test_daily_limit_stops_quiz(db, bot, dispatcher, monkeypatch):
-    monkeypatch.setattr(quiz, "DAILY_LIMIT", 1)
+    dispatcher["settings"] = Settings(bot="fat_joke", quiz_daily_limit=1)
     feed(dispatcher, bot, **text_update(user(7, "Alex"), "/quiz"))
     picker_id = bot.session.next_message_id
     feed(dispatcher, bot, **text_update(user(7, "Alex"), "/quiz мобла"))
@@ -386,8 +387,9 @@ def test_scheduled_question_skips_quiet_hours_and_open_questions(db, bot, monkey
 
 
 def test_season_end_is_announced(db, bot, monkeypatch):
-    monkeypatch.setattr(quiz, "DISCIPLINES", {"mlbb2": quiz.DISCIPLINES["mlbb2"]})
-    for number in quiz.DISCIPLINES["mlbb2"].questions:
+    mlbb2 = quiz.disciplines()["mlbb2"]
+    monkeypatch.setattr(quiz, "disciplines", lambda: {"mlbb2": mlbb2})
+    for number in mlbb2.questions:
         quiz_db.save_quiz_message(db, CHAT.id, number, "mlbb2", 1, number)
     db.execute("UPDATE QuizMessages SET closed_at = CURRENT_TIMESTAMP")
     asyncio.run(ask_question(bot, db, CHAT.id))
@@ -663,15 +665,18 @@ def test_main_starts_up_to_polling(tmp_path, monkeypatch):
 
     session = StopAtPolling()
     monkeypatch.setattr(main, "Bot", lambda token: Bot("42:TEST", session=session))
-    # CI has no .env, the token is never used by the fake session anyway
-    monkeypatch.setattr(main, "get_bot_token", lambda: "42:TEST")
-    monkeypatch.setattr(main, "DB_PATH", str(tmp_path / "bot.db"))
-    monkeypatch.setattr(main, "BACKUP_DIR", str(tmp_path / "backups"))
-    monkeypatch.setattr(main, "MAIN_CHAT_ID", str(CHAT.id))
-    monkeypatch.setattr(main, "QUOTE_OF_THE_DAY_ENABLED", True)
+    settings = Settings(
+        bot="fat_joke",
+        # CI has no .env, the token is never used by the fake session anyway
+        token="42:TEST",
+        db_path=str(tmp_path / "bot.db"),
+        backup_dir=str(tmp_path / "backups"),
+        main_chat_id=str(CHAT.id),
+        quote_of_the_day_enabled=True,
+    )
     try:
         with pytest.raises(asyncio.CancelledError):
-            asyncio.run(main.main())
+            asyncio.run(main.main(settings))
     finally:
         for router in main.ROUTERS:
             router._parent_router = None
@@ -688,7 +693,7 @@ class LootRandom:
         return 0
 
     def choices(self, kinds, weights):
-        return [loot.KINDS[self.code]]
+        return [loot.kinds()[self.code]]
 
     def choice(self, items):
         return list(items)[0]

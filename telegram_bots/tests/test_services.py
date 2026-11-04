@@ -1,11 +1,12 @@
 from datetime import datetime, timedelta
 from random import Random
+from zoneinfo import ZoneInfo
 
 import pytest
 
-from telegram_bots.bots.fat_joke.db import users
-from telegram_bots.bots.fat_joke.services import achievements, bets, duel, fat_day, iq, quiz, quotes, texts, weekly, who
-from telegram_bots.bots.fat_joke.services.reactions import Reply, StickerReplier, text_reactions
+from telegram_bots.engine.db import users
+from telegram_bots.engine.services import achievements, bets, duel, fat_day, iq, quiz, quotes, texts, who, words
+from telegram_bots.engine.services.reactions import Reply, StickerReplier, text_reactions
 from telegram_bots.knowledge_base.fat_joke.random_phrases import random_phrase_groups
 from telegram_bots.knowledge_base.fat_joke.reaction_data import (
     dick_short,
@@ -14,6 +15,7 @@ from telegram_bots.knowledge_base.fat_joke.reaction_data import (
     sticker_responses,
 )
 from telegram_bots.knowledge_base.fat_joke.timer_data import hour_phrases
+from telegram_bots.knowledge_base.fat_joke.who_data import prefix, who_questions
 from telegram_bots.tests.conftest import FakeRandom, make_user
 
 
@@ -35,7 +37,7 @@ def test_philosophy_appears_by_chance():
 
 def test_random_phrase_groups_are_picked_evenly(monkeypatch):
     # a group first, then a phrase in it, so 132 Podervianskyi quotes don't drown the facts
-    monkeypatch.setattr("telegram_bots.bots.fat_joke.services.reactions.PHILOSOPHY_CHANCE", 1)
+    monkeypatch.setattr("telegram_bots.engine.services.reactions.PHILOSOPHY_CHANCE", 1)
     assert all(random_phrase_groups) and len(random_phrase_groups) == 4
     picked = {text_reactions("тишина", rng=Random(seed))[-1].value for seed in range(200)}
     assert all(picked & set(group) for group in random_phrase_groups)
@@ -88,7 +90,8 @@ def test_miss_you_message():
 
 
 def test_hour_message():
-    assert texts.hour_message("19", "18", rng=FakeRandom()) == (
+    evening = datetime(2026, 11, 4, 19, 0, tzinfo=ZoneInfo("Europe/Kyiv"))
+    assert texts.hour_message(evening, rng=FakeRandom()) == (
         f"Бам!!! Говорит Омниссия!\n🇺🇦 19:00 - час {hour_phrases['ua']['evening'][0]}!\n"
         f"🇩🇪 18:00 - время {hour_phrases['de']['evening'][0]}!"
     )
@@ -156,7 +159,7 @@ def test_streak_and_night_achievements(db):
     "count, word", [(1, "сообщение"), (3, "сообщения"), (5, "сообщений"), (12, "сообщений"), (21, "сообщение")]
 )
 def test_plural(count, word):
-    assert weekly.plural(count, "сообщение", "сообщения", "сообщений") == word
+    assert words.plural(count, "сообщение", "сообщения", "сообщений") == word
 
 
 def test_who_result_with_a_tie_and_without_votes():
@@ -175,10 +178,10 @@ def test_who_options():
 
 
 def test_who_questions_go_round():
-    every = {who.PREFIX + question for question in who.who_questions}
-    assert len(every) == len(who.who_questions) >= 100
-    last = who.pick_question(every - {who.PREFIX + who.who_questions[5]})
-    assert last == who.PREFIX + who.who_questions[5]
+    every = {prefix + question for question in who_questions}
+    assert len(every) == len(who_questions) >= 100
+    last = who.pick_question(every - {prefix + who_questions[5]})
+    assert last == prefix + who_questions[5]
     assert who.pick_question(every) in every
 
 

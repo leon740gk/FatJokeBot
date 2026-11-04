@@ -22,6 +22,6 @@ jobs:
       - name: Lint
         run: ruff check .
       - name: Format
-        run: ruff format --check telegram_bots/bots telegram_bots/tests telegram_bots/config.py
+        run: ruff format --check telegram_bots/bots telegram_bots/engine telegram_bots/tests telegram_bots/config.py
       - name: Tests
         run: pytest -q

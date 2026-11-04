@@ -32,8 +32,8 @@ adduser --disabled-password --gecos "" bot
 mkdir -p /home/bot/.ssh && cp ~/.ssh/authorized_keys /home/bot/.ssh/
 chown -R bot:bot /home/bot/.ssh && chmod 700 /home/bot/.ssh && chmod 600 /home/bot/.ssh/authorized_keys
 
-# боту можно только перезапускать свой сервис (для deploy/update.sh)
-echo 'bot ALL=(root) NOPASSWD: /usr/bin/systemctl restart fat-joke' > /etc/sudoers.d/fat-joke
+# боту можно только перезапускать свои сервисы (для deploy/update.sh)
+echo 'bot ALL=(root) NOPASSWD: /usr/bin/systemctl restart fat-joke, /usr/bin/systemctl restart servo-skull' > /etc/sudoers.d/fat-joke
 chmod 440 /etc/sudoers.d/fat-joke
 ```
 
@@ -93,7 +93,7 @@ journalctl -u fat-joke -f    # логи; выход Ctrl+C
 
 | Что | Команда |
 |---|---|
-| Обновить после `git push` | `ssh bot@SERVER_IP FatJokeBot/deploy/update.sh` |
+| Обновить после `git push` (все боты) | `ssh bot@SERVER_IP FatJokeBot/deploy/update.sh` |
 | Логи | `ssh bot@SERVER_IP journalctl -u fat-joke -n 100` |
 | Остановить / запустить (root) | `systemctl stop fat-joke` / `systemctl start fat-joke` |
 | Забрать бэкапы на ноутбук | `scp -r bot@SERVER_IP:FatJokeBot/backups ./backups-server` |
@@ -105,3 +105,24 @@ journalctl -u fat-joke -f    # логи; выход Ctrl+C
 `telegram_bots/db_sqlite/my_database.db`, `systemctl start fat-joke`.
 
 Если поменял `.env`, нужно перезапустить: `sudo systemctl restart fat-joke`.
+
+## Второй бот: ServoSkull
+
+Код у ботов общий (`telegram_bots/engine`), у каждого свои тексты (`telegram_bots/knowledge_base/<бот>/`),
+настройки в том же `.env` со своим префиксом, своя база и свой systemd-сервис. Сервер и папка `~/FatJokeBot` те же.
+
+1. Токен нового бота от @BotFather вписать в `.env` на сервере (под bot, `nano ~/FatJokeBot/.env`):
+   `SERVO_SKULL_BOT_TOKEN=...` и `SERVO_SKULL_MAIN_CHAT_ID=...` (ID чата покажет `/chat_id` в группе).
+2. Под root разрешить боту перезапускать и новый сервис, поставить его и запустить:
+
+```bash
+echo 'bot ALL=(root) NOPASSWD: /usr/bin/systemctl restart fat-joke, /usr/bin/systemctl restart servo-skull' > /etc/sudoers.d/fat-joke
+chmod 440 /etc/sudoers.d/fat-joke
+cp /home/bot/FatJokeBot/deploy/servo-skull.service /etc/systemd/system/
+systemctl daemon-reload
+systemctl enable --now servo-skull
+journalctl -u servo-skull -f
+```
+
+Дальше `deploy/update.sh` обновляет и перезапускает оба бота. База ServoSkull — `telegram_bots/db_sqlite/servo_skull.db`,
+бэкапы — `backups/servo_skull/`. Логи: `journalctl -u servo-skull -n 100`.
