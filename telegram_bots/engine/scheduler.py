@@ -15,6 +15,7 @@ from telegram_bots.config import env_prefix
 from telegram_bots.engine import content
 from telegram_bots.engine.content import kb
 from telegram_bots.engine.db import bets as bets_db
+from telegram_bots.engine.db import chat_games as games_db
 from telegram_bots.engine.db import duels as duels_db
 from telegram_bots.engine.db import loot as loot_db
 from telegram_bots.engine.db import news as news_db
@@ -23,7 +24,19 @@ from telegram_bots.engine.db import quotes as quotes_db
 from telegram_bots.engine.db import users as users_db
 from telegram_bots.engine.db import who_polls as who_db
 from telegram_bots.engine.db.backup import backup_database
-from telegram_bots.engine.services import bets, birthdays, duel, loot, news, quiz, quotes, texts, weekly, who
+from telegram_bots.engine.services import (
+    bets,
+    birthdays,
+    chat_games,
+    duel,
+    loot,
+    news,
+    quiz,
+    quotes,
+    texts,
+    weekly,
+    who,
+)
 from telegram_bots.engine.services.people import mention
 from telegram_bots.engine.services.quiet_hours import is_quiet
 
@@ -229,6 +242,87 @@ async def close_who_polls(bot, db, hours=who.POLL_HOURS):
             logger.warning("can't close the who poll %s in chat %s: %s", message_id, chat_id, error.message)
 
 
+async def start_this_or_that(bot, db, chat_id, rng=random):
+    """Sends an anonymous "Це чи те" poll; returns its message_id, None when the bot has no such polls."""
+    items = kb.chat_games_data.this_or_that
+    if not items:
+        return None
+    number = chat_games.pick_fresh(len(items), games_db.used_this_or_that(db, int(chat_id)), rng)
+    question, first, second = items[number]
+    sent = await bot.send_poll(chat_id, question, options=[first, second], is_anonymous=True)
+    games_db.save_this_or_that(db, int(chat_id), sent.message_id, number)
+    return sent.message_id
+
+
+@chat_job
+async def this_or_that_poll(bot, db, chat_id):
+    await start_this_or_that(bot, db, chat_id)
+
+
+async def start_tonight_poll(bot, db, chat_id):
+    """Sends the "Сьогодні граю в…" poll, open votes with several answers; None when the bot has none."""
+    data = kb.chat_games_data
+    if not data.tonight_options:
+        return None
+    sent = await bot.send_poll(
+        chat_id, data.tonight_question, options=data.tonight_options, is_anonymous=False, allows_multiple_answers=True
+    )
+    return sent.message_id
+
+
+@chat_job
+async def tonight_poll(bot, db, chat_id):
+    await start_tonight_poll(bot, db, chat_id)
+
+
+@chat_job
+async def daily_question(bot, db, chat_id, rng=random):
+    """The question of the day: whoever answers it with a reply gets a few XP."""
+    items = kb.chat_games_data.daily_questions
+    if not items:
+        return
+    number = chat_games.pick_fresh(len(items), games_db.used_daily_questions(db, int(chat_id)), rng)
+    sent = await bot.send_message(chat_id, chat_games.daily_question_text(number))
+    games_db.save_daily_question(db, int(chat_id), sent.message_id, number)
+
+
+async def start_riddle(bot, db, chat_id, rng=random):
+    """Posts a "Вгадай гру" riddle; returns its message_id, None when the bot has no riddles."""
+    items = chat_games.riddles()
+    if not items:
+        return None
+    number = chat_games.pick_fresh(len(items), games_db.used_riddles(db, int(chat_id)), rng)
+    sent = await bot.send_message(chat_id, chat_games.riddle_text(items[number]))
+    games_db.create_riddle(db, int(chat_id), sent.message_id, number)
+    return sent.message_id
+
+
+@chat_job
+async def scheduled_riddle(bot, db, chat_id):
+    if not games_db.open_riddle(db, int(chat_id)):
+        await start_riddle(bot, db, chat_id)
+
+
+async def riddle_tick(bot, db, now=None):
+    """Gives the next hint of every open riddle when it's due, and the answer when nobody got it."""
+    now = time.time() if now is None else now
+    for riddle_id, chat_id, message_id, number, started_at, hints_shown in games_db.all_open_riddles(db):
+        riddle = chat_games.get_riddle(number)
+        reply = ReplyParameters(message_id=message_id, allow_sending_without_reply=True)
+        try:
+            if not riddle:
+                games_db.close_riddle(db, riddle_id)
+            elif chat_games.is_over(riddle, started_at, now):
+                if games_db.close_riddle(db, riddle_id):
+                    text = kb.texts.riddle_revealed.format(answer=riddle.answers[0])
+                    await bot.send_message(chat_id, text, reply_parameters=reply)
+            elif chat_games.hints_due(riddle, started_at, now) > hints_shown:
+                games_db.set_hints_shown(db, riddle_id, hints_shown + 1)
+                await bot.send_message(chat_id, chat_games.hint_text(riddle, hints_shown + 1), reply_parameters=reply)
+        except TelegramAPIError as error:
+            logger.warning("can't move the riddle %s on in chat %s: %s", riddle_id, chat_id, error.message)
+
+
 def duelist_names(db, current):
     names = {}
     for user_id in (current.challenger, current.opponent):
@@ -304,6 +398,10 @@ def create_scheduler(
     who_poll_enabled=False,
     birthdays_enabled=False,
     news_enabled=False,
+    daily_question_enabled=False,
+    this_or_that_enabled=False,
+    riddles_enabled=False,
+    tonight_poll_enabled=False,
 ):
     scheduler = AsyncIOScheduler(timezone=KYIV)
     scheduler.add_job(update_activity, "cron", hour=14, minute=55, kwargs={"db": db})
@@ -312,6 +410,7 @@ def create_scheduler(
     )
     scheduler.add_job(close_who_polls, "interval", minutes=1, kwargs={"bot": bot, "db": db})
     scheduler.add_job(close_duels, "interval", minutes=1, kwargs={"bot": bot, "db": db})
+    scheduler.add_job(riddle_tick, "interval", minutes=1, kwargs={"bot": bot, "db": db})
     if db_path and backup_dir:
         # the bot may be down at 04:00 (laptop asleep, restart), so a missed backup still runs later the same day
         scheduler.add_job(
@@ -370,6 +469,20 @@ def create_scheduler(
             coalesce=True,
             kwargs={"bot": bot, "db": db, "chat_id": chat_id},
         )
+    # the chat games run only for a bot with their content in chat_games_data.py
+    games = kb.chat_games_data
+    if daily_question_enabled and games.daily_questions:
+        scheduler.add_job(daily_question, "cron", hour=14, minute=0, kwargs={"bot": bot, "db": db, "chat_id": chat_id})
+    if this_or_that_enabled and games.this_or_that:
+        scheduler.add_job(
+            this_or_that_poll, "cron", hour=16, minute=0, kwargs={"bot": bot, "db": db, "chat_id": chat_id}
+        )
+    if riddles_enabled and games.riddles:
+        scheduler.add_job(
+            scheduled_riddle, "cron", hour=17, minute=0, kwargs={"bot": bot, "db": db, "chat_id": chat_id}
+        )
+    if tonight_poll_enabled and games.tonight_options:
+        scheduler.add_job(tonight_poll, "cron", hour=18, minute=30, kwargs={"bot": bot, "db": db, "chat_id": chat_id})
     if weekly_summary_enabled:
         scheduler.add_job(
             weekly_summary,

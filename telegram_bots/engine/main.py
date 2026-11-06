@@ -15,7 +15,9 @@ from telegram_bots.engine.db.backup import backup_if_stale
 from telegram_bots.engine.db.connection import Database
 from telegram_bots.engine.db.schema import init_schema
 from telegram_bots.engine.handlers import (
+    anon,
     birthdays,
+    chat_games,
     commands,
     duel,
     fat_day,
@@ -58,6 +60,9 @@ ROUTERS = (
     loot.router,
     duel.router,
     quiz.router,
+    anon.router,
+    # takes the answers to riddles and to the question of the day, passes everything else on to reactions
+    chat_games.router,
     reactions.router,
 )
 
@@ -99,6 +104,10 @@ async def main(settings):
         who_poll_enabled=settings.who_poll_enabled,
         birthdays_enabled=settings.birthdays_enabled,
         news_enabled=settings.news_enabled,
+        daily_question_enabled=settings.daily_question_enabled,
+        this_or_that_enabled=settings.this_or_that_enabled,
+        riddles_enabled=settings.riddles_enabled,
+        tonight_poll_enabled=settings.tonight_poll_enabled,
     )
     scheduler.start()
     try:

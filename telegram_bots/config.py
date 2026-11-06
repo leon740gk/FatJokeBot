@@ -58,6 +58,16 @@ class Settings:
     birthdays_enabled: bool = True
     # gaming news in the main chat at 10:00 Kyiv time, for a bot with feeds in its news_data.py
     news_enabled: bool = True
+    # the chat games, each only for a bot with its content in chat_games_data.py (Kyiv time):
+    # the question of the day at 14:00, a "Це чи те" poll at 16:00, a riddle at 17:00, "Сьогодні граю в…" at 18:30
+    daily_question_enabled: bool = True
+    this_or_that_enabled: bool = True
+    riddles_enabled: bool = True
+    tonight_poll_enabled: bool = True
+    # the bot now and then puts a reaction on a message, for a bot with message_reactions in reaction_data.py
+    reactions_enabled: bool = True
+    # /anon in a private chat with the bot posts the text to the main chat without a name
+    anon_enabled: bool = False
 
     @property
     def env_prefix(self):
@@ -89,6 +99,12 @@ def load_settings(bot, environ=None):
         weekly_summary_enabled=_flag(get("WEEKLY_SUMMARY_ENABLED"), default=True),
         birthdays_enabled=_flag(get("BIRTHDAYS_ENABLED"), default=True),
         news_enabled=_flag(get("NEWS_ENABLED"), default=True),
+        daily_question_enabled=_flag(get("DAILY_QUESTION_ENABLED"), default=True),
+        this_or_that_enabled=_flag(get("THIS_OR_THAT_ENABLED"), default=True),
+        riddles_enabled=_flag(get("RIDDLES_ENABLED"), default=True),
+        tonight_poll_enabled=_flag(get("TONIGHT_POLL_ENABLED"), default=True),
+        reactions_enabled=_flag(get("REACTIONS_ENABLED"), default=True),
+        anon_enabled=_flag(get("ANON_ENABLED")),
     )
 
 

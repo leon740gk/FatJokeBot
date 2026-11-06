@@ -202,6 +202,61 @@ CREATE TABLE IF NOT EXISTS NewsSent (
 )
 """
 
+THIS_OR_THAT_TABLE = """
+CREATE TABLE IF NOT EXISTS ThisOrThat (
+    id INTEGER PRIMARY KEY,
+    chat_id INTEGER NOT NULL,
+    message_id INTEGER NOT NULL,
+    number INTEGER NOT NULL,
+    created_at TEXT DEFAULT CURRENT_TIMESTAMP
+)
+"""
+
+DAILY_QUESTIONS_TABLE = """
+CREATE TABLE IF NOT EXISTS DailyQuestions (
+    id INTEGER PRIMARY KEY,
+    chat_id INTEGER NOT NULL,
+    message_id INTEGER NOT NULL,
+    number INTEGER NOT NULL,
+    created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE (chat_id, message_id)
+)
+"""
+
+DAILY_ANSWERS_TABLE = """
+CREATE TABLE IF NOT EXISTS DailyAnswers (
+    question_id INTEGER NOT NULL,
+    telegram_id INTEGER NOT NULL,
+    points INTEGER NOT NULL,
+    answered_at TEXT DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (question_id, telegram_id)
+)
+"""
+
+RIDDLES_TABLE = """
+CREATE TABLE IF NOT EXISTS Riddles (
+    id INTEGER PRIMARY KEY,
+    chat_id INTEGER NOT NULL,
+    message_id INTEGER NOT NULL,
+    number INTEGER NOT NULL,
+    started_at REAL NOT NULL,
+    hints_shown INTEGER NOT NULL DEFAULT 0,
+    solved_by INTEGER,
+    points INTEGER NOT NULL DEFAULT 0,
+    closed_at TEXT
+)
+"""
+
+ANON_MESSAGES_TABLE = """
+CREATE TABLE IF NOT EXISTS AnonMessages (
+    id INTEGER PRIMARY KEY,
+    telegram_id INTEGER NOT NULL,
+    day TEXT NOT NULL,
+    chat_id INTEGER NOT NULL,
+    message_id INTEGER NOT NULL
+)
+"""
+
 TABLES = (
     USERS_TABLE,
     ANSWERS_TABLE,
@@ -219,6 +274,11 @@ TABLES = (
     DUELS_TABLE,
     DUEL_BETS_TABLE,
     NEWS_SENT_TABLE,
+    THIS_OR_THAT_TABLE,
+    DAILY_QUESTIONS_TABLE,
+    DAILY_ANSWERS_TABLE,
+    RIDDLES_TABLE,
+    ANON_MESSAGES_TABLE,
 )
 
 

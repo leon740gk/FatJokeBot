@@ -187,6 +187,9 @@ commands_responses = {
 }
 
 
+# reactions the bot now and then puts on ordinary messages, from the emojis Telegram allows; empty turns it off
+message_reactions = []
+
 # the command menu Telegram shows when typing "/", the bot sends it on every start
 bot_commands = {
     "quiz": "Вопрос викторины",

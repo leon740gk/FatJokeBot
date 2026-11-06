@@ -238,3 +238,22 @@ birthday_wishes = [
 news_title = "📰 Новости, {date}"
 news_empty = "Свежих новостей пока нет, всё уже было 📰"
 news_off = "Новости у этого бота выключены 📰"
+
+# chat games: /vs, /tonight, /guess and the question of the day, see chat_games_data.py
+chat_games_off = "Такого у этого бота пока нет 🤷"
+riddle_start = "🎮 Угадай игру!\n\n{riddle}\n\nПиши ответ в чат, первый угадавший получит {points} {xp}"
+riddle_hint = "💡 Подсказка {number}: {hint}\nТеперь за ответ {points} {xp}"
+riddle_solved = "🎉 {who} угадал(а)! Это {answer}. +{points} {xp}"
+riddle_revealed = "⌛ Никто не угадал. Ответ: {answer}"
+riddle_already_open = "Загадка уже висит, отгадывай 👆"
+daily_question = "❓ Вопрос дня: {question}\n\nОтвечай реплаем на это сообщение, за ответ +{points} {xp}"
+
+# anonymous messages, /anon
+anon_how_to = "🕵️ Напиши мне в личку /anon и текст, и я отправлю его в чат без имени. Не больше {limit} в день."
+anon_in_private = "🤫 Анонимки пишут мне в личку: {link}"
+anon_post = "🕵️ Анонимно:\n\n{text}"
+anon_sent = "Отправлено 🤫 В чате никто не узнает, что это ты."
+anon_not_member = "Анонимки могут писать только участники чата 🤷"
+anon_limit = "На сегодня хватит: не больше {limit} анонимок в день 🤐"
+anon_too_long = "Слишком длинно, максимум {limit} символов ✂️"
+anon_off = "Анонимки у этого бота выключены 🤐"

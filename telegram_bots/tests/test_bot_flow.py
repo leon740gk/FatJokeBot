@@ -310,6 +310,7 @@ def test_scheduler_jobs(db, bot):
         "close_duels",
         "close_expired_questions",
         "close_who_polls",
+        "riddle_tick",
         "update_activity",
     ]
     # questions only on /quiz unless the schedule is switched on
@@ -318,6 +319,7 @@ def test_scheduler_jobs(db, bot):
         "close_expired_questions",
         "close_who_polls",
         "hourly_bam",
+        "riddle_tick",
         "update_activity",
     ]
     scheduler = create_scheduler(bot, db, CHAT.id, quote_of_the_day_enabled=True)
