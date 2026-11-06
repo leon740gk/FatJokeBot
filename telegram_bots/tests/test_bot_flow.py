@@ -14,7 +14,7 @@ from aiogram.types import (
 )
 
 from telegram_bots.config import Settings
-from telegram_bots.engine import main
+from telegram_bots.engine import main, middlewares
 from telegram_bots.engine import scheduler as scheduler_module
 from telegram_bots.engine.db import quiz as quiz_db
 from telegram_bots.engine.db import users as users_db
@@ -197,6 +197,29 @@ def test_anonymous_admin_quiz_is_for_whoever_picks(db, bot, dispatcher):
 
     feed(dispatcher, bot, **press(user(7, "Alex"), bot.session.next_message_id, "t accounting"))
     assert quiz_db.get_open_question_of(db, CHAT.id, 7) == (bot.session.next_message_id,)
+
+
+def test_the_only_anonymous_admin_is_themselves(db, bot, dispatcher):
+    bot.session.anonymous_admins = [(7, "Alex")]
+    feed(dispatcher, bot, **anonymous_update("/quiz"))
+    picker = bot.session.of_type(methods.SendMessage)[-1]
+    buttons = {button.text: button.callback_data for row in picker.reply_markup.inline_keyboard for button in row}
+    assert buttons["Бухгалтерия"] == "t accounting 7"
+    assert users_db.get_iq_and_name(db, 7)[1] == "Alex"
+
+    # Bob can't take the owner's /quiz, the owner can
+    feed(dispatcher, bot, **press(user(8, "Bob"), bot.session.next_message_id, "t accounting 7"))
+    assert bot.session.of_type(methods.AnswerCallbackQuery)[-1].text.startswith("Это не твой /quiz")
+    feed(dispatcher, bot, **press(user(7, "Alex"), bot.session.next_message_id, "t accounting 7"))
+    assert quiz_db.get_open_question_of(db, CHAT.id, 7) == (bot.session.next_message_id,)
+
+
+def test_several_anonymous_admins_stay_anonymous(db, bot, dispatcher):
+    bot.session.anonymous_admins = [(7, "Alex"), (8, "Bob")]
+    feed(dispatcher, bot, **anonymous_update("/quiz"))
+    picker = bot.session.of_type(methods.SendMessage)[-1]
+    buttons = {button.text: button.callback_data for row in picker.reply_markup.inline_keyboard for button in row}
+    assert buttons["Бухгалтерия"] == "t accounting"
 
 
 def test_anonymous_admin_commands(db, bot, dispatcher):
@@ -878,3 +901,12 @@ def test_bets_come_back_when_the_duel_is_off(db, bot, dispatcher):
     feed(dispatcher, bot, **press(user(8, "Bob"), bot.session.next_message_id - 1, duel.challenge_callback(1, "no")))
     assert bot.session.of_type(methods.EditMessageText)[-1].text.endswith("💰 Ставки вернули.")
     assert achievements.battle_points(db, 9) == 30
+
+
+def test_reply_to_the_anonymous_admin_is_a_reply_to_them():
+    owner, bob = user(7, "Alex"), user(8, "Bob")
+    original = anonymous_update("гг")["message"]
+    reply = text_update(bob, "/duel")["message"].model_copy(update={"reply_to_message": original})
+    changed = middlewares.as_admin(reply, owner)
+    assert changed.from_user == bob
+    assert changed.reply_to_message.from_user == owner and changed.reply_to_message.sender_chat is None

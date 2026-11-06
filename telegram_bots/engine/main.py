@@ -31,7 +31,7 @@ from telegram_bots.engine.handlers import (
     reactions,
     who,
 )
-from telegram_bots.engine.middlewares import UserActivityMiddleware
+from telegram_bots.engine.middlewares import AnonymousAdminMiddleware, UserActivityMiddleware
 from telegram_bots.engine.scheduler import check_chat, create_scheduler
 from telegram_bots.engine.services.quiet_hours import parse_quiet_hours
 
@@ -70,6 +70,8 @@ ROUTERS = (
 def build_dispatcher(db, settings=None):
     """settings reach the handlers as the `settings` argument, like db."""
     dispatcher = Dispatcher(db=db, settings=settings or Settings(bot=content.active()))
+    # first, so everything after it sees the anonymous admin as themselves
+    dispatcher.message.outer_middleware(AnonymousAdminMiddleware())
     dispatcher.message.outer_middleware(UserActivityMiddleware())
     dispatcher.callback_query.outer_middleware(UserActivityMiddleware())
     dispatcher.include_routers(*ROUTERS)

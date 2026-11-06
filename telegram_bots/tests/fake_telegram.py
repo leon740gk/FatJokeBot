@@ -33,6 +33,7 @@ class FakeSession(BaseSession):
         self.requests = []
         self.next_message_id = 1000
         self.admins = set()
+        self.anonymous_admins = []  # (id, name) of admins who write as the group, for GetChatAdministrators
         self.missing_chats = set()
         self.left_chats = set()
         self.left_users = set()
@@ -59,6 +60,13 @@ class FakeSession(BaseSession):
             if method.user_id in self.admins:
                 return ChatMemberOwner(user=member_user, is_anonymous=False)
             return ChatMemberMember(user=member_user)
+        if isinstance(method, methods.GetChatAdministrators):
+            owner = ChatMemberOwner(user=User(id=1, is_bot=False, first_name="Owner"), is_anonymous=False)
+            anonymous = [
+                ChatMemberOwner(user=User(id=user_id, is_bot=False, first_name=name), is_anonymous=True)
+                for user_id, name in self.anonymous_admins
+            ]
+            return [owner, *anonymous]
         if isinstance(method, methods.StopPoll):
             options = [
                 PollOption(persistent_id=str(i), text=str(i), voter_count=n) for i, n in enumerate(self.poll_votes)
