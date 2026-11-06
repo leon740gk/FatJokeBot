@@ -65,10 +65,12 @@ tonight_question = "🎮 Сьогодні ввечері граю в…"
 tonight_options = [
     "CS2",
     "Dota 2",
-    "Valorant",
-    "Fortnite",
+    "LoL",
+    "MLBB",
+    "World of Tanks",
     "Minecraft",
-    "GTA Online",
+    "Helldivers 2",
+    "It Takes Two / Split Fiction",
     "Щось інше 🎲",
     "Сьогодні відпочиваю 😴",
 ]
