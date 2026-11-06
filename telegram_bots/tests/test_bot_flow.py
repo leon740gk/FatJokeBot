@@ -6,6 +6,7 @@ from datetime import datetime
 import pytest
 from aiogram import Bot, methods
 from aiogram.types import (
+    Chat,
     ChatMemberLeft,
     ChatMemberMember,
     ChatMemberUpdated,
@@ -178,6 +179,36 @@ def test_quiz_command_without_topic_shows_picker(db, bot, dispatcher):
     feed(dispatcher, bot, **press(user(7, "Alex"), picker_id, "t geo 7"))
     assert bot.session.of_type(methods.AnswerCallbackQuery)[-1].text == "Тему уже выбрали"
     assert quiz_db.get_open_question(db, CHAT.id, "geo") is None
+
+
+def anonymous_update(text, sender_chat=CHAT):
+    """A message an anonymous admin (or a channel) sends on behalf of a chat: from_user is GroupAnonymousBot."""
+    update = text_update(user(1087968824, "GroupAnonymousBot"), text)
+    update["message"] = update["message"].model_copy(update={"sender_chat": sender_chat})
+    return update
+
+
+def test_anonymous_admin_quiz_is_for_whoever_picks(db, bot, dispatcher):
+    # the button press comes from the person behind the anonymous /quiz
+    feed(dispatcher, bot, **anonymous_update("/quiz"))
+    picker = bot.session.of_type(methods.SendMessage)[-1]
+    buttons = {button.text: button.callback_data for row in picker.reply_markup.inline_keyboard for button in row}
+    assert buttons["Бухгалтерия"] == "t accounting"
+
+    feed(dispatcher, bot, **press(user(7, "Alex"), bot.session.next_message_id, "t accounting"))
+    assert quiz_db.get_open_question_of(db, CHAT.id, 7) == (bot.session.next_message_id,)
+
+
+def test_anonymous_admin_commands(db, bot, dispatcher):
+    feed(dispatcher, bot, **anonymous_update("/already_answered_questions"))
+    assert bot.session.of_type(methods.SendMessage)[-1].text.startswith("Анонимно не вижу")
+
+    feed(dispatcher, bot, **anonymous_update("/discipline гео"))
+    assert quiz.current_discipline(db) == "geo"
+
+    channel = Chat(id=-100777, type="channel", title="Linked channel")
+    feed(dispatcher, bot, **anonymous_update("/discipline мобла", sender_chat=channel))
+    assert quiz.current_discipline(db) == "geo"
 
 
 def test_picker_refuses_topic_with_open_question(db, bot, dispatcher):

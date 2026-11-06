@@ -88,6 +88,7 @@ quiz_pick_topic = "Какую тему хотите? 👇"
 quiz_right_answer = "Правильный ответ: {answer}"
 quiz_expired = "⏰ Время вышло, никто не ответил!"
 answered_none = "Вот ленивая срака! Ещё ни на один вопрос не ответили ("
+answered_anonymous = 'Анонимно не вижу, чьи это ответы 🙈 Напиши от себя'
 answered_title = "Вы уже ответили на следующие вопросы:\n"
 leaders_title = "Лидеры в дисциплине {topic}, сезон {season}\nvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv\n"
 leaders_row = "{name}: {count} верных ответов\n==============================\n"
