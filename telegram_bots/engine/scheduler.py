@@ -85,17 +85,25 @@ async def check_chat(bot, chat_id):
 
 
 @chat_job
-async def hourly_bam(bot, db, chat_id, quiet_hours=None, rng=random):
-    """The time message; in the daytime now and then with an MLBB objective for the fastest to take."""
-    now = datetime.now(KYIV)
-    text = texts.hour_message(now)
-    kind = None if is_quiet(now.hour, quiet_hours) else loot.roll(rng)
-    if not kind:
-        await bot.send_message(chat_id, text)
-        return
+async def hourly_bam(bot, db, chat_id):
+    """The time message."""
+    await bot.send_message(chat_id, texts.hour_message(datetime.now(KYIV)))
+
+
+def plan_loot(scheduler, bot, db, chat_id, rng=random):
+    """Maybe puts a loot drop at a random moment of the current window, see loot.WINDOW_HOURS."""
+    at = loot.spawn_time(datetime.now(KYIV), rng)
+    if at:
+        scheduler.add_job(loot_drop, "date", run_date=at, kwargs={"bot": bot, "db": db, "chat_id": chat_id})
+
+
+@chat_job
+async def loot_drop(bot, db, chat_id, rng=random):
+    """An MLBB objective for the fastest to take."""
+    kind = loot.roll(rng)
     keyboard = InlineKeyboardBuilder()
     keyboard.button(text=kb.theme_data.loot_button, callback_data=loot.CALLBACK)
-    sent = await bot.send_message(chat_id, loot.spawn_text(text, kind), reply_markup=keyboard.as_markup())
+    sent = await bot.send_message(chat_id, loot.spawn_text(kind), reply_markup=keyboard.as_markup())
     loot_db.create(db, int(chat_id), sent.message_id, kind.code, kind.points)
 
 
@@ -432,8 +440,16 @@ def create_scheduler(
         "cron",
         hour="*/3",
         minute=0,
-        # nobody is awake to take the loot in quiet hours, the same ones as for the quiz
-        kwargs={"bot": bot, "db": db, "chat_id": chat_id, "quiet_hours": quiet_hours},
+        kwargs={"bot": bot, "db": db, "chat_id": chat_id},
+    )
+    # loot at random moments day and night, planned at the start of each window and for the rest of it at start
+    scheduler.add_job(
+        plan_loot,
+        "cron",
+        hour=f"*/{loot.WINDOW_HOURS}",
+        minute=0,
+        next_run_time=datetime.now(KYIV),
+        kwargs={"scheduler": scheduler, "bot": bot, "db": db, "chat_id": chat_id},
     )
     if quiz_schedule_enabled:
         scheduler.add_job(

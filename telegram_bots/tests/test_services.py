@@ -5,7 +5,20 @@ from zoneinfo import ZoneInfo
 import pytest
 
 from telegram_bots.engine.db import users
-from telegram_bots.engine.services import achievements, bets, duel, fat_day, iq, party, quiz, quotes, texts, who, words
+from telegram_bots.engine.services import (
+    achievements,
+    bets,
+    duel,
+    fat_day,
+    iq,
+    loot,
+    party,
+    quiz,
+    quotes,
+    texts,
+    who,
+    words,
+)
 from telegram_bots.engine.services.reactions import Reply, StickerReplier, text_reactions
 from telegram_bots.knowledge_base.fat_joke.random_phrases import random_phrase_groups
 from telegram_bots.knowledge_base.fat_joke.reaction_data import (
@@ -225,3 +238,22 @@ def test_bet_payouts():
 )
 def test_party_size_from_args(args, expected):
     assert party.parse_args(args) == expected
+
+
+def test_loot_comes_day_and_night_at_random_minutes():
+    rng = Random(7)
+    start = datetime(2026, 11, 16, tzinfo=ZoneInfo("Europe/Kyiv"))
+    windows = [start + timedelta(hours=hours) for hours in range(0, 24 * 100, loot.WINDOW_HOURS)]
+    planned = [(window, loot.spawn_time(window, rng)) for window in windows]
+    assert all(window <= at < window + timedelta(hours=loot.WINDOW_HOURS) for window, at in planned if at)
+    drops = [at for _, at in planned if at]
+    # about 3 a day, half of them from 20:00 to 08:00
+    assert 270 <= len(drops) <= 330
+    night = sum(at.hour >= 20 or at.hour < 8 for at in drops)
+    assert 0.4 < night / len(drops) < 0.6
+    assert len({at.strftime("%H:%M") for at in drops}) > 200
+
+    # started in the middle of a window: the rest of it
+    now = start.replace(hour=10, minute=30)
+    drops = filter(None, (loot.spawn_time(now, rng) for _ in range(50)))
+    assert all(now <= at < start.replace(hour=12) for at in drops)

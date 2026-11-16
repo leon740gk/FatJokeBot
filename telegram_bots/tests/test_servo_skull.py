@@ -6,7 +6,7 @@ import pytest
 from aiogram import methods
 
 from telegram_bots.engine import content
-from telegram_bots.engine.scheduler import hourly_bam, weekly_summary
+from telegram_bots.engine.scheduler import hourly_bam, loot_drop, weekly_summary
 from telegram_bots.engine.services import quiz
 from telegram_bots.tests.fake_telegram import (
     CHAT,
@@ -53,11 +53,14 @@ def test_help_and_quiz_speak_ukrainian(db, bot, dispatcher):
     assert not bot.session.of_type(methods.SendSticker)
 
 
-def test_bam_is_kyiv_only_with_gaming_drop(db, bot, dispatcher):
-    asyncio.run(hourly_bam(bot, db, chat_id=CHAT.id, rng=LootRandom("legendary")))
+def test_bam_is_kyiv_only_and_gaming_drop(db, bot, dispatcher):
+    asyncio.run(hourly_bam(bot, db, chat_id=CHAT.id))
+    bam = bot.session.of_type(methods.SendMessage)[-1].text
+    assert bam.startswith("Бам!!! Серво-череп на зв'язку!\n🇺🇦 ") and "🇩🇪" not in bam
+
+    asyncio.run(loot_drop(bot, db, chat_id=CHAT.id, rng=LootRandom("legendary")))
     sent = bot.session.of_type(methods.SendMessage)[-1]
-    assert sent.text.startswith("Бам!!! Серво-череп на зв'язку!\n🇺🇦 ")
-    assert "🇩🇪" not in sent.text and "ЛЕГЕНДАРНИЙ ДРОП" in sent.text and "+25 XP" in sent.text
+    assert "ЛЕГЕНДАРНИЙ ДРОП" in sent.text and "+25 XP" in sent.text
 
     press_loot(dispatcher, bot, user(7, "Alex"), bot.session.next_message_id, sent.text)
     assert "Легендарний дроп забрав(ла) Alex (@alex)" in bot.session.of_type(methods.EditMessageText)[-1].text

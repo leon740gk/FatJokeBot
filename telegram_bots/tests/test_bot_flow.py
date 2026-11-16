@@ -1,7 +1,8 @@
 """Feeds real Telegram updates through the aiogram dispatcher, with a fake session instead of the network."""
 
 import asyncio
-from datetime import datetime
+from datetime import datetime, timedelta
+from random import Random
 
 import pytest
 from aiogram import Bot, methods
@@ -30,6 +31,8 @@ from telegram_bots.engine.scheduler import (
     close_who_polls,
     create_scheduler,
     hourly_bam,
+    loot_drop,
+    plan_loot,
     quote_of_the_day,
     scheduled_question,
     weekly_summary,
@@ -373,6 +376,7 @@ def test_scheduler_jobs(db, bot):
         "close_expired_questions",
         "close_who_polls",
         "hourly_bam",
+        "plan_loot",
         "riddle_tick",
         "update_activity",
     ]
@@ -628,21 +632,21 @@ def test_main_starts_up_to_polling(tmp_path, monkeypatch):
 
 
 def bam_with_loot(bot, db, code):
-    asyncio.run(hourly_bam(bot, db, chat_id=CHAT.id, rng=LootRandom(code)))
+    asyncio.run(loot_drop(bot, db, chat_id=CHAT.id, rng=LootRandom(code)))
     sent = bot.session.of_type(methods.SendMessage)[-1]
     return sent, bot.session.next_message_id
 
 
-def test_bam_loot_goes_to_the_fastest(db, bot, dispatcher):
+def test_loot_goes_to_the_fastest(db, bot, dispatcher):
     sent, message_id = bam_with_loot(bot, db, "turtle")
-    assert "🐢 Заспавнилась Черепаха!" in sent.text and "+10 BP" in sent.text
+    assert sent.text.startswith("🐢 Заспавнилась Черепаха!") and "+10 BP" in sent.text
     assert sent.reply_markup.inline_keyboard[0][0].callback_data == loot.CALLBACK
 
     press_loot(dispatcher, bot, user(7, "Alex"), message_id, sent.text)
     press_loot(dispatcher, bot, user(8, "Bob"), message_id, sent.text)
     assert answers(bot)[0] == "+10 BP! 💰" and answers(bot)[1] in late_phrases
     edit = bot.session.of_type(methods.EditMessageText)[-1]
-    assert edit.text.startswith("Бам!!!") and "Черепаху добил(а) Alex (@alex): +10 BP" in edit.text
+    assert edit.text.startswith("🐢 Черепаху добил(а) Alex (@alex): +10 BP")
     assert "Заспавнилась" not in edit.text and edit.reply_markup is None
     assert achievements.battle_points(db, 7) == 10 and achievements.battle_points(db, 8) == 0
 
@@ -656,10 +660,31 @@ def test_old_loot_is_gone(db, bot, dispatcher):
     assert achievements.battle_points(db, 7) == 0
 
 
-def test_no_loot_in_quiet_hours(db, bot):
-    asyncio.run(hourly_bam(bot, db, chat_id=CHAT.id, quiet_hours=(0, 24), rng=LootRandom("lord")))
+def test_loot_under_an_old_bam_keeps_the_bam(db, bot, dispatcher):
+    sent, message_id = bam_with_loot(bot, db, "turtle")
+    press_loot(dispatcher, bot, user(7, "Alex"), message_id, "Бам!!!\n🇺🇦 12:00\n\n" + sent.text)
+    edit = bot.session.of_type(methods.EditMessageText)[-1]
+    assert edit.text.startswith("Бам!!!\n🇺🇦 12:00\n\n🐢 Черепаху добил(а) Alex (@alex)")
+
+
+def test_bam_has_no_loot(db, bot):
+    asyncio.run(hourly_bam(bot, db, chat_id=CHAT.id))
     assert bot.session.of_type(methods.SendMessage)[-1].reply_markup is None
     assert db.fetch_one("SELECT COUNT(*) FROM Loot")[0] == 0
+
+
+def test_plan_loot_puts_a_drop_in_the_current_window(db, bot):
+    async def planned(rng):
+        scheduler = create_scheduler(bot, db, "")
+        plan_loot(scheduler, bot, db, CHAT.id, rng=rng)
+        return [job.trigger.run_date for job in scheduler.get_jobs() if job.func is loot_drop]
+
+    run_times = [run_time for seed in range(20) for run_time in asyncio.run(planned(Random(seed)))]
+    # 0.75 a window: some windows get a drop, some don't
+    assert 0 < len(run_times) < 20
+    now = datetime.now(KYIV)
+    window = timedelta(hours=loot.WINDOW_HOURS)
+    assert all(now - timedelta(minutes=1) <= run_time <= now + window for run_time in run_times)
 
 
 def test_lord_gives_an_achievement_and_shows_in_profile(db, bot, dispatcher):

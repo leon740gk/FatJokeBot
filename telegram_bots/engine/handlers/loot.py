@@ -28,7 +28,7 @@ async def loot_callback(callback: CallbackQuery, db):
     bam_text = loot.bam_part(message.text)
     if not loot_db.claim(db, message.chat.id, message.message_id, user.id, loot.LOOT_MINUTES):
         await callback.answer(kb.theme_data.gone_phrase)
-        await message.edit_text(f"{bam_text}\n\n{kb.theme_data.gone_line}")
+        await message.edit_text(loot.gone_text(bam_text))
         return
 
     kind = loot.kinds()[kind_code]
