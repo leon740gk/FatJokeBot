@@ -15,6 +15,12 @@ def pick(quotes, author=None, rng=random):
     return rng.choice(quotes) if quotes else None
 
 
+def quoted_in(texts, message_text):
+    """The quote of the book a bot message shows (/quote, the quote of the day or of the week), or None."""
+    shown = [text for text in texts if f"«{text}»\n— " in (message_text or "")]
+    return max(shown, key=len, default=None)
+
+
 def format_quote(quote, title=None):
     text, author_name, author_username, said_on = quote
     year, month, day = said_on.split("-")

@@ -15,6 +15,19 @@ def count(db, chat_id):
     return db.fetch_one("SELECT COUNT(*) FROM Quotes WHERE chat_id = ?", (chat_id,))[0]
 
 
+def delete_saved_from(db, chat_id, message_id):
+    """Deletes the quote saved from this message; False if there is none."""
+    return db.execute("DELETE FROM Quotes WHERE chat_id = ? AND message_id = ?", (chat_id, message_id)) > 0
+
+
+def texts(db, chat_id):
+    return [row[0] for row in db.fetch_all("SELECT text FROM Quotes WHERE chat_id = ?", (chat_id,))]
+
+
+def delete_text(db, chat_id, text):
+    return db.execute("DELETE FROM Quotes WHERE chat_id = ? AND text = ?", (chat_id, text)) > 0
+
+
 def get_all(db, chat_id):
     """(text, author_name, author_username, said_on) of every quote in the chat."""
     return db.fetch_all(

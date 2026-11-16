@@ -18,6 +18,7 @@ from telegram_bots.config import Settings
 from telegram_bots.engine import main, middlewares
 from telegram_bots.engine import scheduler as scheduler_module
 from telegram_bots.engine.db import quiz as quiz_db
+from telegram_bots.engine.db import quotes as quotes_db
 from telegram_bots.engine.db import users as users_db
 from telegram_bots.engine.db.duels import COLUMNS as DUEL_COLUMNS
 from telegram_bots.engine.handlers import fat_day as fat_day_handlers
@@ -452,6 +453,32 @@ def test_quote_book(db, bot, dispatcher):
     today = datetime.now(KYIV).strftime("%d.%m.%Y")
     assert texts[4] == f"«Я на диете с понедельника»\n— Sergio (@sergio), {today}"
     assert texts[5] == "У «Вася» цитат пока нет 🤔"
+
+
+def test_admins_unquote(db, bot, dispatcher):
+    alex, sergio = user(7, "Alex"), user(8, "Sergio")
+    bot.session.admins.add(7)
+    # from different people, three of one person's would bring an achievement message
+    for number, (author, phrase) in enumerate(((sergio, "Раз"), (sergio, "Два"), (user(9, "Bob"), "Три"))):
+        feed(dispatcher, bot, **reply_update(alex, "/save", author, phrase, message_id=10 + number, original_id=number))
+
+    feed(dispatcher, bot, **reply_update(sergio, "/unquote", sergio, "Раз", message_id=20, original_id=0))
+    assert sent_texts(bot)[-1] == "Удалять цитаты могут только админы чата 😈"
+    feed(dispatcher, bot, **text_update(alex, "/unquote"))
+    assert sent_texts(bot)[-1].startswith("Ответь командой /unquote")
+    feed(dispatcher, bot, **reply_update(alex, "/unquote", sergio, "Не цитата", message_id=21, original_id=5))
+    assert sent_texts(bot)[-1] == "Этого сообщения нет в цитатнике 🤔"
+
+    # a reply to the saved message itself
+    feed(dispatcher, bot, **reply_update(alex, "/unquote", sergio, "Раз", message_id=22, original_id=0))
+    assert sent_texts(bot)[-1] == "Цитата удалена из цитатника 🗑 Осталось цитат: 2"
+    # a reply to the quote of the day
+    asyncio.run(quote_of_the_day(bot, db, chat_id=CHAT.id))
+    shown = sent_texts(bot)[-1]
+    feed(dispatcher, bot, **reply_update(alex, "/unquote", BOT_USER, shown, message_id=23, original_id=100))
+    assert sent_texts(bot)[-1].endswith("Осталось цитат: 1")
+    left = [text for (text, *_) in quotes_db.get_all(db, CHAT.id)]
+    assert len(left) == 1 and f"«{left[0]}»" not in shown
 
 
 def test_quote_of_the_day_goes_through_every_quote(db, bot, dispatcher):
