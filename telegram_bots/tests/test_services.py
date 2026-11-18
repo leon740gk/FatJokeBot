@@ -28,7 +28,7 @@ from telegram_bots.knowledge_base.fat_joke.reaction_data import (
     sticker_responses,
 )
 from telegram_bots.knowledge_base.fat_joke.timer_data import hour_phrases
-from telegram_bots.knowledge_base.fat_joke.who_data import prefix, who_questions
+from telegram_bots.knowledge_base.fat_joke.who_data import prefix, spicy_questions, who_questions
 from telegram_bots.tests.conftest import FakeRandom, make_user
 
 
@@ -191,11 +191,22 @@ def test_who_options():
 
 
 def test_who_questions_go_round():
-    every = {prefix + question for question in who_questions}
-    assert len(every) == len(who_questions) >= 100
-    last = who.pick_question(every - {prefix + who_questions[5]})
-    assert last == prefix + who_questions[5]
+    mild = {prefix + question for question in who_questions}
+    spicy = {prefix + question for question in spicy_questions}
+    assert len(mild) == len(who_questions) >= 100 and len(spicy) == len(spicy_questions) >= 100
+    assert not mild & spicy
+    every = mild | spicy
+    last_ones = {prefix + who_questions[5], prefix + spicy_questions[5]}
+    rng = Random(3)
+    assert {who.pick_question(every - last_ones, rng) for _ in range(30)} == last_ones
     assert who.pick_question(every) in every
+
+
+def test_who_questions_are_half_spicy():
+    rng = Random(5)
+    picked = [who.pick_question(set(), rng) for _ in range(1000)]
+    share = sum(question.removeprefix(prefix) in spicy_questions for question in picked) / len(picked)
+    assert 0.45 < share < 0.55
 
 
 def test_duel_winner():

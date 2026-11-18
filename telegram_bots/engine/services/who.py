@@ -14,8 +14,12 @@ POLL_HOURS = 3
 
 
 def pick_question(used, rng=random):
-    """A question not asked in this chat yet; when all have been asked, they go round again."""
-    prefix, questions = kb.who_data.prefix, kb.who_data.who_questions
+    """A question not asked in this chat yet, half the time a spicy one; when all of a list are asked, they go round.
+
+    Each list goes round on its own, so the spicy half stays half however long the lists are.
+    """
+    data = kb.who_data
+    prefix, questions = data.prefix, rng.choice([pool for pool in (data.who_questions, data.spicy_questions) if pool])
     fresh = [question for question in questions if prefix + question not in used]
     return prefix + rng.choice(fresh or questions)
 

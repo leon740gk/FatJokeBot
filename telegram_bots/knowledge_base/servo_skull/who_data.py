@@ -106,3 +106,6 @@ who_questions = [
     "дивиться всі катсцени і ще читає кожну записку?",
     "задонатить на скін більше, ніж коштувала сама гра?",
 ]
+
+# the spicy ones, half of the polls take a question from here; an empty list leaves only who_questions
+spicy_questions = []

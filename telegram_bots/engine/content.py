@@ -50,7 +50,7 @@ REQUIRED = {
     ),
     "random_phrases": ("random_phrase_groups",),
     "timer_data": ("bam_title", "clocks"),
-    "who_data": ("prefix", "who_questions"),
+    "who_data": ("prefix", "who_questions", "spicy_questions"),
     "fat_day_data": ("scan_phrases", "winner_phrases", "already_phrases"),
     # polls, the question of the day and riddles, see engine/services/chat_games.py; an empty list turns one off
     "chat_games_data": ("this_or_that", "tonight_question", "tonight_options", "daily_questions", "riddles"),
