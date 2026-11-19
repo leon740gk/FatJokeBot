@@ -10,3 +10,4 @@ telegram_bots/bots/fat_joke/token_for_fat_joke.py
 *.db
 
 backups/
+/memes/

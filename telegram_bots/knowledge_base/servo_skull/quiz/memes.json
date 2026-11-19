@@ -1,0 +1,765 @@
+{
+  "code": "memes",
+  "title": "Мемологія",
+  "aliases": [
+    "меми",
+    "мем",
+    "мемологія",
+    "мемаси"
+  ],
+  "asks": {
+    "name": "Як називається цей мем?",
+    "year": "У якому році цей мем став популярним?",
+    "origin": "Звідки взялася ця картинка?",
+    "author": "Хто автор цього мему?"
+  },
+  "facts": {
+    "year": "Рік: {year}",
+    "origin": "Звідки: {origin}",
+    "author": "Автор: {author}"
+  },
+  "memes": [
+    {
+      "number": 1,
+      "code": "drake",
+      "name": "Дрейк: ні — так",
+      "year": 2015,
+      "origin": "кліп Дрейка «Hotline Bling»",
+      "photo": "AgACAgIAAxkDAAIBRmr_YyLFRg2bXLN9fDSSt0rMBYxcAAJgHWsbnXYBSB9u98wFPnZrAQADAgADeQADPQQ"
+    },
+    {
+      "number": 2,
+      "code": "two_buttons",
+      "name": "Дві кнопки",
+      "origin": "веб-комікс Джейка Кларка",
+      "author": "Джейк Кларк",
+      "photo": "AgACAgIAAxkDAAIBR2r_YyPRadkbeuw7blYFZOvu9Mo5AAJhHWsbnXYBSLEm1oxSmHkmAQADAgADeAADPQQ"
+    },
+    {
+      "number": 3,
+      "code": "distracted_boyfriend",
+      "name": "Невірний хлопець",
+      "year": 2017,
+      "origin": "фотосток",
+      "author": "фотограф Антоніо Гільєм",
+      "photo": "AgACAgIAAxkDAAIBSGr_YyWtRfo5RIYWz7DuJgHV1pNXAAJiHWsbnXYBSHVJZzeDQnwGAQADAgADeQADPQQ"
+    },
+    {
+      "number": 4,
+      "code": "bernie_asking",
+      "name": "Берні знову просить підтримки",
+      "year": 2020,
+      "origin": "передвиборче відео Берні Сандерса",
+      "hide_name": true,
+      "photo": "AgACAgIAAxkDAAIBSWr_YybVYzlWWpnVWQI-iXeuL-GpAAJjHWsbnXYBSJRIJffLdyF7AQADAgADeAADPQQ"
+    },
+    {
+      "number": 5,
+      "code": "uno_draw_25",
+      "name": "UNO або візьми 25 карт",
+      "origin": "карткова гра UNO",
+      "hide_name": true,
+      "photo": "AgACAgIAAxkDAAIBSmr_Yyc3jFnmgORCktLxNmTzf-OqAAJkHWsbnXYBSJ17QVfXUCjfAQADAgADeAADPQQ"
+    },
+    {
+      "number": 6,
+      "code": "always_has_been",
+      "name": "Завжди так було",
+      "photo": "AgACAgIAAxkDAAIBS2r_YynoV8wHqlrgvhVcGiHOhQ9OAAJlHWsbnXYBSMv_FHAKkwjPAQADAgADeQADPQQ"
+    },
+    {
+      "number": 7,
+      "code": "left_exit",
+      "name": "Різкий поворот на з'їзд",
+      "photo": "AgACAgIAAxkDAAIBTGr_YyoRJIBw_ObSPCZTyp1aD7jhAAJmHWsbnXYBSDC7tgABsoe64wEAAwIAA3gAAz0E"
+    },
+    {
+      "number": 8,
+      "code": "anakin_padme",
+      "name": "Енакін і Падме",
+      "year": 2020,
+      "origin": "фільм «Зоряні війни: Атака клонів»",
+      "photo": "AgACAgIAAxkDAAIBTWr_YyvUy3w8tckibCw60ZrVxtCnAAJnHWsbnXYBSAxnSmFypsftAQADAgADeAADPQQ"
+    },
+    {
+      "number": 9,
+      "code": "grus_plan",
+      "name": "План Грю",
+      "origin": "мультфільм «Нікчемний я»",
+      "photo": "AgACAgIAAxkDAAIBTmr_Yy18hdjCKyPJRGtBjwZySl1iAAJoHWsbnXYBSNbhiE99DAS7AQADAgADeAADPQQ"
+    },
+    {
+      "number": 10,
+      "code": "epic_handshake",
+      "name": "Епічне рукостискання",
+      "origin": "фільм «Хижак» (1987)",
+      "photo": "AgACAgIAAxkDAAIBT2r_Yy6seKTVerrI94TCSQ8q95aWAAJpHWsbnXYBSD55cdV47qxgAQADAgADeQADPQQ"
+    },
+    {
+      "number": 11,
+      "code": "disaster_girl",
+      "name": "Дівчинка-катастрофа",
+      "origin": "сімейне фото на тлі пожежі",
+      "author": "фотограф Дейв Рот, її батько",
+      "photo": "AgACAgIAAxkDAAIBUGr_Yy8MNws2zm3iUJ1AxPLOqKeyAAJqHWsbnXYBSLjAZUq3gOeoAQADAgADeAADPQQ"
+    },
+    {
+      "number": 12,
+      "code": "waiting_skeleton",
+      "name": "Скелет досі чекає",
+      "photo": "AgACAgIAAxkDAAIBUWr_YzE1IeEa9y7gLsQuSxlcfvPUAAJrHWsbnXYBSJ1fJL_y1d0PAQADAgADeAADPQQ"
+    },
+    {
+      "number": 13,
+      "code": "running_balloon",
+      "name": "Шарик, що відлітає",
+      "photo": "AgACAgIAAxkDAAIBUmr_YzLrw01LSjU29Ra8iqu2agjGAAJsHWsbnXYBSPb2iSXmVb8xAQADAgADeQADPQQ"
+    },
+    {
+      "number": 14,
+      "code": "sad_pablo",
+      "name": "Сумний Пабло Ескобар",
+      "origin": "серіал «Нарко»",
+      "photo": "AgACAgIAAxkDAAIBU2r_YzMiuwNMIdZaSpcaualLatzdAAJtHWsbnXYBSHX976wjSfb5AQADAgADeAADPQQ"
+    },
+    {
+      "number": 15,
+      "code": "x_everywhere",
+      "name": "Усюди X",
+      "origin": "мультфільм «Історія іграшок»",
+      "photo": "AgACAgIAAxkDAAIBVGr_YzW4GrdodSN90sTuq25rK7gbAAJuHWsbnXYBSOBMimjT_gm2AQADAgADdwADPQQ"
+    },
+    {
+      "number": 16,
+      "code": "change_my_mind",
+      "name": "Переконай мене",
+      "year": 2018,
+      "origin": "стрім Стівена Краудера",
+      "hide_name": true,
+      "photo": "AgACAgIAAxkDAAIBVWr_YzaXHNT2jP3xQQMx0gu_axW0AAJvHWsbnXYBSF4bhOtURlnDAQADAgADeAADPQQ"
+    },
+    {
+      "number": 17,
+      "code": "trade_offer",
+      "name": "Торгова пропозиція",
+      "year": 2021,
+      "origin": "відео з TikTok",
+      "hide_name": true,
+      "photo": "AgACAgIAAxkDAAIBVmr_YzcMHp6R9Guj84JBen415hDWAAJwHWsbnXYBSJPN3-EIX_XCAQADAgADeAADPQQ"
+    },
+    {
+      "number": 18,
+      "code": "yall_got_any_more",
+      "name": "Ще є?",
+      "origin": "скетч-шоу «Шоу Шаппелла»",
+      "photo": "AgACAgIAAxkDAAIBV2r_YzjySEav0O1VtYkx9vLtjrkyAAJxHWsbnXYBSNAYaeEUX_rOAQADAgADeAADPQQ"
+    },
+    {
+      "number": 19,
+      "code": "woman_yelling_cat",
+      "name": "Жінка кричить на кота",
+      "year": 2019,
+      "origin": "реаліті-шоу «Справжні домогосподарки Беверлі-Гіллз»",
+      "photo": "AgACAgIAAxkDAAIBWGr_YzqinLvL92EO5JE5KhTnoSP_AAJyHWsbnXYBSNGELJzEy2PqAQADAgADeAADPQQ"
+    },
+    {
+      "number": 20,
+      "code": "batman_slapping_robin",
+      "name": "Бетмен б'є Робіна",
+      "origin": "комікс про Бетмена",
+      "photo": "AgACAgIAAxkDAAIBWWr_YztJmOZp-mAfHHYqpCsDNiyBAAJzHWsbnXYBSFoLM9KQit0ZAQADAgADbQADPQQ"
+    },
+    {
+      "number": 21,
+      "code": "mocking_spongebob",
+      "name": "Глузливий Губка Боб",
+      "year": 2017,
+      "origin": "мультсеріал «Губка Боб Квадратні Штани»",
+      "photo": "AgACAgIAAxkDAAIBWmr_Yzw2x9jL5GvwEyUEefMKkGlDAAJ0HWsbnXYBSNanpLa37DyEAQADAgADeAADPQQ"
+    },
+    {
+      "number": 22,
+      "code": "ancient_aliens",
+      "name": "Це прибульці",
+      "origin": "передача «Стародавні прибульці»",
+      "photo": "AgACAgIAAxkDAAIBW2r_Yz1n4wMBlKmIHNUI6rYM9pOOAAJ1HWsbnXYBSGWuM-_9T8RvAQADAgADeAADPQQ"
+    },
+    {
+      "number": 23,
+      "code": "one_does_not_simply",
+      "name": "Не можна просто так взяти і…",
+      "origin": "фільм «Володар перснів: Братство персня»",
+      "photo": "AgACAgIAAxkDAAIBXGr_Yz-hOTE1clBWSjAVK9ajTx0vAAJ2HWsbnXYBSOqW6tdhf1oQAQADAgADeAADPQQ"
+    },
+    {
+      "number": 24,
+      "code": "squidward_window",
+      "name": "Сквідвард біля вікна",
+      "origin": "мультсеріал «Губка Боб Квадратні Штани»",
+      "photo": "AgACAgIAAxkDAAIBXWr_Y0Cw0lECHn_6Cjx-S9g_hqtgAAJ3HWsbnXYBSM_vge8D10xeAQADAgADeAADPQQ"
+    },
+    {
+      "number": 25,
+      "code": "is_this_a_pigeon",
+      "name": "Це голуб?",
+      "year": 2018,
+      "origin": "аніме «Хоробрий боєць сонця Файберд»",
+      "photo": "AgACAgIAAxkDAAIBXmr_Y0FRRdnXQHTUcw_bkOXf12jnAAJ4HWsbnXYBSFsv4fi7J2SQAQADAgADdwADPQQ"
+    },
+    {
+      "number": 26,
+      "code": "absolute_cinema",
+      "name": "Абсолютне кіно",
+      "year": 2024,
+      "origin": "фото Мартіна Скорсезе",
+      "photo": "AgACAgIAAxkDAAIBX2r_Y0KEWNrCeS4KTbaDl6kio6DmAAJ5HWsbnXYBSMhrZM_FjT2IAQADAgADeQADPQQ"
+    },
+    {
+      "number": 27,
+      "code": "same_picture",
+      "name": "Це одна й та сама картинка",
+      "origin": "серіал «Офіс»",
+      "hide_name": true,
+      "photo": "AgACAgIAAxkDAAIBYGr_Y0SU4xWn1wdlGwuht4Tq0hseAAJ6HWsbnXYBSFxjGQk90GbVAQADAgADdwADPQQ"
+    },
+    {
+      "number": 28,
+      "code": "buff_doge_cheems",
+      "name": "Качок Доге і Чімс",
+      "year": 2020,
+      "photo": "AgACAgIAAxkDAAIBYWr_Y0VEGBg_LkJC2luUqSmY0_YUAAJ7HWsbnXYBSERrOz1_RztPAQADAgADeQADPQQ"
+    },
+    {
+      "number": 29,
+      "code": "expanding_brain",
+      "name": "Зростаючий мозок",
+      "year": 2017,
+      "photo": "AgACAgIAAxkDAAIBYmr_Y0axb8yYS9S7uDIsM3ITo6GIAAJ8HWsbnXYBSJ8i4gi2FHfEAQADAgADeQADPQQ"
+    },
+    {
+      "number": 30,
+      "code": "this_is_fine",
+      "name": "Усе нормально (This is fine)",
+      "year": 2013,
+      "origin": "веб-комікс «Gunshow»",
+      "author": "КейСі Грін",
+      "hide_name": true,
+      "photo": "AgACAgIAAxkDAAIBY2r_Y0iM7Qd0AaI2Y7-QNhMpiqGTAAJ9HWsbnXYBSAndho0PHd4WAQADAgADeAADPQQ"
+    },
+    {
+      "number": 31,
+      "code": "tuxedo_pooh",
+      "name": "Вінні-Пух у смокінгу",
+      "origin": "мультфільми про Вінні-Пуха від Disney",
+      "photo": "AgACAgIAAxkDAAIBZGr_Y0m3QhNZy59dDd3tGBXaNNUoAAJ-HWsbnXYBSNwcrrP_b3aGAQADAgADeAADPQQ"
+    },
+    {
+      "number": 32,
+      "code": "megamind_peeking",
+      "name": "Мегамозок визирає",
+      "origin": "мультфільм «Мегамозок»",
+      "photo": "AgACAgIAAxkDAAIBZWr_Y0q8U1CBcMcUjMSnR4Y4646sAAJ_HWsbnXYBSOj5CzGdY6j5AQADAgADeAADPQQ"
+    },
+    {
+      "number": 33,
+      "code": "pawn_stars",
+      "name": "Найкраще, що можу запропонувати",
+      "origin": "шоу «Зірки ломбарду»",
+      "photo": "AgACAgIAAxkDAAIBZmr_Y0wh3vx89Su4GJ0ny4OqgxPoAAKAHWsbnXYBSCqoMxDplmgcAQADAgADeAADPQQ"
+    },
+    {
+      "number": 34,
+      "code": "hide_the_pain_harold",
+      "name": "Гарольд, що приховує біль",
+      "year": 2011,
+      "origin": "фотосток",
+      "photo": "AgACAgIAAxkDAAIBZ2r_Y00HEr8x5M2dpQ6y_oTMwn1DAAKBHWsbnXYBSBm0U4dNdqBbAQADAgADeAADPQQ"
+    },
+    {
+      "number": 35,
+      "code": "roll_safe",
+      "name": "Подумай про це (Roll Safe)",
+      "year": 2017,
+      "origin": "веб-серіал «Hood Documentary»",
+      "photo": "AgACAgIAAxkDAAIBaGr_Y07lvLdtLSqC5eXG06Studb8AAKCHWsbnXYBSDKYIFBF2iK7AQADAgADeAADPQQ"
+    },
+    {
+      "number": 36,
+      "code": "monkey_puppet",
+      "name": "Незручна мавпочка",
+      "photo": "AgACAgIAAxkDAAIBaWr_Y09BCmBhCNSL1HX6cGLBJotzAAKDHWsbnXYBSE4459UczEHsAQADAgADeQADPQQ"
+    },
+    {
+      "number": 37,
+      "code": "clown_makeup",
+      "name": "Клоун наносить грим",
+      "photo": "AgACAgIAAxkDAAIBamr_Y1HTZOqklsU9DteJvgsJjX-CAAKEHWsbnXYBSPlqah-2YFiiAQADAgADeAADPQQ"
+    },
+    {
+      "number": 38,
+      "code": "two_guys_bus",
+      "name": "Двоє в автобусі",
+      "photo": "AgACAgIAAxkDAAIBa2r_Y1JFcm_Fhu52vMpJeSIpd2ucAAKFHWsbnXYBSDTWGPv_SCRBAQADAgADeAADPQQ"
+    },
+    {
+      "number": 39,
+      "code": "boardroom",
+      "name": "Пропозиція на нараді",
+      "photo": "AgACAgIAAxkDAAIBbGr_Y1PXMuIbHRbfLfy3wMkAASKDXgAChh1rG512AUhk0VedZHti0AEAAwIAA3gAAz0E"
+    },
+    {
+      "number": 40,
+      "code": "imagination_spongebob",
+      "name": "Губка Боб: уява",
+      "origin": "мультсеріал «Губка Боб Квадратні Штани»",
+      "photo": "AgACAgIAAxkDAAIBbWr_Y1W-UCYBPa8YPVwRN3EGbp91AAKHHWsbnXYBSGn7TGt6SlbAAQADAgADeAADPQQ"
+    },
+    {
+      "number": 41,
+      "code": "spiderman_pointing",
+      "name": "Людина-павук показує на Людину-павука",
+      "origin": "мультсеріал «Людина-павук» 1967 року",
+      "photo": "AgACAgIAAxkDAAIBbmr_Y1YM3n7wCh0HVc3L-wKIvGHmAAKIHWsbnXYBSDogzXompK96AQADAgADeAADPQQ"
+    },
+    {
+      "number": 42,
+      "code": "evil_kermit",
+      "name": "Злий Керміт",
+      "year": 2016,
+      "origin": "фільм «Маппети 2»",
+      "photo": "AgACAgIAAxkDAAIBb2r_Y1fJNrrEyPSI-47QI-zmhLkmAAKJHWsbnXYBSPa_twNXeqF5AQADAgADeAADPQQ"
+    },
+    {
+      "number": 43,
+      "code": "bad_luck_brian",
+      "name": "Невдаха Браян",
+      "year": 2012,
+      "origin": "шкільна фотографія",
+      "photo": "AgACAgIAAxkDAAIBcGr_Y1hebAIrk6ALebKTI97fYLdoAAKKHWsbnXYBSBxpK0KQW93NAQADAgADeAADPQQ"
+    },
+    {
+      "number": 44,
+      "code": "inhaling_seagull",
+      "name": "Чайка, що кричить",
+      "photo": "AgACAgIAAxkDAAIBcWr_Y1qfnhHzCn4xk41DO2yhMMyXAAKLHWsbnXYBSGOCJi25w-CBAQADAgADdwADPQQ"
+    },
+    {
+      "number": 45,
+      "code": "three_headed_dragon",
+      "name": "Триголовий дракон",
+      "photo": "AgACAgIAAxkDAAIBcmr_Y1vDXD44UQJ9o5IrVCSp2-X7AAKMHWsbnXYBSCVYwDbOfcDaAQADAgADeAADPQQ"
+    },
+    {
+      "number": 46,
+      "code": "sleeping_shaq",
+      "name": "Сплячий Шак",
+      "photo": "AgACAgIAAxkDAAIBc2r_Y1x5b2R69Dwi8O0mXhaYTOZiAAKNHWsbnXYBSAbuzXq8c0NhAQADAgADeAADPQQ"
+    },
+    {
+      "number": 47,
+      "code": "scooby_mask",
+      "name": "Скубі-Ду: зриваємо маску",
+      "origin": "мультсеріал «Скубі-Ду, де ти!»",
+      "photo": "AgACAgIAAxkDAAIBdGr_Y14_elDWTuapooOPl2eU-cgPAAKOHWsbnXYBSFDuxBDYWP9NAQADAgADeAADPQQ"
+    },
+    {
+      "number": 48,
+      "code": "futurama_fry",
+      "name": "Підозрілий Фрай",
+      "year": 2011,
+      "origin": "мультсеріал «Футурама»",
+      "photo": "AgACAgIAAxkDAAIBdWr_Y18fLtECoNL3XNjH-NUhfM-3AAKPHWsbnXYBSOvH4GWG2SHmAQADAgADeAADPQQ"
+    },
+    {
+      "number": 49,
+      "code": "grim_reaper_door",
+      "name": "Смерть стукає у двері",
+      "photo": "AgACAgIAAxkDAAIBdmr_Y2AqLg_RIpRVw2JCrzNIu8pYAAKQHWsbnXYBSDZOWyN1HbktAQADAgADeAADPQQ"
+    },
+    {
+      "number": 50,
+      "code": "surprised_pikachu",
+      "name": "Здивований Пікачу",
+      "year": 2018,
+      "origin": "аніме «Покемон»",
+      "photo": "AgACAgIAAxkDAAIBd2r_Y2EJ0Msnsu-ZxFxyCmDxnzoIAAKRHWsbnXYBSBlb273qD9S9AQADAgADdwADPQQ"
+    },
+    {
+      "number": 51,
+      "code": "something_of_a_scientist",
+      "name": "Я й сам певною мірою науковець",
+      "origin": "фільм «Людина-павук» (2002)",
+      "photo": "AgACAgIAAxkDAAIBeGr_Y2N_twABQu5vncblA2lVQQHHkwACkh1rG512AUhIP0cmsdQ-lwEAAwIAA3kAAz0E"
+    },
+    {
+      "number": 52,
+      "code": "laughing_leo",
+      "name": "Лео сміється",
+      "origin": "фільм «Джанго вільний»",
+      "photo": "AgACAgIAAxkDAAIBeWr_Y2TnqHT5GoU6XEZljzQ0YANTAAKTHWsbnXYBSHUMkGVDXgoRAQADAgADeAADPQQ"
+    },
+    {
+      "number": 53,
+      "code": "leo_cheers",
+      "name": "Ді Капріо піднімає келих",
+      "origin": "фільм «Великий Гетсбі»",
+      "photo": "AgACAgIAAxkDAAIBemr_Y2XD2QnhVXNCk2Nuv7Cu55reAAKUHWsbnXYBSL5190ORuwdNAQADAgADeAADPQQ"
+    },
+    {
+      "number": 54,
+      "code": "rock_driving",
+      "name": "Скеля за кермом",
+      "origin": "фільм «Відьмина гора»",
+      "photo": "AgACAgIAAxkDAAIBe2r_Y2fh3Ij3l0yHOlXZlvSqc7i8AAKVHWsbnXYBSEMx1IhYl9iGAQADAgADeAADPQQ"
+    },
+    {
+      "number": 55,
+      "code": "im_the_captain",
+      "name": "Тепер я капітан",
+      "origin": "фільм «Капітан Філліпс»",
+      "photo": "AgACAgIAAxkDAAIBfGr_Y2j0yxcbbe0edGR-1QFEBZN2AAKWHWsbnXYBSFAbhQx54WSdAQADAgADeAADPQQ"
+    },
+    {
+      "number": 56,
+      "code": "gus_fring",
+      "name": "Ми не однакові",
+      "origin": "серіал «Пуститися берега»",
+      "photo": "AgACAgIAAxkDAAIBfWr_Y2k6qAEw2UoMJR7HP8fuBG79AAKXHWsbnXYBSMXvKwABzrhYQAEAAwIAA3kAAz0E"
+    },
+    {
+      "number": 57,
+      "code": "scroll_of_truth",
+      "name": "Сувій істини",
+      "photo": "AgACAgIAAxkDAAIBfmr_Y2tkJuUcCLFXUkAZAsUX6o03AAKYHWsbnXYBSKVHhadXK0HNAQADAgADeQADPQQ"
+    },
+    {
+      "number": 58,
+      "code": "oprah",
+      "name": "Опра роздає подарунки",
+      "origin": "«Шоу Опри Вінфрі»",
+      "photo": "AgACAgIAAxkDAAIBf2r_Y20eqzfpMwga0tJ4agZzCxD9AAKZHWsbnXYBSMP7VWxPW9u0AQADAgADeAADPQQ"
+    },
+    {
+      "number": 59,
+      "code": "all_my_homies",
+      "name": "Усі мої кореші ненавидять",
+      "photo": "AgACAgIAAxkDAAIBgGr_Y29E5QnNI6--dHzDlSiYD-H8AAKaHWsbnXYBSJG8AnWPRA7TAQADAgADeAADPQQ"
+    },
+    {
+      "number": 60,
+      "code": "friendship_ended",
+      "name": "Дружба скінчилася",
+      "photo": "AgACAgIAAxkDAAIBgWr_Y3D0QIIn_KO0H76ztm2IYWDPAAKbHWsbnXYBSMd9iHUo9tgFAQADAgADeAADPQQ"
+    },
+    {
+      "number": 61,
+      "code": "thinking_other_women",
+      "name": "Мабуть, думає про інших жінок",
+      "photo": "AgACAgIAAxkDAAIBgmr_Y3E93xlbNrjiZ5RtNTTpOh8lAAKcHWsbnXYBSKzm8yT5mTbpAQADAgADeQADPQQ"
+    },
+    {
+      "number": 62,
+      "code": "who_killed_hannibal",
+      "name": "Хто вбив Ганнібала?",
+      "origin": "«Шоу Еріка Андре»",
+      "photo": "AgACAgIAAxkDAAIBg2r_Y3Pv_CgiiYn1zyr6fMHC0p6dAAKdHWsbnXYBSHXl8Sb3KDkhAQADAgADeQADPQQ"
+    },
+    {
+      "number": 63,
+      "code": "charlie_conspiracy",
+      "name": "Чарлі і теорія змови",
+      "origin": "серіал «У Філадельфії завжди сонячно»",
+      "photo": "AgACAgIAAxkDAAIBhGr_Y3S-moJlbLSPanzfSYb330uTAAKeHWsbnXYBSIleA2Qe_76-AQADAgADeQADPQQ"
+    },
+    {
+      "number": 64,
+      "code": "bugs_communist",
+      "name": "Багз Банні: наше",
+      "origin": "мультфільми «Луні Тюнз»",
+      "photo": "AgACAgIAAxkDAAIBhWr_Y3UFcbYWyc_C13MsormhX3dqAAKfHWsbnXYBSFQEuMHqkkjQAQADAgADeAADPQQ"
+    },
+    {
+      "number": 65,
+      "code": "they_dont_know",
+      "name": "Вони не знають",
+      "photo": "AgACAgIAAxkDAAIBhmr_Y3ZdYLYgzXsdWWhpbjfan4EUAAKgHWsbnXYBSJalwh1iD_tdAQADAgADeAADPQQ"
+    },
+    {
+      "number": 66,
+      "code": "panik_kalm",
+      "name": "Паніка — спокій — паніка",
+      "photo": "AgACAgIAAxkDAAIBh2r_Y3i26eLECxyXwUsP_-Q-PNkaAAKhHWsbnXYBSG709xhFMDVHAQADAgADeQADPQQ"
+    },
+    {
+      "number": 67,
+      "code": "doge",
+      "name": "Доге",
+      "year": 2013,
+      "origin": "фото сиба-іну Кабосу з блогу господині",
+      "author": "Ацуко Сато, господиня Кабосу",
+      "photo": "AgACAgIAAxkDAAIBiGr_Y3mc799Vrwz6uUMvb09HZEYgAAKiHWsbnXYBSJhllQEMyZZ-AQADAgADeAADPQQ"
+    },
+    {
+      "number": 68,
+      "code": "trollface",
+      "name": "Тролфейс",
+      "year": 2008,
+      "origin": "малюнок у Paint",
+      "author": "Карлос Рамірес",
+      "photo": "AgACAgIAAxkDAAIBiWr_Y3t_yu2CPW6jcjgRy0-cumhEAAKjHWsbnXYBSL3LCwvt7hINAQADAgADbQADPQQ"
+    },
+    {
+      "number": 69,
+      "code": "grumpy_cat",
+      "name": "Сердитий котик",
+      "year": 2012,
+      "origin": "фото кішки Тардар Соус на Reddit",
+      "photo": "AgACAgIAAxkDAAIBimr_Y3zgxXBwlS-PaLc-kccfSjAlAAKkHWsbnXYBSJlwGUcDcBngAQADAgADeAADPQQ"
+    },
+    {
+      "number": 70,
+      "code": "success_kid",
+      "name": "Успішний малюк",
+      "origin": "фото малюка на пляжі",
+      "author": "Лейні Грінер, мама малюка",
+      "photo": "AgACAgIAAxkDAAIBi2r_Y32_edBvECK2UOevC-_ar6NGAAKlHWsbnXYBSGIRQoIywGnSAQADAgADeAADPQQ"
+    },
+    {
+      "number": 71,
+      "code": "overly_attached_girlfriend",
+      "name": "Надто прив'язана дівчина",
+      "year": 2012,
+      "origin": "відео на YouTube",
+      "author": "Лейна Морріс",
+      "photo": "AgACAgIAAxkDAAIBjGr_Y37Z_yearJj9VbROgQ2-7XSYAAKmHWsbnXYBSI0MddLE3kWgAQADAgADeAADPQQ"
+    },
+    {
+      "number": 72,
+      "code": "forever_alone",
+      "name": "Вічно самотній",
+      "year": 2010,
+      "origin": "рейдж-комікси",
+      "photo": "AgACAgIAAxkDAAIBjWr_Y38RxqOdmaHL7iZqVc1QPbiLAAKnHWsbnXYBSOUQvJQfrXC6AQADAgADeAADPQQ"
+    },
+    {
+      "number": 73,
+      "code": "y_u_no",
+      "name": "Y U NO",
+      "origin": "рейдж-комікси",
+      "photo": "AgACAgIAAxkDAAIBjmr_Y4GQTB9G42ivQDiCioJTsVDoAAKoHWsbnXYBSC5aNW7kHclnAQADAgADeAADPQQ"
+    },
+    {
+      "number": 74,
+      "code": "kermit_tea",
+      "name": "Керміт п'є чай: але це не моя справа",
+      "year": 2014,
+      "origin": "реклама чаю Lipton",
+      "photo": "AgACAgIAAxkDAAIBj2r_Y4K9sJTAPYhv4IyV8ZfqhcCyAAKpHWsbnXYBSO0cc451lQ4JAQADAgADeAADPQQ"
+    },
+    {
+      "number": 75,
+      "code": "arthur_fist",
+      "name": "Кулак Артура",
+      "year": 2016,
+      "origin": "мультсеріал «Артур»",
+      "photo": "AgACAgIAAxkDAAIBkGr_Y4NvFtCDUTNYUJjGzRRGSozGAAKqHWsbnXYBSCNgahMUE9YSAQADAgADeQADPQQ"
+    },
+    {
+      "number": 76,
+      "code": "crying_jordan",
+      "name": "Плачучий Джордан",
+      "origin": "промова Майкла Джордана в Залі слави",
+      "photo": "AgACAgIAAxkDAAIBkWr_Y4VWtAUVoie6cu0Zyre2pc3sAAKrHWsbnXYBSKy-QHa39E68AQADAgADbQADPQQ"
+    },
+    {
+      "number": 77,
+      "code": "confused_travolta",
+      "name": "Розгублений Траволта",
+      "year": 2015,
+      "origin": "фільм «Кримінальне чтиво»",
+      "photo": "AgACAgIAAxkDAAIBkmr_Y4b_kiWyjEvmRDqoXtaWyzGNAAKsHWsbnXYBSKx9WzjI39swAQADAgADeAADPQQ"
+    },
+    {
+      "number": 78,
+      "code": "math_lady",
+      "name": "Математична жінка",
+      "origin": "бразильський серіал «Досконала краса»",
+      "photo": "AgACAgIAAxkDAAIBk2r_Y4f89AFzF1i9cbkqn9VCvOqhAAKtHWsbnXYBSPIGmdICOROMAQADAgADeAADPQQ"
+    },
+    {
+      "number": 79,
+      "code": "ight_imma_head_out",
+      "name": "Ну, я пішов",
+      "year": 2019,
+      "origin": "мультсеріал «Губка Боб Квадратні Штани»",
+      "hide_name": true,
+      "photo": "AgACAgIAAxkDAAIBlGr_Y4if-Nt8Nsn5kXWIG7r-a-R2AAKuHWsbnXYBSG_5t4ubXGKhAQADAgADeAADPQQ"
+    },
+    {
+      "number": 80,
+      "code": "salt_bae",
+      "name": "Солт Бей",
+      "year": 2017,
+      "origin": "відео турецького кухаря Нусрета Гекче",
+      "photo": "AgACAgIAAxkDAAIBlWr_Y4oFJGx1qpKNbTFzO11yG-P2AAKvHWsbnXYBSMcRrCn331IFAQADAgADeAADPQQ"
+    },
+    {
+      "number": 81,
+      "code": "sad_keanu",
+      "name": "Сумний Кіану",
+      "year": 2010,
+      "origin": "фото папараці",
+      "photo": "AgACAgIAAxkDAAIBlmr_Y4vlmHwyOMx2TUnQlLRPrtVnAAKwHWsbnXYBSP-FgtmdiVPlAQADAgADeQADPQQ"
+    },
+    {
+      "number": 82,
+      "code": "leo_pointing",
+      "name": "Ді Капріо показує на екран",
+      "year": 2019,
+      "origin": "фільм «Одного разу в… Голлівуді»",
+      "photo": "AgACAgIAAxkDAAIBl2r_Y40kDsPWkc0W8Jmyhut289QWAAKxHWsbnXYBSIK93WomuAvPAQADAgADeQADPQQ"
+    },
+    {
+      "number": 83,
+      "code": "mr_krabs_blur",
+      "name": "Розмитий містер Крабс",
+      "origin": "мультсеріал «Губка Боб Квадратні Штани»",
+      "photo": "AgACAgIAAxkDAAIBmGr_Y45KTVgTR6oS9yX7qdzrXWyOAAKyHWsbnXYBSKfU1EL9QhxuAQADAgADeAADPQQ"
+    },
+    {
+      "number": 84,
+      "code": "big_chungus",
+      "name": "Біг Чангус",
+      "year": 2018,
+      "origin": "мультфільми «Луні Тюнз»",
+      "photo": "AgACAgIAAxkDAAIBmWr_Y4_8QqT_nrUiged1PmRAvyydAAKzHWsbnXYBSCWH7nOK9tSMAQADAgADeAADPQQ"
+    },
+    {
+      "number": 85,
+      "code": "stonks",
+      "name": "Стонкс",
+      "photo": "AgACAgIAAxkDAAIBmmr_Y5FTf3BWNGQOAnJsy7rQkS4oAAK0HWsbnXYBSOXOC1j76tk2AQADAgADeQADPQQ"
+    },
+    {
+      "number": 86,
+      "code": "gigachad",
+      "name": "Гігачад",
+      "photo": "AgACAgIAAxkDAAIBm2r_Y5JKoslqOVdWzszYDeTpAioFAAK1HWsbnXYBSLcuk-FpAYGhAQADAgADdwADPQQ"
+    },
+    {
+      "number": 87,
+      "code": "pepe",
+      "name": "Жабеня Пепе",
+      "year": 2008,
+      "origin": "комікс «Boy's Club»",
+      "author": "Метт Ф'юрі",
+      "photo": "AgACAgIAAxkDAAIBnGr_Y5QgFKOrumq2wpyCegxsldImAAK2HWsbnXYBSEbZyxPjthKsAQADAgADeAADPQQ"
+    },
+    {
+      "number": 88,
+      "code": "nyan_cat",
+      "name": "Нян Кет",
+      "year": 2011,
+      "origin": "GIF-анімація",
+      "author": "Кріс Торрес",
+      "photo": "AgACAgIAAxkDAAIBnWr_Y5WNfwOPNvgpf2qq8sdFcJECAAK3HWsbnXYBSH2VAAH5oYUBEAEAAwIAA3gAAz0E"
+    },
+    {
+      "number": 89,
+      "code": "rickroll",
+      "name": "Рікрол",
+      "year": 2007,
+      "origin": "кліп Ріка Естлі «Never Gonna Give You Up»",
+      "photo": "AgACAgIAAxkDAAIBnmr_Y5YsVsgsSTnkXaBYbKcTcePsAAK4HWsbnXYBSBxxnUQ1IAKoAQADAgADeAADPQQ"
+    },
+    {
+      "number": 90,
+      "code": "coffin_dance",
+      "name": "Танець із труною",
+      "year": 2020,
+      "origin": "відео ганських похоронників",
+      "photo": "AgACAgIAAxkDAAIBn2r_Y5crgAl89rPUOj0h581XH1QSAAK5HWsbnXYBSOMGQyIOLbbTAQADAgADeQADPQQ"
+    },
+    {
+      "number": 91,
+      "code": "bongo_cat",
+      "name": "Бонго Кет",
+      "year": 2018,
+      "origin": "GIF-анімація",
+      "photo": "AgACAgIAAxkDAAIBoGr_Y5lU-JXx9PFxisDXGYIx2TJrAAK6HWsbnXYBSJtnIjmr4jsdAQADAgADeQADPQQ"
+    },
+    {
+      "number": 92,
+      "code": "chill_guy",
+      "name": "Чіл гай",
+      "year": 2024,
+      "origin": "малюнок у соцмережах",
+      "author": "художник Філліп Бенкс",
+      "photo": "AgACAgIAAxkDAAIBoWr_Y5pLhVOzN-ABfwABtjIxnHZBdQACux1rG512AUglM_-bmqWNTQEAAwIAA3gAAz0E"
+    },
+    {
+      "number": 93,
+      "code": "zhdun",
+      "name": "Ждун",
+      "year": 2017,
+      "origin": "скульптура «Homunculus loxodontus»",
+      "author": "Маргріт ван Бреворт",
+      "photo": "AgACAgIAAxkDAAIBomr_Y5vf-1-7OeU7IxnIUIAfKwgeAAK8HWsbnXYBSPLYKu91EK-XAQADAgADeQADPQQ"
+    },
+    {
+      "number": 94,
+      "code": "stoned_fox",
+      "name": "Упоротий лис",
+      "year": 2012,
+      "origin": "невдале опудало лиса",
+      "author": "таксидермістка Адель Морс",
+      "photo": "AgACAgIAAxkDAAIBo2r_Y5yvjRT2EYJJvl0tes9ljtn4AAK9HWsbnXYBSPb3CDX8wOP1AQADAgADeAADPQQ"
+    },
+    {
+      "number": 95,
+      "code": "cat_stepan",
+      "name": "Кіт Степан",
+      "origin": "Instagram харківського кота",
+      "photo": "AgACAgIAAxkDAAIBpGr_Y57lg1R9yfBj4W5E8vNbhrAMAAK-HWsbnXYBSCjOxYpmu2aMAQADAgADeAADPQQ"
+    },
+    {
+      "number": 96,
+      "code": "patron",
+      "name": "Пес Патрон",
+      "year": 2022,
+      "origin": "собака-сапер ДСНС України",
+      "photo": "AgACAgIAAxkDAAIBpWr_Y58ILdCOEUuxdGYZK3i4jh_gAAK_HWsbnXYBSN3nz9XNRVYEAQADAgADeAADPQQ"
+    },
+    {
+      "number": 97,
+      "code": "russian_warship",
+      "name": "Русский военный корабль, іді…",
+      "year": 2022,
+      "origin": "марка Укрпошти",
+      "author": "художник Борис Гроха",
+      "photo": "AgACAgIAAxkDAAIBpmr_Y6E7hVFfFYa8ejcpqbqjM2rfAALAHWsbnXYBSCViSC7Pbg8SAQADAgADeAADPQQ"
+    },
+    {
+      "number": 98,
+      "code": "saint_javelin",
+      "name": "Святий Джавелін",
+      "year": 2022,
+      "photo": "AgACAgIAAxkDAAIBp2r_Y6Jxv8YLI5P5Kdpvipc82wUqAALBHWsbnXYBSNyDZMcKxEq-AQADAgADdwADPQQ"
+    },
+    {
+      "number": 99,
+      "code": "take_my_money",
+      "name": "Замовкни і візьми мої гроші",
+      "origin": "мультсеріал «Футурама»",
+      "photo": "AgACAgIAAxkDAAIBqGr_Y6R05Ak7mXOhRX8oxuMeSofaAALCHWsbnXYBSMMphDC4P-OOAQADAgADeAADPQQ"
+    },
+    {
+      "number": 100,
+      "code": "kombucha_girl",
+      "name": "Дівчина і комбуча",
+      "year": 2019,
+      "origin": "відео з TikTok",
+      "photo": "AgACAgIAAxkDAAIBqWr_Y6ZAmELIw5dcXTrCWb0Ou30pAALEHWsbnXYBSPyQzvMqv1PoAQADAgADeAADPQQ"
+    }
+  ]
+}

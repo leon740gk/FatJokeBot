@@ -1,13 +1,16 @@
+import json
 from types import SimpleNamespace
 
 import pytest
 from aiogram import Bot
 
 from telegram_bots.engine import main
+from telegram_bots.engine.content import KNOWLEDGE_BASE
 from telegram_bots.engine.db.connection import Database
 from telegram_bots.engine.db.schema import init_schema
-from telegram_bots.engine.services import achievements
+from telegram_bots.engine.services import achievements, quiz
 from telegram_bots.engine.services.chat_games import Reactor
+from telegram_bots.engine.services.quiz_bank import load_discipline
 from telegram_bots.tests.fake_telegram import FakeSession
 
 
@@ -56,3 +59,22 @@ def dispatcher(db):
     # module level routers can belong to one dispatcher only, detach them for the next test
     for router in main.ROUTERS:
         router._parent_router = None
+
+
+def memes_catalog(tmp_path, bot="fat_joke"):
+    """The bot's meme catalog with a made-up photo for every meme, as after telegram_bots/upload_memes.py."""
+    catalog = json.loads((KNOWLEDGE_BASE / bot / "quiz" / "memes.json").read_text(encoding="utf-8"))
+    for meme in catalog["memes"]:
+        meme["photo"] = f"photo-{meme['code']}"
+    path = tmp_path / "memes.json"
+    path.write_text(json.dumps(catalog, ensure_ascii=False), encoding="utf-8")
+    return path
+
+
+@pytest.fixture
+def memes(monkeypatch, tmp_path):
+    """FatJoke's quiz with the meme topic, its pictures uploaded."""
+    monkeypatch.setitem(
+        quiz._disciplines, "fat_joke", {**quiz.disciplines(), "memes": load_discipline(memes_catalog(tmp_path))}
+    )
+    return quiz.disciplines()["memes"]

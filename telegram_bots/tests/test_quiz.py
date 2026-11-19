@@ -4,19 +4,21 @@ from datetime import UTC, datetime
 
 import pytest
 
+from telegram_bots.engine.content import KNOWLEDGE_BASE
 from telegram_bots.engine.db import quiz as quiz_db
 from telegram_bots.engine.db import users as users_db
 from telegram_bots.engine.services import quiz
 from telegram_bots.engine.services.quiet_hours import is_quiet, parse_quiet_hours
 from telegram_bots.engine.services.quiz import Outcome
 from telegram_bots.engine.services.quiz_bank import load_discipline
-from telegram_bots.tests.conftest import FakeRandom, make_user
+from telegram_bots.tests.conftest import FakeRandom, make_user, memes_catalog
 
 
 def test_all_disciplines_load():
     assert {"ukr", "geo", "bio", "mix", "mlbb", "mlbb2", "accounting", "welding"} <= set(quiz.disciplines())
-    # every topic has the same number of questions, so their seasons last about as long
-    assert {len(discipline.questions) for discipline in quiz.disciplines().values()} == {150}
+    # every text topic has the same number of questions, so their seasons last about as long
+    text_topics = [discipline for discipline in quiz.disciplines().values() if not discipline.has_photos]
+    assert {len(discipline.questions) for discipline in text_topics} == {150}
     assert quiz.disciplines()["mlbb2"].shuffle_options
 
 
@@ -297,3 +299,53 @@ def test_daily_limit(db):
     quiz_db.save_quiz_message(db, -100, 3, "geo", 1, 3, asked_by=7)
     quiz_db.save_quiz_message(db, -100, 4, "geo", 1, 4, asked_by=7)
     assert not quiz.limit_reached(db, 7, 0)
+
+
+def test_memes_wait_for_their_pictures():
+    for bot in ("fat_joke", "servo_skull"):
+        catalog = KNOWLEDGE_BASE / bot / "quiz" / "memes.json"
+        raw = json.loads(catalog.read_text(encoding="utf-8"))
+        if not any(meme["photo"] for meme in raw["memes"]):
+            assert load_discipline(catalog) is None
+
+
+def test_both_bots_have_the_same_memes():
+    def facts(bot):
+        raw = json.loads((KNOWLEDGE_BASE / bot / "quiz" / "memes.json").read_text(encoding="utf-8"))
+        keys = ("number", "code", "year", "hide_name")
+        return [(tuple(meme.get(key) for key in keys), "origin" in meme, "author" in meme) for meme in raw["memes"]]
+
+    assert facts("fat_joke") == facts("servo_skull")
+    assert len(facts("fat_joke")) == 100
+
+
+@pytest.mark.parametrize("bot", ["fat_joke", "servo_skull"])
+def test_meme_questions(tmp_path, bot):
+    raw = json.loads(memes_catalog(tmp_path, bot).read_text(encoding="utf-8"))
+    memes = load_discipline(memes_catalog(tmp_path, bot))
+    assert memes.shuffle_options and memes.has_photos
+    by_code = {meme["code"]: meme for meme in raw["memes"]}
+    for meme in raw["memes"]:
+        # every meme is asked about something, and its picture goes with each of its questions
+        own = [question for number, question in memes.questions.items() if number // 10 == meme["number"]]
+        assert own and all(question.photo == meme["photo"] for question in own)
+        assert all(question.options[0] in question.explanation for question in own if question.number % 10 == 1)
+    for question in memes.questions.values():
+        assert len(set(question.options)) == 4 and question.correct == {0}
+    doge = by_code["doge"]["number"] * 10
+    assert memes.questions[doge + 1].options[0] == by_code["doge"]["name"]
+    years = [int(option) for option in memes.questions[doge + 2].options]
+    assert years[0] == 2013 and all(abs(year - 2013) <= 4 for year in years)
+    assert memes.questions[doge + 4].options[0] == by_code["doge"]["author"]
+    # the picture says the name itself
+    assert by_code["this_is_fine"]["number"] * 10 + 1 not in memes.questions
+    # the same wrong options after a restart
+    assert load_discipline(memes_catalog(tmp_path, bot)).questions == memes.questions
+
+
+def test_a_meme_without_a_picture_is_not_asked(tmp_path):
+    path = memes_catalog(tmp_path)
+    raw = json.loads(path.read_text(encoding="utf-8"))
+    raw["memes"][0]["photo"] = None
+    path.write_text(json.dumps(raw, ensure_ascii=False), encoding="utf-8")
+    assert not [number for number in load_discipline(path).questions if number // 10 == 1]

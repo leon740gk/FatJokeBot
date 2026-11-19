@@ -54,6 +54,9 @@ async def duel_command(message: Message, command: CommandObject, db):
     if rest and not discipline:
         await message.answer(kb.texts.unknown_topic + quiz.format_disciplines(quiz.current_discipline(db)))
         return
+    if discipline and quiz.disciplines()[discipline].has_photos:
+        await message.answer(kb.texts.duel_no_pictures)
+        return
     for user_id in (challenger.id, opponent[0]):
         if duels_db.open_for(db, message.chat.id, user_id):
             busy = kb.texts.duel_busy_you if user_id == challenger.id else kb.texts.duel_busy_opponent

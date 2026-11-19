@@ -73,6 +73,9 @@ async def answer_callback(callback: CallbackQuery, db):
     # a bot may have no stickers of its own yet: file ids of one bot don't always work for another
     if kind == "animation" and file_id:
         await message.answer_animation(file_id)
-    await message.edit_text(result.text)
+    if message.photo:
+        await message.edit_caption(caption=result.text)
+    else:
+        await message.edit_text(result.text)
     if kind == "sticker" and file_id:
         await message.answer_sticker(file_id)

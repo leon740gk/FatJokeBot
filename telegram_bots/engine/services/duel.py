@@ -69,7 +69,8 @@ def challenge_text(challenger, opponent, discipline=None):
 
 
 def pick_question(discipline=None, rng=random):
-    discipline = discipline or rng.choice(list(quiz.disciplines()))
+    # the duel turns its text message into the question, a picture topic can't be asked there
+    discipline = discipline or rng.choice([code for code, topic in quiz.disciplines().items() if not topic.has_photos])
     return quiz.get_question(discipline, rng.choice(list(quiz.disciplines()[discipline].questions)))
 
 

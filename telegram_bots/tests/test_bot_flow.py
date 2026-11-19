@@ -962,3 +962,50 @@ def test_reply_to_the_anonymous_admin_is_a_reply_to_them():
     changed = middlewares.as_admin(reply, owner)
     assert changed.from_user == bob
     assert changed.reply_to_message.from_user == owner and changed.reply_to_message.sender_chat is None
+
+
+def sent_meme(bot):
+    photo = bot.session.of_type(methods.SendPhoto)[-1]
+    return photo, [button for row in photo.reply_markup.inline_keyboard for button in row]
+
+
+def test_meme_question_is_a_picture(db, bot, dispatcher, memes):
+    feed(dispatcher, bot, **text_update(user(7, "Alex"), "/quiz мемы"))
+    photo, buttons = sent_meme(bot)
+    message_id = bot.session.next_message_id
+    assert photo.photo.startswith("photo-") and photo.caption.startswith("Мемология.\n")
+    number = db.fetch_one("SELECT question_number FROM QuizMessages WHERE message_id = ?", (message_id,))[0]
+    assert memes.questions[number].photo == photo.photo
+
+    right = next(button for button in buttons if quiz.parse_callback(button.callback_data).option_index == 0)
+    feed(dispatcher, bot, **press(user(7, "Alex"), message_id, right.callback_data, photo=True))
+    edit = bot.session.of_type(methods.EditMessageCaption)[-1]
+    assert edit.message_id == message_id and "Правильный ответ" in edit.caption and "«" in edit.caption
+    assert not bot.session.of_type(methods.EditMessageText)
+
+
+def test_meme_question_expires_in_its_caption(db, bot, memes):
+    asyncio.run(ask_question(bot, db, CHAT.id, "memes"))
+    db.execute("UPDATE QuizMessages SET created_at = datetime('now', '-20 minutes')")
+    asyncio.run(close_expired_questions(bot, db, minutes=15))
+    edit = bot.session.of_type(methods.EditMessageCaption)[-1]
+    assert edit.message_id == bot.session.next_message_id and "Время вышло" in edit.caption
+
+
+def test_picked_meme_topic_comes_as_a_new_message(db, bot, dispatcher, memes):
+    feed(dispatcher, bot, **text_update(user(7, "Alex"), "/quiz"))
+    picker_id = bot.session.next_message_id
+    assert "t memes 7" in [b.callback_data for row in sent_question(bot)[0].reply_markup.inline_keyboard for b in row]
+    feed(dispatcher, bot, **press(user(7, "Alex"), picker_id, "t memes 7"))
+    assert bot.session.of_type(methods.DeleteMessage)[-1].message_id == picker_id
+    assert bot.session.of_type(methods.SendPhoto)[-1].caption.startswith("Мемология.")
+    assert db.fetch_all("SELECT message_id, asked_by FROM QuizMessages") == [(bot.session.next_message_id, 7)]
+
+
+def test_no_duels_on_memes(db, bot, dispatcher, memes):
+    feed(dispatcher, bot, **text_update(user(8, "Bob"), "привет"))
+    feed(dispatcher, bot, **text_update(user(7, "Alex"), "/duel @bob мемы"))
+    assert sent_texts(bot)[-1].startswith("Мемы в дуэлях не разыгрываются")
+    assert {duel.pick_question(rng=Random(seed)).discipline for seed in range(50)} <= set(quiz.disciplines()) - {
+        "memes"
+    }

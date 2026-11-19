@@ -35,8 +35,9 @@ def test_help_and_quiz_speak_ukrainian(db, bot, dispatcher):
     feed(dispatcher, bot, **text_update(user(7, "Alex"), "/quiz"))
     assert sent_texts(bot)[-1] == "Яку тему хочете? 👇"
     # only the topics of ServoSkull's own quiz folder: no MLBB, a gaming topic instead
-    assert set(quiz.disciplines()) == {"ukr", "geo", "bio", "mix", "accounting", "welding", "games"}
-    assert {len(topic.questions) for topic in quiz.disciplines().values()} == {150}
+    assert set(quiz.disciplines()) == {"ukr", "geo", "bio", "mix", "accounting", "welding", "games", "memes"}
+    assert {len(topic.questions) for topic in quiz.disciplines().values() if not topic.has_photos} == {150}
+    assert quiz.title("memes") == "Мемологія"
     assert quiz.current_discipline(db) == "games"
 
     feed(dispatcher, bot, **text_update(user(7, "Alex"), "/quiz мова"))

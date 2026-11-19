@@ -129,13 +129,22 @@ async def ask_question(bot, db, chat_id, discipline=None, into_message_id=None, 
         await bot.send_message(chat_id, quiz.format_season_end(discipline, picked.finished_season, picked.winners))
 
     rendered = quiz.render_question(picked.question, rng)
-    if into_message_id:
-        await bot.edit_message_text(
-            rendered.text, chat_id=chat_id, message_id=into_message_id, reply_markup=build_keyboard(rendered)
-        )
+    keyboard, photo = build_keyboard(rendered), picked.question.photo
+    if into_message_id and not photo:
+        await bot.edit_message_text(rendered.text, chat_id=chat_id, message_id=into_message_id, reply_markup=keyboard)
         message_id = into_message_id
     else:
-        message_id = (await bot.send_message(chat_id, rendered.text, reply_markup=build_keyboard(rendered))).message_id
+        if into_message_id:
+            # a text message can't turn into a photo: the topic picker goes, the question comes as a new message
+            try:
+                await bot.delete_message(chat_id, into_message_id)
+            except TelegramAPIError as error:
+                logger.warning("can't delete the topic picker %s in chat %s: %s", into_message_id, chat_id, error)
+        if photo:
+            sent = await bot.send_photo(chat_id, photo, caption=rendered.text, reply_markup=keyboard)
+        else:
+            sent = await bot.send_message(chat_id, rendered.text, reply_markup=keyboard)
+        message_id = sent.message_id
     quiz_db.save_quiz_message(db, chat_id, message_id, discipline, picked.season, picked.question.number, asked_by)
 
 
@@ -156,7 +165,12 @@ async def close_expired_questions(bot, db, minutes):
         if not question:
             continue
         try:
-            await bot.edit_message_text(quiz.expired_text(question), chat_id=chat_id, message_id=message_id)
+            if question.photo:
+                await bot.edit_message_caption(
+                    chat_id=chat_id, message_id=message_id, caption=quiz.expired_text(question)
+                )
+            else:
+                await bot.edit_message_text(quiz.expired_text(question), chat_id=chat_id, message_id=message_id)
         except TelegramAPIError as error:
             logger.warning("can't close expired question %s in chat %s: %s", message_id, chat_id, error)
 
