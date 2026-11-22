@@ -64,13 +64,13 @@ this_or_that = [
 tonight_question = "🎮 Сьогодні ввечері граю в…"
 tonight_options = [
     "CS2",
-    "Dota 2",
+    "Tekken",
     "LoL",
     "MLBB",
     "World of Tanks",
     "Minecraft",
     "Helldivers 2",
-    "It Takes Two / Split Fiction",
+    "FIFA",
     "Щось інше 🎲",
     "Сьогодні відпочиваю 😴",
 ]
