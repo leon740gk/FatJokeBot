@@ -9,7 +9,7 @@ from telegram_bots.engine.db import users as users_db
 from telegram_bots.engine.handlers.commands import is_chat_admin
 from telegram_bots.engine.scheduler import KYIV
 from telegram_bots.engine.services import birthdays
-from telegram_bots.engine.services.people import display_name
+from telegram_bots.engine.services.people import display_name, is_person
 
 router = Router(name="birthdays")
 # "/birthday -" forgets the saved birthday
@@ -21,12 +21,15 @@ async def birthday_command(message: Message, command: CommandObject, db):
     """/birthday 03.05[.1990] for yourself; an admin replies with it to set someone else's."""
     replied = message.reply_to_message
     target = message.from_user
-    if replied and replied.from_user and not replied.from_user.is_bot and replied.from_user.id != target.id:
+    if replied and replied.from_user and is_person(replied.from_user) and replied.from_user.id != target.id:
         if not await is_chat_admin(message):
             await message.answer(kb.texts.birthday_admins_only)
             return
         target = replied.from_user
         users_db.register(db, target)
+    if not is_person(target):
+        await message.answer(kb.texts.anonymous_sender)
+        return
     name = display_name(target)
     args = (command.args or "").strip()
 

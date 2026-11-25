@@ -11,7 +11,7 @@ from telegram_bots.engine.db import users as users_db
 from telegram_bots.engine.db import weekly as weekly_db
 from telegram_bots.engine.scheduler import KYIV
 from telegram_bots.engine.services import achievements
-from telegram_bots.engine.services.people import display_name, mention
+from telegram_bots.engine.services.people import display_name, is_person, mention
 
 logger = logging.getLogger(__name__)
 
@@ -83,7 +83,7 @@ class UserActivityMiddleware(BaseMiddleware):
 
     async def __call__(self, handler, event, data):
         user = data.get("event_from_user")
-        if not user or user.is_bot:
+        if not user or not is_person(user):
             return await handler(event, data)
         db = data["db"]
         users_db.register(db, user)

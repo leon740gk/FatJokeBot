@@ -6,6 +6,7 @@ from aiogram import Router
 from aiogram.filters import Command
 from aiogram.types import Message
 
+from telegram_bots.engine.content import kb
 from telegram_bots.engine.db import fat_days as fat_days_db
 from telegram_bots.engine.db import users as users_db
 from telegram_bots.engine.scheduler import KYIV
@@ -25,8 +26,11 @@ async def fat_command(message: Message, db):
     if winner:
         await message.answer(fat_day.already_picked(winner))
         return
-    # never empty: the activity middleware has just touched the one who sent /fat
     candidates = users_db.get_active_since(db, datetime.now() - timedelta(days=ACTIVE_DAYS))
+    if not candidates:
+        # only when /fat came from an anonymous admin, anyone else has just been touched by the activity middleware
+        await message.answer(kb.texts.anonymous_sender)
+        return
     user_id, name, username = random.choice(candidates)
     if not fat_days_db.claim(db, chat_id, day, user_id):
         await message.answer(fat_day.already_picked(fat_days_db.get_winner(db, chat_id, day)))

@@ -10,6 +10,7 @@ from telegram_bots.engine.content import kb
 from telegram_bots.engine.db import users as users_db
 from telegram_bots.engine.handlers.commands import is_chat_admin
 from telegram_bots.engine.services.members import format_members
+from telegram_bots.engine.services.people import is_person
 
 logger = logging.getLogger(__name__)
 router = Router(name="members")
@@ -17,7 +18,7 @@ IN_CHAT_STATUSES = (ChatMemberStatus.CREATOR, ChatMemberStatus.ADMINISTRATOR, Ch
 
 
 def joined(db, user):
-    if user.is_bot:
+    if not is_person(user):
         return
     users_db.register(db, user)
     users_db.update_profile(db, user)

@@ -4,10 +4,12 @@ from aiogram import Router
 from aiogram.filters import Command
 from aiogram.types import Message
 
+from telegram_bots.engine.content import kb
 from telegram_bots.engine.db import achievements as achievements_db
 from telegram_bots.engine.db import users as users_db
 from telegram_bots.engine.scheduler import KYIV
 from telegram_bots.engine.services import achievements, weekly
+from telegram_bots.engine.services.people import is_person
 
 router = Router(name="profile")
 
@@ -16,7 +18,10 @@ router = Router(name="profile")
 async def me_command(message: Message, db):
     # a reply shows the profile of whoever wrote the replied message
     replied = message.reply_to_message
-    target = replied.from_user if replied and replied.from_user and not replied.from_user.is_bot else message.from_user
+    target = replied.from_user if replied and replied.from_user and is_person(replied.from_user) else message.from_user
+    if not is_person(target):
+        await message.answer(kb.texts.anonymous_sender)
+        return
     users_db.register(db, target)
     iq_level, name = users_db.get_iq_and_name(db, target.id)
     text = achievements.format_profile(

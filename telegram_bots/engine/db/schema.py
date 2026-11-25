@@ -1,6 +1,7 @@
 import json
 
 from telegram_bots.engine.db.quiz import LEGACY_DISCIPLINE
+from telegram_bots.engine.services.people import SERVICE_IDS
 
 USERS_TABLE = """
 CREATE TABLE IF NOT EXISTS Users (
@@ -296,6 +297,15 @@ def init_schema(db):
     if "size" not in _columns(db, "Parties"):
         # added 2026-11-04; every party was for five before
         db.execute("ALTER TABLE Parties ADD COLUMN size INTEGER NOT NULL DEFAULT 5")
+    _remove_service_accounts(db)
+
+
+def _remove_service_accounts(db):
+    # until 2026-11-25 "Telegram" and "Group" got into Users and were picked like any member;
+    # FatDays too, a day whose fatty isn't in Users would look free but couldn't be claimed
+    for user_id in SERVICE_IDS:
+        db.execute("DELETE FROM Users WHERE telegram_id = ?", (user_id,))
+        db.execute("DELETE FROM FatDays WHERE telegram_id = ?", (user_id,))
 
 
 def _columns(db, table):

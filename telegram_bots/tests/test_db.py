@@ -1,5 +1,6 @@
 from datetime import datetime
 
+from telegram_bots.engine.db import fat_days as fat_days_db
 from telegram_bots.engine.db import quiz as quiz_db
 from telegram_bots.engine.db import users as users_db
 from telegram_bots.engine.db.schema import init_schema
@@ -156,3 +157,14 @@ def test_old_parties_get_size_column(tmp_path):
     init_schema(db)
     init_schema(db)
     assert db.fetch_all("SELECT message_id, size FROM Parties") == [(2, 5)]
+
+
+def test_service_accounts_are_removed_at_start(db):
+    for user_id, name in ((1, "Alex"), (777000, "Telegram"), (1087968824, "Group"), (136817688, "Channel")):
+        users_db.register(db, make_user(user_id, name))
+    fat_days_db.claim(db, -100, "2026-11-24", 1)
+    fat_days_db.claim(db, -100, "2026-11-25", 777000)
+    init_schema(db)
+    assert users_db.get_all_ids(db) == [1]
+    assert fat_days_db.get_stats(db, -100) == [("Alex", 1)]
+    assert fat_days_db.claim(db, -100, "2026-11-25", 1)

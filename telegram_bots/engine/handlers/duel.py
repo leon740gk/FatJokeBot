@@ -12,7 +12,7 @@ from telegram_bots.engine.db import duels as duels_db
 from telegram_bots.engine.db import users as users_db
 from telegram_bots.engine.scheduler import build_keyboard, duelist_names, finish_duel, settle_bets
 from telegram_bots.engine.services import achievements, bets, duel, quiz
-from telegram_bots.engine.services.people import display_name
+from telegram_bots.engine.services.people import display_name, is_person
 from telegram_bots.engine.services.quiz import RenderedQuestion
 
 router = Router(name="duel")
@@ -21,12 +21,12 @@ router = Router(name="duel")
 def find_opponent(message: Message, db, words):
     """(telegram_id, name, username) of the one challenged and the words left for the topic."""
     replied = message.reply_to_message
-    if replied and replied.from_user and not replied.from_user.is_bot:
+    if replied and replied.from_user and is_person(replied.from_user):
         user = replied.from_user
         users_db.register(db, user)
         return (user.id, display_name(user), user.username), words
     for entity in message.entities or []:
-        if entity.type == MessageEntityType.TEXT_MENTION and entity.user and not entity.user.is_bot:
+        if entity.type == MessageEntityType.TEXT_MENTION and entity.user and is_person(entity.user):
             users_db.register(db, entity.user)
             name = entity.extract_from(message.text)
             rest = [word for word in words if word not in name.split()]
@@ -40,6 +40,10 @@ def find_opponent(message: Message, db, words):
 
 @router.message(Command("duel"))
 async def duel_command(message: Message, command: CommandObject, db):
+    if not is_person(message.from_user):
+        # the buttons would come from the real account, so the "Group" could never answer
+        await message.answer(kb.texts.anonymous_sender)
+        return
     words = (command.args or "").split()
     opponent, rest = find_opponent(message, db, words)
     if not opponent:

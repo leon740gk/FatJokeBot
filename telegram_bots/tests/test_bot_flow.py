@@ -238,6 +238,20 @@ def test_anonymous_admin_commands(db, bot, dispatcher):
     assert quiz.current_discipline(db) == "geo"
 
 
+def test_service_accounts_are_not_members(db, bot, dispatcher):
+    # a post of the linked channel comes from "Telegram", which has no is_bot
+    channel = Chat(id=-100777, type="channel", title="Linked channel")
+    post = text_update(user(777000, "Telegram"), "новый пост")["message"]
+    feed(dispatcher, bot, message=post.model_copy(update={"sender_chat": channel}))
+    # whatever the anonymous admin sends, "Group" stays out
+    for command in ("/me", "/birthday 03.05", "/duel @alex", "/fat"):
+        feed(dispatcher, bot, **anonymous_update(command))
+        assert sent_texts(bot)[-1].startswith("Анонимно не вижу, кто ты")
+    # nor can they be called to a duel with a reply
+    feed(dispatcher, bot, **reply_update(user(7, "Alex"), "/duel", user(777000, "Telegram"), "новый пост"))
+    assert users_db.get_all_ids(db) == [7]
+
+
 def test_picker_refuses_topic_with_open_question(db, bot, dispatcher):
     feed(dispatcher, bot, **text_update(user(7, "Alex"), "/quiz бух"))
     feed(dispatcher, bot, **text_update(user(7, "Alex"), "/quiz"))
