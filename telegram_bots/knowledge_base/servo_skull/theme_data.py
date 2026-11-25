@@ -18,6 +18,8 @@ rare_loot = "epic"
 top_loot = "legendary"
 # quiz topic of the scheduled questions until an admin picks another with /discipline
 default_discipline = "games"
+# raise it to start a new IQ season: at the next start everyone is back at 100, once
+iq_season = 2
 
 # a press after someone else has taken it
 late_phrases = [

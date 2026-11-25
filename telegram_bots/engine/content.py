@@ -29,6 +29,7 @@ REQUIRED = {
         "achievements",
         "unlocked_phrases",
         "default_discipline",
+        "iq_season",
     ),
     "reaction_data": (
         "text_to_text_reactions",

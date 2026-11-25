@@ -46,6 +46,15 @@ def set_iq(db, user_id, iq_level):
     db.execute("UPDATE Users SET iq_level = ? WHERE telegram_id = ?", (iq_level, user_id))
 
 
+def get_iq_by_id(db):
+    return dict(db.fetch_all("SELECT telegram_id, iq_level FROM Users"))
+
+
+def reset_iq(db):
+    """Puts everyone back at the starting IQ, those who left the chat too."""
+    db.execute("UPDATE Users SET iq_level = ?", (DEFAULT_IQ,))
+
+
 def get_all_iq(db):
     return db.fetch_all("SELECT name, iq_level FROM Users WHERE in_chat = 1")
 

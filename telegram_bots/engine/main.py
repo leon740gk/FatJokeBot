@@ -33,6 +33,7 @@ from telegram_bots.engine.handlers import (
 )
 from telegram_bots.engine.middlewares import AnonymousAdminMiddleware, UserActivityMiddleware
 from telegram_bots.engine.scheduler import check_chat, create_scheduler
+from telegram_bots.engine.services import iq
 from telegram_bots.engine.services.quiet_hours import parse_quiet_hours
 
 
@@ -87,6 +88,7 @@ async def main(settings):
         backup_if_stale(settings.db_path, settings.backup_dir)
     db = Database(settings.db_path)
     init_schema(db)
+    iq.start_new_season(db)
 
     bot = Bot(require_token(settings))
     dispatcher = build_dispatcher(db, settings)

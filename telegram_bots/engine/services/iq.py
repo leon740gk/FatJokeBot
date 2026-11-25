@@ -1,4 +1,12 @@
+import json
+import logging
+
 from telegram_bots.engine.content import kb
+from telegram_bots.engine.db import settings as settings_db
+from telegram_bots.engine.db import users as users_db
+
+logger = logging.getLogger(__name__)
+SEASON_KEY = "iq_season"
 
 PRIZES = {1: "🥇", 2: "🥈", 3: "🥉"}
 
@@ -28,3 +36,15 @@ def change_message(iq_old, user_name, increase):
 
 def anti_cheat_message(user_name):
     return kb.texts.anti_cheat.format(name=user_name)
+
+
+def start_new_season(db):
+    """Resets everyone's IQ when theme_data.iq_season has been raised; the old numbers stay in Settings."""
+    season = int(settings_db.get(db, SEASON_KEY, 1))
+    if kb.theme_data.iq_season <= season:
+        return False
+    settings_db.set_value(db, f"iq_of_season_{season}", json.dumps(users_db.get_iq_by_id(db)))
+    users_db.reset_iq(db)
+    settings_db.set_value(db, SEASON_KEY, str(kb.theme_data.iq_season))
+    logger.info("IQ season %s has started", kb.theme_data.iq_season)
+    return True

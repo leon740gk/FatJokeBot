@@ -14,6 +14,8 @@ points = "BP"
 loot_button = "⚔️ Забрать"
 # quiz topic of the scheduled questions until an admin picks another with /discipline
 default_discipline = "mlbb2"
+# raise it to start a new IQ season: at the next start everyone is back at 100, once
+iq_season = 1
 # codes of the second rarest and the rarest loot, for the achievements and the summaries
 rare_loot = "turtle"
 top_loot = "lord"

@@ -1,13 +1,16 @@
 """ServoSkull runs on the same engine as FatJoke: a few rounds through the dispatcher in its Ukrainian texts."""
 
 import asyncio
+import json
 
 import pytest
 from aiogram import methods
 
 from telegram_bots.engine import content
+from telegram_bots.engine.db import settings as settings_db
+from telegram_bots.engine.db import users as users_db
 from telegram_bots.engine.scheduler import hourly_bam, loot_drop, weekly_summary
-from telegram_bots.engine.services import quiz
+from telegram_bots.engine.services import iq, quiz
 from telegram_bots.tests.fake_telegram import (
     CHAT,
     LootRandom,
@@ -84,3 +87,26 @@ def test_weekly_summary_and_reactions(db, bot, dispatcher):
 
     asyncio.run(weekly_summary(bot, db, chat_id=CHAT.id))
     assert sent_texts(bot)[-1].startswith("📅 Підсумки тижня")
+
+
+def test_new_iq_season_resets_everyone_once(db):
+    for user_id, level in ((7, 130), (8, 70)):
+        users_db.register(db, user(user_id, f"User{user_id}"))
+        users_db.set_iq(db, user_id, level)
+    users_db.set_in_chat(db, 8, False)
+    assert iq.start_new_season(db)
+    assert users_db.get_iq_by_id(db) == {7: 100, 8: 100}
+    assert json.loads(settings_db.get(db, "iq_of_season_1")) == {"7": 130, "8": 70}
+
+    # the next restart keeps what has been earned since
+    users_db.set_iq(db, 7, 105)
+    assert not iq.start_new_season(db)
+    assert users_db.get_iq_by_id(db) == {7: 105, 8: 100}
+
+
+def test_fat_joke_iq_is_not_reset(db):
+    content.activate("fat_joke")
+    users_db.register(db, user(7, "Alex"))
+    users_db.set_iq(db, 7, 130)
+    assert not iq.start_new_season(db)
+    assert users_db.get_iq_by_id(db) == {7: 130}
