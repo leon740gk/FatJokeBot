@@ -48,7 +48,8 @@ class FakeSession(BaseSession):
         if isinstance(method, methods.GetChatMember) and method.chat_id in self.left_chats:
             return ChatMemberLeft(user=BOT_USER)
         if isinstance(method, methods.GetMe):
-            return BOT_USER
+            # a User before aiogram 3.34, a BotFullInfo since; unvalidated, as only the latter requires the can_* fields
+            return method.__returning__.model_construct(**BOT_USER.model_dump())
         if isinstance(method, methods.GetChatMember) and method.user_id in self.unknown_users:
             raise TelegramBadRequest(method=method, message="Bad Request: PARTICIPANT_ID_INVALID")
         if isinstance(method, methods.GetChatMember):
