@@ -1,5 +1,6 @@
-aiogram>=3.13,<4
+# exact versions, so a new release can't break CI or the server; raise them by hand and run the tests
+aiogram==3.31.0
 # comes with aiogram; the news feeds use it directly
-aiohttp
-apscheduler>=3.10,<4
-python-dotenv
+aiohttp==3.14.5
+apscheduler==3.11.3
+python-dotenv==1.2.4
